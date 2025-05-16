@@ -250,7 +250,7 @@
                 min-width: 250px;
             }
             .carousel-arrow {
-                 display: none;
+                 display: none; /* Caché sur mobile, comme dans votre code original */
             }
         }
          @media (max-width: 480px) {
@@ -275,19 +275,35 @@
         <div class="container header-container">
             <div class="header-left">
                 <a href="index.html"><img src="images/Logowithoutbg.png" alt="Logo" class="logo"></a>
-                <nav class="main-nav">
-                    <ul>
+                <nav class="main-nav"> <ul>
                         <li><a href="index.html" class="active">Accueil</a></li>
                         <li><a href="recherche.html">Recherche</a></li>
                     </ul>
                 </nav>
             </div>
             <div class="header-right">
-                <a href="../BO/index.html" class="pro-link">Je suis professionnel</a>
-                <a href="creation-compte.html" class="btn btn-secondary">S'enregistrer</a>
-                <a href="connexion-compte.html" class="btn btn-primary">Se connecter</a>
+                <a href="../BO/index.html" class="pro-link desktop-only">Je suis professionnel</a>
+                <a href="creation-compte.html" class="btn btn-secondary desktop-only">S'enregistrer</a>
+                <a href="connexion-compte.html" class="btn btn-primary desktop-only">Se connecter</a>
+
+                <div class="mobile-icons">
+                    <a href="index.html" class="mobile-icon" aria-label="Accueil"><i class="fas fa-home"></i></a>
+                    <a href="profil.html" class="mobile-icon" aria-label="Profil"><i class="fas fa-user"></i></a>
+                    <button class="mobile-icon hamburger-menu" aria-label="Menu" aria-expanded="false">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
             </div>
         </div>
+        <nav class="mobile-nav-links">
+            <ul>
+                <li><a href="index.html">Accueil</a></li>
+                <li><a href="recherche.html">Recherche</a></li>
+                <li><a href="../BO/index.html">Je suis professionnel</a></li>
+                <li><a href="creation-compte.html">S'enregistrer</a></li>
+                <li><a href="connexion-compte.html">Se connecter</a></li>
+            </ul>
+        </nav>
     </header>
 
     <main style="padding: 0px;"> <section class="hero-section">
@@ -452,6 +468,7 @@
         const prevArrow = document.querySelector('.prev-arrow');
         const nextArrow = document.querySelector('.next-arrow');
 
+        // Délais pour laisser le scroll se terminer avant de vérifier la position
         setTimeout(() => {
             if (container.scrollLeft <= 0) {
                 prevArrow.style.display = 'none';
@@ -459,22 +476,24 @@
                 prevArrow.style.display = 'flex';
             }
 
+            // Petite marge d'erreur pour la comparaison de scrollWidth
             if (container.scrollLeft + container.clientWidth >= container.scrollWidth - (gap / 2) ) {
                 nextArrow.style.display = 'none';
             } else {
                 nextArrow.style.display = 'flex';
             }
-        }, 350);
+        }, 350); // 350ms, un peu plus long que l'animation 'smooth'
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         const container = document.querySelector('.cards-container');
         if (container) {
             const prevArrow = document.querySelector('.prev-arrow');
-            if (prevArrow) prevArrow.style.display = 'none';
+            if (prevArrow) prevArrow.style.display = 'none'; // Caché au chargement
 
             const nextArrow = document.querySelector('.next-arrow');
             if (nextArrow) {
+                // Afficher la flèche "next" seulement si le contenu dépasse
                 if (container.scrollWidth > container.clientWidth) {
                     nextArrow.style.display = 'flex';
                 } else {
