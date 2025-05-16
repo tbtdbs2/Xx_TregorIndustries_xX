@@ -87,7 +87,7 @@
 
         .news-section {
             padding: var(--espacement-triple) var(--espacement-double);
-            background-color: var(--couleur-fond-body); /* Ou une couleur spécifique si besoin */
+            background-color: var(--couleur-fond-body);
         }
 
         .news-section h2 {
@@ -99,15 +99,15 @@
         }
 
         .cards-container-wrapper {
-            position: relative; /* Nécessaire pour positionner les flèches */
+            position: relative;
         }
 
         .cards-container {
             display: flex;
             gap: var(--espacement-double);
             overflow-x: auto;
-            padding-bottom: var(--espacement-standard); /* Pour la scrollbar si visible et pour l'esthétique */
-            align-items: stretch; /* Assure que les cards ont la même hauteur si leur contenu varie */
+            padding-bottom: var(--espacement-standard);
+            align-items: stretch;
         }
         
         /* Masquer la scrollbar pour Chrome, Safari et Opera */
@@ -123,15 +123,15 @@
         .card {
             background-color: var(--couleur-blanche);
             border: var(--bordure-standard-interface);
-            border-radius: 12px; /* MODIFIÉ: Augmenté pour correspondre à l'image */
+            border-radius: 12px;
             padding: var(--espacement-moyen);
             min-width: 280px;
             max-width: 300px;
-            flex: 0 0 auto; /* Empêche le rétrécissement/agrandissement, base sur la largeur */
+            flex: 0 0 auto;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* Espace le contenu et le lien "Voir plus" */
+            justify-content: space-between;
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
         .card:hover {
@@ -162,7 +162,7 @@
 
         .star-rating {
             margin-bottom: var(--espacement-standard);
-            color: var(--couleur-principale); /* Couleur par défaut pour les étoiles pleines */
+            color: var(--couleur-principale);
         }
 
         .star-rating .fas.fa-star {
@@ -199,7 +199,7 @@
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background-color: rgba(255, 255, 255, 0.9); /* Légèrement plus opaque */
+            background-color: rgba(255, 255, 255, 0.9);
             border: var(--bordure-standard-interface);
             border-radius: 50%;
             width: 40px;
@@ -250,7 +250,7 @@
                 min-width: 250px;
             }
             .carousel-arrow {
-                 display: none; /* Cacher les flèches sur mobile où le swipe est plus naturel */
+                 display: none;
             }
         }
          @media (max-width: 480px) {
@@ -443,9 +443,9 @@
     <script>
     function scrollCards(direction) {
         const container = document.querySelector('.cards-container');
-        const cardWidth = container.querySelector('.card')?.offsetWidth || 300; // Largeur d'une carte
-        const gap = parseFloat(getComputedStyle(container).gap) || 20; // Valeur du gap
-        const scrollAmount = cardWidth + gap; // Défilement = largeur carte + gap
+        const cardWidth = container.querySelector('.card')?.offsetWidth || 300;
+        const gap = parseFloat(getComputedStyle(container).gap) || 20;
+        const scrollAmount = cardWidth + gap;
         
         container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
 
