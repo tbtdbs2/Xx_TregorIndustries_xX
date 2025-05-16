@@ -7,11 +7,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="style.css"> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Styles spécifiques à la page d'accueil */
         .hero-section {
-            background-image: url('images/photo-nice.png'); 
+            background-image: url('images/photo-nice.png');
             background-size: cover;
             background-position: center;
             padding: 160px var(--espacement-double);
@@ -50,7 +50,7 @@
             max-width: 700px;
             margin: 0 auto;
             background-color: var(--couleur-blanche);
-            height: 50px; 
+            height: 50px;
             border-radius: 25px;
             padding: 0 var(--espacement-standard);
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -87,7 +87,7 @@
 
         .news-section {
             padding: var(--espacement-triple) var(--espacement-double);
-            background-color: var(--couleur-fond-body);
+            background-color: var(--couleur-fond-body); /* Ou une couleur spécifique si besoin */
         }
 
         .news-section h2 {
@@ -99,45 +99,51 @@
         }
 
         .cards-container-wrapper {
-            position: relative;
+            position: relative; /* Nécessaire pour positionner les flèches */
         }
 
         .cards-container {
             display: flex;
             gap: var(--espacement-double);
-            overflow-x: auto; 
-            padding-bottom: var(--espacement-standard);
-            align-items: stretch; 
+            overflow-x: auto;
+            padding-bottom: var(--espacement-standard); /* Pour la scrollbar si visible et pour l'esthétique */
+            align-items: stretch; /* Assure que les cards ont la même hauteur si leur contenu varie */
         }
         
+        /* Masquer la scrollbar pour Chrome, Safari et Opera */
         .cards-container::-webkit-scrollbar {
             display: none;
         }
+        /* Masquer la scrollbar pour IE, Edge et Firefox */
         .cards-container {
-            -ms-overflow-style: none;  
-            scrollbar-width: none;  
+            -ms-overflow-style: none;  /* IE et Edge */
+            scrollbar-width: none;  /* Firefox */
         }
-
 
         .card {
             background-color: var(--couleur-blanche);
             border: var(--bordure-standard-interface);
-            border-radius: 8px;
+            border-radius: 12px; /* MODIFIÉ: Augmenté pour correspondre à l'image */
             padding: var(--espacement-moyen);
-            min-width: 280px; 
-            max-width: 300px; 
-            flex: 0 0 auto; 
+            min-width: 280px;
+            max-width: 300px;
+            flex: 0 0 auto; /* Empêche le rétrécissement/agrandissement, base sur la largeur */
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: space-between; /* Espace le contenu et le lien "Voir plus" */
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
         .card img {
             width: 100%;
-            height: 180px; 
+            height: 180px;
             object-fit: cover;
-            border-radius: 4px 4px 0 0; 
+            border-radius: 10px 10px 0 0; /* MODIFIÉ: Arrondir les coins supérieurs de l'image */
             margin-bottom: var(--espacement-moyen);
         }
 
@@ -156,23 +162,25 @@
 
         .star-rating {
             margin-bottom: var(--espacement-standard);
+            color: var(--couleur-principale); /* Couleur par défaut pour les étoiles pleines */
         }
 
-        .star-rating .fas.fa-star { 
-            color: #008C8C;
+        .star-rating .fas.fa-star {
+            /* La couleur est héritée de .star-rating ou peut être surchargée ici si besoin */
         }
-
-        .star-rating .far.fa-star { 
+        .star-rating .fas.fa-star-half-alt {
+            /* La couleur est héritée de .star-rating */
+        }
+        .star-rating .far.fa-star { /* Étoiles vides */
             color: var(--couleur-bordure);
         }
 
-
         .card-description {
             font-size: var(--font-size-corps-petit);
-            color: var(--couleur-texte-footer); 
+            color: var(--couleur-texte-footer);
             line-height: 1.5;
             margin-bottom: var(--espacement-moyen);
-            flex-grow: 1; 
+            flex-grow: 1;
         }
 
         .card-more {
@@ -180,17 +188,18 @@
             color: var(--couleur-principale);
             text-decoration: none;
             font-weight: var(--font-weight-medium);
-            align-self: flex-start; 
+            align-self: flex-start;
         }
         .card-more:hover {
             text-decoration: underline;
+            color: var(--couleur-principale-hover);
         }
 
         .carousel-arrow {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(255, 255, 255, 0.9); /* Légèrement plus opaque */
             border: var(--bordure-standard-interface);
             border-radius: 50%;
             width: 40px;
@@ -203,18 +212,20 @@
             cursor: pointer;
             z-index: 10;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: background-color 0.2s ease, color 0.2s ease;
         }
         .carousel-arrow:hover {
             background-color: var(--couleur-blanche);
             color: var(--couleur-principale-hover);
         }
         .prev-arrow {
-            left: -20px; 
+            left: -20px;
         }
         .next-arrow {
-            right: -20px; 
+            right: -20px;
         }
 
+        /* Media Queries pour la responsivité de la page d'accueil */
         @media (max-width: 768px) {
             .hero-section h1 {
                 font-size: 2.2em;
@@ -236,10 +247,10 @@
                 font-size: 1.2em;
             }
             .card {
-                min-width: 250px; 
+                min-width: 250px;
             }
-            .carousel-arrow { 
-                 display: none;
+            .carousel-arrow {
+                 display: none; /* Cacher les flèches sur mobile où le swipe est plus naturel */
             }
         }
          @media (max-width: 480px) {
@@ -257,7 +268,6 @@
                 font-size: 1.1em;
             }
          }
-
     </style>
 </head>
 <body>
@@ -280,8 +290,7 @@
         </div>
     </header>
 
-    <main style="padding: 0px;">
-        <section class="hero-section">
+    <main style="padding: 0px;"> <section class="hero-section">
             <div class="hero-content">
                 <h1>Découvrez la région PACA</h1>
                 <div class="search-bar-container">
@@ -291,10 +300,9 @@
             </div>
         </section>
 
-        <section class="news-section container">
-            <h2>Nouveautés</h2>
+        <section class="news-section container"> <h2>Nouveautés</h2>
             <div class="cards-container-wrapper">
-                <div class="cards-container">
+                <div class="cards-container" style="padding: 5px;">
                     <div class="card">
                         <img src="images/kayak.jpg" alt="Archipel de Bréhat en kayak">
                         <div class="card-content">
@@ -319,7 +327,7 @@
                                 <i class="fas fa-star"></i>
                                 <i class="fas fa-star"></i>
                                 <i class="fas fa-star"></i>
-                                <i class="far fa-star"></i> 
+                                <i class="far fa-star"></i>
                             </div>
                             <p class="card-description">Les sorties sont volontairement limitées entre 15 km et ...</p>
                         </div>
@@ -337,6 +345,48 @@
                                 <i class="far fa-star"></i>
                             </div>
                             <p class="card-description">Les Vedettes des 7 îles proposent des excursions et ...</p>
+                        </div>
+                        <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
+                    </div>
+                    <div class="card">
+                        <img src="images/randonnee.jpg" alt="Randonnée dans les Calanques"> <div class="card-content">
+                            <h3 class="card-title">Randonnée dans les Calanques</h3>
+                            <div class="star-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i> </div>
+                            <p class="card-description">Explorez les paysages à couper le souffle des Calanques de Cassis.</p>
+                        </div>
+                        <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
+                    </div>
+                    <div class="card">
+                        <img src="images/gordes.jpg" alt="Visite de Gordes et Roussillon"> <div class="card-content">
+                            <h3 class="card-title">Visite de Gordes et Roussillon</h3>
+                            <div class="star-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                            <p class="card-description">Découvrez le charme des villages perchés du Luberon.</p>
+                        </div>
+                        <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
+                    </div>
+                    <div class="card">
+                        <img src="images/cuisine.jpg" alt="Cours de cuisine provençale"> 
+                        <div class="card-content">
+                            <h3 class="card-title">Cours de cuisine provençale</h3>
+                            <div class="star-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <p class="card-description">Apprenez à cuisiner les plats traditionnels de la Provence.</p>
                         </div>
                         <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
@@ -391,11 +441,48 @@
 
     <script src="script.js" defer></script>
     <script>
-        function scrollCards(direction) {
+    function scrollCards(direction) {
         const container = document.querySelector('.cards-container');
-        const scrollAmount = 320; 
+        const cardWidth = container.querySelector('.card')?.offsetWidth || 300; // Largeur d'une carte
+        const gap = parseFloat(getComputedStyle(container).gap) || 20; // Valeur du gap
+        const scrollAmount = cardWidth + gap; // Défilement = largeur carte + gap
+        
         container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+
+        const prevArrow = document.querySelector('.prev-arrow');
+        const nextArrow = document.querySelector('.next-arrow');
+
+        setTimeout(() => {
+            if (container.scrollLeft <= 0) {
+                prevArrow.style.display = 'none';
+            } else {
+                prevArrow.style.display = 'flex';
+            }
+
+            if (container.scrollLeft + container.clientWidth >= container.scrollWidth - (gap / 2) ) {
+                nextArrow.style.display = 'none';
+            } else {
+                nextArrow.style.display = 'flex';
+            }
+        }, 350);
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const container = document.querySelector('.cards-container');
+        if (container) {
+            const prevArrow = document.querySelector('.prev-arrow');
+            if (prevArrow) prevArrow.style.display = 'none';
+
+            const nextArrow = document.querySelector('.next-arrow');
+            if (nextArrow) {
+                if (container.scrollWidth > container.clientWidth) {
+                    nextArrow.style.display = 'flex';
+                } else {
+                    nextArrow.style.display = 'none';
+                }
+            }
+        }
+    });
     </script>
 
 </body>
