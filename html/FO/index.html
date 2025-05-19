@@ -10,14 +10,28 @@
     <link rel="stylesheet" href="style.css"> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* Styles spécifiques à la page d'accueil */
+        /* Styles spécifiques à la page d'accueil */
         .hero-section {
-            background-image: url('images/photo-nice.png');
-            background-size: cover;
-            background-position: center;
+            /* Supprimez ou commentez la ligne background-image */
+            /* background-image: url('images/photo-nice.png'); */
+            background-size: cover; /* Peut être conservé pour un fallback si vous mettez une couleur de fond */
+            background-position: center; /* Peut être conservé pour un fallback */
             padding: 160px var(--espacement-double);
             text-align: center;
             color: var(--couleur-blanche);
-            position: relative;
+            position: relative; /* TRÈS IMPORTANT - pour positionner la vidéo et le ::before par rapport à cette section */
+            overflow: hidden; /* Empêche la vidéo de déborder et de créer des barres de défilement */
+        }
+
+        #hero-video-background {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Couvre toute la section, rognage possible */
+            transform: translate(-50%, -50%); /* Centre la vidéo */
+            z-index: 0; /* La vidéo est tout en bas */
         }
 
         .hero-section::before {
@@ -27,14 +41,15 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: rgba(0, 0, 0, 0.4);
-            z-index: 1;
+            background-color: rgba(0, 0, 0, 0.4); /* Votre overlay sombre */
+            z-index: 1; /* L'overlay est AU-DESSUS de la vidéo */
         }
 
         .hero-content {
-            position: relative;
-            z-index: 2;
+            position: relative; /* Reste relatif pour le flux normal dans la section */
+            z-index: 2; /* Le contenu est AU-DESSUS de l'overlay et de la vidéo */
         }
+
 
         .hero-section h1 {
             font-size: 3em;
@@ -306,13 +321,114 @@
         </nav>
     </header>
 
-    <main style="padding: 0px;"> <section class="hero-section">
+    <main style="padding: 0px;">
+        <section class="hero-section">
+            <video autoplay muted loop playsinline id="hero-video-background">
+                <source src="images/Paca.mp4" type="video/mp4">
+                Votre navigateur ne supporte pas les vidéos HTML5.
+            </video>
             <div class="hero-content">
                 <h1>Découvrez la région PACA</h1>
                 <div class="search-bar-container">
                     <input type="text" placeholder="Rechercher">
                     <button type="submit" aria-label="Rechercher"><i class="fas fa-search"></i></button>
                 </div>
+            </div>
+        </section>
+
+        <section class="news-section container"> <h2>A la une</h2>
+            <div class="cards-container-wrapper">
+                <div class="cards-container" style="padding: 5px;">
+                    <div class="card">
+                        <img src="images/kayak.jpg" alt="Archipel de Bréhat en kayak">
+                        <div class="card-content">
+                            <h3 class="card-title">Archipel de Bréhat en kayak</h3>
+                            <div class="star-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <p class="card-description">Venez passer un moment inoubliable sur l'archipel de Bréhat ...</p>
+                        </div>
+                        <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
+                    </div>
+                    <div class="card">
+                        <img src="images/louer_velo_famille.jpg" alt="Balade familiale à vélo">
+                        <div class="card-content">
+                            <h3 class="card-title">Balade familiale à vélo</h3>
+                            <div class="star-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                            <p class="card-description">Les sorties sont volontairement limitées entre 15 km et ...</p>
+                        </div>
+                         <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
+                    </div>
+                    <div class="card">
+                        <img src="images/centre-ville.jpg" alt="Découverte du centre-ville historique de Lannion">
+                        <div class="card-content">
+                            <h3 class="card-title">Découverte du centre-ville historique de Lannion</h3>
+                            <div class="star-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                            <p class="card-description">Les Vedettes des 7 îles proposent des excursions et ...</p>
+                        </div>
+                        <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
+                    </div>
+                    <div class="card">
+                        <img src="images/randonnee.jpg" alt="Randonnée dans les Calanques"> <div class="card-content">
+                            <h3 class="card-title">Randonnée dans les Calanques</h3>
+                            <div class="star-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i> </div>
+                            <p class="card-description">Explorez les paysages à couper le souffle des Calanques de Cassis.</p>
+                        </div>
+                        <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
+                    </div>
+                    <div class="card">
+                        <img src="images/gordes.jpg" alt="Visite de Gordes et Roussillon"> <div class="card-content">
+                            <h3 class="card-title">Visite de Gordes et Roussillon</h3>
+                            <div class="star-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                            <p class="card-description">Découvrez le charme des villages perchés du Luberon.</p>
+                        </div>
+                        <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
+                    </div>
+                    <div class="card">
+                        <img src="images/cuisine.jpg" alt="Cours de cuisine provençale"> 
+                        <div class="card-content">
+                            <h3 class="card-title">Cours de cuisine provençale</h3>
+                            <div class="star-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <p class="card-description">Apprenez à cuisiner les plats traditionnels de la Provence.</p>
+                        </div>
+                        <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
+                    </div>
+                </div>
+                <div class="carousel-arrow prev-arrow" style="display:none;" onclick="scrollCards(-1)"><i class="fas fa-chevron-left"></i></div>
+                <div class="carousel-arrow next-arrow" onclick="scrollCards(1)"><i class="fas fa-chevron-right"></i></div>
             </div>
         </section>
 
@@ -411,10 +527,7 @@
                 <div class="carousel-arrow next-arrow" onclick="scrollCards(1)"><i class="fas fa-chevron-right"></i></div>
             </div>
         </section>
-        <div class="container content-area" style="display:none;">
-            <h1>Page d'accueil</h1>
-            <p>Contenu principal de la page...</p>
-        </div>
+
     </main>
 
     <footer>
