@@ -22,6 +22,14 @@
 
         }
 
+        .grid-card {
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
         .card_section {
 
             box-sizing: border-box;
@@ -45,6 +53,7 @@
             width: 457px;
             height: 86px;
             gap: 8px;
+            margin-left: 20px;
 
         }
 
@@ -62,6 +71,7 @@
             border-radius: 8px;
             border: 1px solid #D9D9D9;
             padding: 12px 16px;
+            
             
         }
 
@@ -108,6 +118,102 @@
             
         }
 
+        /* Adresse */
+
+        .adresse_postal {
+
+            display: flex;
+            flex-wrap: wrap;
+            width: 580px;
+            height: 86px;
+            gap: 8px;
+            margin-left: 20px;
+        }
+
+        #adresse {
+            box-sizing: border-box;
+            width: 580px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid #D9D9D9;
+            padding: 12px 16px;
+        }        
+
+        .ville {
+            display: flex;
+            flex-wrap: wrap;
+            width: 270px;
+            height: 70px;
+            gap: 8px;
+            margin-left: 20px;
+        }
+
+        #ville {
+            box-sizing: border-box;
+            width: 270px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid #D9D9D9;
+            padding: 12px 16px;
+        } 
+
+        .code_postal {
+            display: flex;
+            flex-wrap: wrap;
+            width: 270px;
+            height: 70px;
+            gap: 8px;
+            margin-left: 20px;
+        }
+
+        #code_postal {
+            box-sizing: border-box;
+            width: 270px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid #D9D9D9;
+            padding: 12px 16px;
+        }  
+        
+        /* Contact */
+
+        .mail {
+            display: flex;
+            flex-wrap: wrap;
+            width: 580px;
+            height: 70px;
+            gap: 8px;
+            margin-left: 20px;
+        }
+
+        #email {
+            box-sizing: border-box;
+            width: 580px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid #D9D9D9;
+            padding: 12px 16px;
+        } 
+
+        .telephone {
+            display: flex;
+            flex-wrap: wrap;
+            width: 270px;
+            height: 70px;
+            gap: 8px;
+            margin-left: 20px;
+        }
+
+        #telephone {
+            box-sizing: border-box;
+            width: 270px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid #D9D9D9;
+            padding: 12px 16px;
+        }  
+        
+
 
     </style>
     
@@ -138,7 +244,6 @@
 
                 <div class="card_section Pseudonyme">
 
-                    <img src="images/profil.png" alt="Profil" class="img_profil">
 
                     <div class="input_pseudo">
                         <label for="pseudo">Pseudonyme</label>
@@ -156,28 +261,34 @@
 
                 <div class="card_section Adresse">
 
-                    <label for="adresse">Adresse postale</label>
-                    <input type="text" id="adresse" placeholder="1 impasse VIctor Hugo">
-
-                    <label for="ville">Ville</label>
-                    <input type="text" id="ville" placeholder="Lannion">   
-                        
-                    <label for="code_postal">Code postal</label>
-                    <input type="text" id="code_postal" placeholder="22300">
-                        
+                    <div class="adresse_postal">
+                        <label for="adresse">Adresse postale</label>
+                        <input type="text" id="adresse" placeholder="1 impasse VIctor Hugo">
+                    </div>
+                    <div class="ville">
+                        <label for="ville">Ville</label>
+                        <input type="text" id="ville" placeholder="Lannion">   
+                    </div> 
+                    <div class="code_postal">
+                        <label for="code_postal">Code postal</label>
+                        <input type="text" id="code_postal" placeholder="22300">
+                    </div>
                 </div>
 
-                    <div class="card_section Contact">
+                <div class="card_section Contact">
 
-                    <label for="email">Email</label>
-                    <input type="text" id="email" placeholder="john.doe@mail.com">
+                    <div class="mail">
+                        <label for="email">Email</label>
+                        <input type="text" id="email" placeholder="john.doe@mail.com">
+                    </div>
 
-                    <label for="telephone">Téléphone</label>
-                    <input type="text" id="telephone" placeholder="+33701020304">   
-
+                    <div class="telephone">
+                        <label for="telephone">Téléphone</label>
+                        <input type="text" id="telephone" placeholder="+33701020304">   
+                    </div>
                         
                 </div>
-
+                    <!--
                     <div class="card_section Mot de passe">
 
                     <label for="mdp">Mot de passe</label>
@@ -186,7 +297,7 @@
                     <label for="confirm_mdp">Confirmation de mot de passe</label>
                     <input type="text" id="confirm_mdp" placeholder="Mot de passe"> 
                         
-                        
+                    -->                        
                 </div>
 
             </div>
