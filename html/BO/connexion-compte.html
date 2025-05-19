@@ -9,6 +9,130 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .content-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px;
+    }
+
+    .login-container {
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        width: 320px;
+        height: 368px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .content-area h1 {
+        color: #000000;
+        margin-bottom: 10px;
+        font-size: 36px;
+    }
+
+    .content-area p{
+        color: #000000;
+        margin-bottom: 20px;
+        font-size: 24px;
+        font-weight: 500;
+    }
+
+    .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+    }
+
+    .form-group label {
+        color: #333;
+        margin-bottom: 5px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .form-group input[type="email"],
+    .form-group input[type="password"] {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+
+    .login-button {
+        background-color:var(--couleur-principale);
+        
+        color: #fff;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 16px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 500;
+        transition: background-color 0.3s ease;
+    }
+
+    .login-button:hover {
+        background-color: var(--couleur-principale-hover);
+    }
+
+    .options {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        margin-top: 15px;
+        font-size: 14px;
+        width: 100%;
+    }
+
+    .options div {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+
+    .options label {
+        color: #333;
+        font-weight: normal;
+    }
+
+    .options input[type="checkbox"] {
+        margin-right: 5px;
+    }
+
+    .forgot-password {
+        text-decoration: underline;
+        color: #000;
+        margin-top: 5px;
+    }
+
+    .forgot-password:hover {
+        text-decoration: underline;
+        color: #000;
+    }
+    .inscription-pro-lien:hover {
+        text-decoration: underline;
+        color: #000;
+    }
+    .inscription-pro-lien {
+        text-decoration: underline;
+        color: #000;
+        margin-top: 5px;
+    }
+    
+</style>
 </head>
 <body>
     <header>
@@ -32,14 +156,36 @@
             <a href="connexion-compte.html" class="btn btn-primary">Se connecter</a>
         </div>
     </div>
+    
 </header>
 
-    <main>
-        <div class="container content-area">
-            <h1>Page de connexion au compte</h1>
-            <p>Contenu principal de la page...</p>
+<main>
+    <div class="container content-area">
+        <h1>Connexion</h1>
+        <p>Consultez vos offres !</p>
+        <div class="login-container">
+            <form class="login-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="adressemail@exemple.com">
+                </div>
+                <div class="form-group">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" name="password">
+                </div>
+                <button type="submit" class="login-button">Connexion</button>
+                <div class="options">
+                    <div>
+                        <input type="checkbox" id="remember" name="remember">
+                        <label for="remember">Rester connecté</label>
+                    </div>
+                    <a href="#" class="forgot-password">Mot de passe oublié ?</a>
+                    <a href="#" class="inscription-pro-lien">Je m'inscris en tant que professionnel</a>
+                </div>
+            </form>
         </div>
-    </main>
+    </div>
+</main>
 
     <footer>
         <div class="container footer-content">
