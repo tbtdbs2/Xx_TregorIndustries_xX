@@ -78,6 +78,16 @@ header {
     padding: 0 var(--espacement-double);
     width: 100%;
     box-sizing: border-box;
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0; 
+    z-index: 1000;
+    transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+header.header-scrolled {
+    background-color: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .header-container {
@@ -135,7 +145,7 @@ nav.main-nav ul li a:hover {
     align-items: center;
 }
 
-.header-right a {
+.header-right a { /* S'applique aux liens directs, pas aux boutons dans .mobile-icons */
     text-decoration: none;
     margin-left: var(--espacement-moyen);
     font-size: var(--font-size-header-right-lien);
@@ -283,32 +293,32 @@ footer {
 /* Media Queries pour la responsivité */
 @media (max-width: 992px) {
     .header-container {
-        flex-direction: column;
-        align-items: flex-start;
+        /* flex-direction: column; */ /* Commenté car le header mobile sera en row */
+        /* align-items: flex-start; */ /* Commenté */
     }
     header {
-        height: auto;
+      /* height: auto; */ /* Maintenir hauteur fixe pour mobile ou ajuster spécifiquement */
         padding: var(--espacement-moyen) var(--espacement-double);
     }
     .header-left {
-        width: 100%;
-        margin-bottom: var(--espacement-moyen);
+        /* width: 100%; */ /* Ne doit pas prendre toute la largeur sur mobile */
+        /* margin-bottom: var(--espacement-moyen); */ /* Non nécessaire pour mobile row layout */
     }
     nav.main-nav {
-      margin-top: var(--espacement-standard);
+      /* margin-top: var(--espacement-standard); */ /* Sera caché sur mobile */
     }
     .header-right {
-        width: 100%;
-        justify-content: flex-start;
-        flex-wrap: wrap;
+        /* width: 100%; */ /* Non nécessaire pour mobile */
+        /* justify-content: flex-start; */ /* Sera flex-end sur mobile */
+        /* flex-wrap: wrap; */ /* Non nécessaire pour les icônes mobiles */
     }
-    .header-right a {
-        margin-left: 0;
-        margin-right: var(--espacement-moyen);
-        margin-bottom: var(--espacement-standard);
+    .header-right a { /* Cela s'appliquait aux liens desktop */
+        /* margin-left: 0; */
+        /* margin-right: var(--espacement-moyen); */
+        /* margin-bottom: var(--espacement-standard); */
     }
     .pro-link { 
-        padding: var(--espacement-standard) 0;
+        /* padding: var(--espacement-standard) 0; */
     }
 
     .footer-content, .footer-bottom {
@@ -317,31 +327,146 @@ footer {
     }
 }
 
-@media (max-width: 768px) {
+
+/* NOUVEAUX STYLES POUR LE HEADER MOBILE ET MENU */
+
+.desktop-only { /* Sera utilisé pour cacher les éléments desktop sur mobile */
+    /* display: none; est appliqué dans la media query mobile */
+}
+
+.mobile-icons {
+    display: none; /* Caché par défaut, affiché via media query */
+    align-items: center;
+}
+
+.mobile-icon {
+    color: var(--couleur-texte);
+    font-size: 1.5em; /* Taille des icônes Home, User, Bars */
+    margin-left: var(--espacement-moyen); /* Espace entre les icônes */
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px; /* Un peu de padding pour faciliter le clic */
+    text-decoration: none; /* Pour les liens icônes */
+}
+
+.mobile-icon:first-child {
+    margin-left: 0; /* Pas de marge à gauche pour la première icône */
+}
+
+.mobile-icon:hover {
+    color: var(--couleur-principale);
+}
+
+.hamburger-menu {
+    /* Hérite de .mobile-icon, styles spécifiques si besoin */
+}
+
+.mobile-nav-links {
+    display: none; /* Caché par défaut, JS basculera 'active' */
+    background-color: var(--couleur-fond-header);
+    position: absolute; /* Positionné par rapport au header */
+    top: var(--hauteur-header); /* Juste en dessous du header */
+    left: 0;
+    right: 0; /* S'étend sur toute la largeur */
+    width: 100%;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Ombre portée plus prononcée */
+    z-index: 999; /* En dessous du header sticky, mais au-dessus du contenu de la page */
+    border-top: var(--bordure-standard-interface);
+}
+
+.mobile-nav-links.active {
+    display: block; /* Affiche le menu quand la classe 'active' est ajoutée par JS */
+}
+
+.mobile-nav-links ul {
+    list-style: none;
+    padding: 0; /* Pas de padding par défaut pour ul */
+    margin: 0;
+}
+
+.mobile-nav-links ul li a {
+    display: block; /* Pour que le lien prenne toute la largeur */
+    padding: var(--espacement-moyen) var(--espacement-double); /* Espacement interne des liens */
+    text-decoration: none;
+    color: var(--couleur-texte-lien-nav);
+    font-weight: var(--font-weight-medium);
+    border-bottom: 1px solid var(--couleur-bordure); /* Séparateur entre les liens */
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.mobile-nav-links ul li:last-child a {
+    border-bottom: none; /* Pas de bordure pour le dernier élément */
+}
+
+.mobile-nav-links ul li a:hover,
+.mobile-nav-links ul li a:focus { /* Amélioration accessibilité */
+    background-color: var(--couleur-secondaire-hover-bg);
+    color: var(--couleur-principale-hover);
+}
+
+
+/* Styles pour écrans mobiles - AJUSTEMENT DU BREAKPOINT EXISTANT */
+@media (max-width: 768px) { /* Ce breakpoint existait déjà, on ajoute/modifie des règles */
     .container {
         width: 95%;
     }
-    nav.main-nav ul {
-        flex-direction: column;
-        align-items: flex-start;
+
+    /* Modifications spécifiques au Header pour mobile */
+    header {
+        padding: 0 var(--espacement-moyen); /* Padding plus petit pour mobile */
     }
-    nav.main-nav ul li {
-        margin-right: 0;
-        margin-bottom: calc(var(--espacement-standard) / 2);
+    
+    .header-container {
+        flex-direction: row; /* Assure que c'est bien en ligne */
+        justify-content: space-between; /* Logo à gauche, icônes à droite */
+        align-items: center; /* Centrage vertical */
     }
 
-    .header-right .btn {
-        width: calc(50% - (var(--espacement-moyen) / 2) );
-        box-sizing: border-box;
+    .header-left {
+        width: auto; /* S'adapte au logo */
+        margin-bottom: 0; /* Annule le margin-bottom du breakpoint 992px */
+    }
+
+    .logo {
+        margin-right: 0; /* Pas de marge à droite si le nav principal est caché */
+        height: calc(var(--logo-hauteur) * 0.9); /* Optionnel: logo légèrement plus petit */
+    }
+    
+    nav.main-nav { /* Le menu de navigation principal desktop */
+        display: none !important; /* Caché sur mobile, !important pour surcharger */
+    }
+
+    .header-right {
+        width: auto; /* S'adapte aux icônes */
+        justify-content: flex-end; /* Aligne les icônes à droite */
+        margin-left: auto; /* Pousse le groupe d'icônes vers la droite */
+    }
+    
+    .desktop-only { /* Cache les éléments spécifiques au desktop */
+        display: none !important;
+    }
+
+    .mobile-icons { /* Affiche le conteneur des icônes mobiles */
+        display: flex; 
+    }
+    
+    /* Styles pour les boutons dans le header-right qui étaient pour desktop */
+    /* Les styles .header-right .btn et .header-right .pro-link sont déjà modifiés par .desktop-only */
+    /* Mais on peut vouloir les réinitialiser s'ils avaient des largeurs spécifiques */
+     .header-right .btn {
+        /* width: calc(50% - (var(--espacement-moyen) / 2) ); */ /* Annulé car desktop-only */
+        /* box-sizing: border-box; */
     }
 
      .header-right .pro-link {
-        width: 100%; 
-        text-align: left;
-        margin-bottom: var(--espacement-moyen);
-        margin-right: 0; 
+        /* width: 100%;  */ /* Annulé */
+        /* text-align: left; */
+        /* margin-bottom: var(--espacement-moyen); */
+        /* margin-right: 0;  */
     }
 
+    /* Footer adjustments from existing rules (vérifier si toujours pertinents) */
     .footer-content {
         flex-direction: column;
         align-items: center;
