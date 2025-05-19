@@ -66,7 +66,7 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             text-align: center;
             width: 320px;
-            height: 368px;
+            height: fit-content;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -105,8 +105,7 @@
             font-weight: 500;
         }
 
-        .form-group input[type="email"],
-        .form-group input[type="password"] {
+        .form-group input[type="email"]{
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -128,41 +127,6 @@
 
         .login-button:hover {
             background-color: var(--couleur-principale-hover);
-        }
-
-        .options {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            margin-top: 15px;
-            font-size: 14px;
-            width: 100%;
-        }
-
-        .options div {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-
-        .options label {
-            color: #333;
-            font-weight: normal;
-        }
-
-        .options input[type="checkbox"] {
-            margin-right: 5px;
-        }
-
-        .forgot-password {
-            text-decoration: underline;
-            color: #000;
-            margin-top: 5px;
-        }
-
-        .forgot-password:hover {
-            text-decoration: underline;
-            color: #000;
         }
     </style>
 </head>
@@ -203,26 +167,15 @@
 
     <main>
         <div class="container content-area">
-            <h1>Connexion</h1>
-            <p>Bon retour parmi nous !</p>
+            <h1>Récupérez votre mot de passe</h1>
+            <p>Saisissez votre email ci-dessous</p>
             <div class="login-container">
                 <form class="login-form">
                     <div class="form-group">
                         <label for="email">Email</label>
                         <input type="email" id="email" name="email" placeholder="adressemail@exemple.com">
                     </div>
-                    <div class="form-group">
-                        <label for="password">Mot de passe</label>
-                        <input type="password" id="password" name="password">
-                    </div>
-                    <button type="submit" class="login-button">Connexion</button>
-                    <div class="options">
-                        <div>
-                            <input type="checkbox" id="remember" name="remember">
-                            <label for="remember">Rester connecté</label>
-                        </div>
-                        <a href="mdp-oublié.html" class="forgot-password">Mot de passe oublié ?</a>
-                    </div>
+                    <button type="submit" class="login-button">Envoyer un code</button>
                 </form>
             </div>
         </div>
