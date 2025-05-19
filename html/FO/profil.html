@@ -213,6 +213,49 @@
             padding: 12px 16px;
         }  
         
+        @media (max-width: 768px) {
+    .container.content-area {
+        padding: 16px 0px; /* Réduire le padding pour les petits écrans */
+    }
+
+    .card_section {
+        width: 100%; /* Prendre toute la largeur de l'écran */
+        height: auto; /* Permettre à la hauteur de s'ajuster automatiquement */
+        padding: 16px; /* Réduire le padding */
+    }
+
+    .input_pseudo,
+    .input_prenom,
+    .input_nom,
+    .adresse_postal,
+    .ville,
+    .code_postal,
+    .mail,
+    .telephone {
+        width: 100%; /* Prendre toute la largeur de l'écran */
+        margin-left: 0; /* Supprimer la marge gauche */
+    }
+
+    #pseudo,
+    #prenom,
+    #nom,
+    #adresse,
+    #ville,
+    #code_postal,
+    #email,
+    #telephone {
+        width: 100%; /* Prendre toute la largeur de l'écran */
+    }
+
+    h1 {
+        font-size: 24px; /* Réduire la taille de la police pour le titre */
+    }
+
+    .grid-card {
+        gap: 16px; /* Réduire l'espace entre les cartes */
+    }
+}
+
 
 
     </style>
