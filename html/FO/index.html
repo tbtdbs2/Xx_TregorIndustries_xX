@@ -119,6 +119,7 @@
             gap: var(--espacement-double);
             overflow-x: auto;
             padding-bottom: var(--espacement-standard);
+            padding-top: var(--espacement-standard);
             align-items: stretch;
         }
         
@@ -151,13 +152,62 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
-        .card img {
+        /* Updated card image structure styles */
+        .card .card-image-wrapper {
+            position: relative;
             width: 100%;
             height: 180px;
-            object-fit: cover;
-            border-radius: 10px;
             margin-bottom: var(--espacement-moyen);
         }
+
+        .card .card-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            display: block;
+        }
+
+        .favorite-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px; /* Changed from left to right */
+            background-color: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--couleur-texte); /* Default color for empty heart */
+            font-size: 1rem; /* Adjust icon size */
+            z-index: 5;
+            padding: 0;
+            transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+        }
+
+        .favorite-btn:hover {
+            background-color: var(--couleur-blanche);
+            color: var(--couleur-principale);
+            transform: scale(1.1);
+        }
+
+        .favorite-btn .fas.fa-heart { /* Filled heart icon */
+            display: none; /* Hidden by default */
+        }
+
+        .favorite-btn.active .far.fa-heart { /* Empty heart icon */
+            display: none; /* Hide empty heart when active */
+        }
+
+        .favorite-btn.active .fas.fa-heart { /* Filled heart icon */
+            display: inline-block; /* Show filled heart when active */
+            color: var(--couleur-principale); /* Or red e.g. #E53935 */
+        }
+        /* End of new favorite button styles */
+
 
         .card-content {
             flex-grow: 1;
@@ -174,7 +224,7 @@
 
         .star-rating {
             margin-bottom: var(--espacement-standard);
-            color: var(--couleur-principale);
+            color: var(--couleur-principale); /* Couleur par défaut pour étoiles pleines */
         }
 
         .star-rating .fas.fa-star {
@@ -192,7 +242,7 @@
             color: var(--couleur-texte-footer);
             line-height: 1.5;
             margin-bottom: var(--espacement-moyen);
-            flex-grow: 1;
+            flex-grow: 1; /* Pour que la description prenne l'espace disponible */
         }
 
         .card-more {
@@ -200,7 +250,7 @@
             color: var(--couleur-principale);
             text-decoration: none;
             font-weight: var(--font-weight-medium);
-            align-self: flex-start;
+            align-self: flex-start; /* Aligner en bas à gauche de la card-content */
         }
         .card-more:hover {
             text-decoration: underline;
@@ -231,11 +281,67 @@
             color: var(--couleur-principale-hover);
         }
         .prev-arrow {
-            left: -20px;
+            left: -20px; /* Ajuster pour qu'elle soit visible et cliquable */
         }
         .next-arrow {
-            right: -20px;
+            right: -20px; /* Ajuster */
         }
+
+        /* Styling for "À la une" cards */
+        .card.card-a-la-une {
+            border: 1px solid #ffe390; /* Bordure jaune sur tous les côtés */
+            position: relative; /* Nécessaire pour le positionnement absolu de l'étoile */
+        }
+
+        .card-a-la-une .highlight-star-icon {
+            position: absolute;
+            bottom: 10px; 
+            right: 10px;   /* Positionné à droite */
+            color: #FFC107; 
+            font-size: 1em;  
+            z-index: 5;      
+        }
+
+        /* Styling for Category and Destination cards */
+        .category-card, .destination-card {
+            background-color: var(--couleur-blanche);
+            border: var(--bordure-standard-interface);
+            border-radius: 12px; 
+            min-width: 250px;    /* Augmenté */
+            max-width: 260px;    /* Augmenté */
+            flex: 0 0 auto;      
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; 
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .category-card:hover, .destination-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .category-card img, .destination-card img {
+            width: 100%;
+            height: 150px; /* Augmenté */
+            object-fit: cover; 
+        }
+
+        .category-card h3, .destination-card h3 {
+            font-size: 1em; 
+            font-weight: var(--font-weight-medium);
+            color: var(--couleur-texte);
+            margin: 0; 
+            padding: var(--espacement-moyen) var(--espacement-standard); 
+            background-color: var(--couleur-blanche); 
+            flex-grow: 1; 
+            display: flex;
+            align-items: center; 
+            justify-content: center; 
+        }
+
 
         /* Media Queries pour la responsivité de la page d'accueil */
         @media (max-width: 768px) {
@@ -258,11 +364,21 @@
             .search-bar-container button {
                 font-size: 1.2em;
             }
-            .card {
+            .card { /* S'applique aussi aux .card-a-la-une */
                 min-width: 250px;
             }
+             .card .card-image-wrapper { /* Ensure image height is responsive if needed */
+                /* height: 160px; /* Example adjustment for smaller cards */
+            }
+            .category-card, .destination-card { 
+                min-width: 220px; /* Ajustement pour mobile aussi */
+                max-width: 230px;
+            }
+            .category-card img, .destination-card img {
+                height: 130px; /* Peut-être réduire un peu la hauteur sur mobile */
+            }
             .carousel-arrow {
-                 display: none; /* Caché sur mobile, comme dans votre code original */
+                 display: none; 
             }
         }
          @media (max-width: 480px) {
@@ -278,6 +394,16 @@
             }
              .search-bar-container button {
                 font-size: 1.1em;
+            }
+            .card .card-image-wrapper { /* Example for very small screens */
+                /* height: 140px; */
+            }
+            .category-card, .destination-card {
+                min-width: 180px; /* Ajustement plus petit pour très petits écrans */
+                 max-width: 190px;
+            }
+            .category-card img, .destination-card img {
+                height: 110px; 
             }
          }
     </style>
@@ -334,194 +460,274 @@
         </section>
 
         <section class="news-section container"> <h2>A la une</h2>
-            <div class="cards-container-wrapper">
-                <div class="cards-container" style="padding: 5px;">
-                    <div class="card">
-                        <img src="images/kayak.jpg" alt="Archipel de Bréhat en kayak">
+            <div class="cards-container-wrapper" id="alaUneCarouselWrapper">
+                <div class="cards-container">
+                    <div class="card card-a-la-une">
+                        <div class="card-image-wrapper">
+                            <img src="images/kayak.jpg" alt="Archipel de Bréhat en kayak">
+                            <button class="favorite-btn" aria-label="Ajouter aux favoris">
+                                <i class="far fa-heart"></i><i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        <span class="highlight-star-icon"><i class="fas fa-star"></i></span>
                         <div class="card-content">
                             <h3 class="card-title">Archipel de Bréhat en kayak</h3>
                             <div class="star-rating">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i>
                             </div>
                             <p class="card-description">Venez passer un moment inoubliable sur l'archipel de Bréhat ...</p>
                         </div>
                         <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
-                    <div class="card">
-                        <img src="images/louer_velo_famille.jpg" alt="Balade familiale à vélo">
+                    <div class="card card-a-la-une">
+                        <div class="card-image-wrapper">
+                            <img src="images/louer_velo_famille.jpg" alt="Balade familiale à vélo">
+                            <button class="favorite-btn" aria-label="Ajouter aux favoris">
+                                <i class="far fa-heart"></i><i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        <span class="highlight-star-icon"><i class="fas fa-star"></i></span>
                         <div class="card-content">
                             <h3 class="card-title">Balade familiale à vélo</h3>
                             <div class="star-rating">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="far fa-star"></i>
+                                <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="far fa-star"></i>
                             </div>
                             <p class="card-description">Les sorties sont volontairement limitées entre 15 km et ...</p>
                         </div>
                          <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
-                    <div class="card">
-                        <img src="images/centre-ville.jpg" alt="Découverte du centre-ville historique de Lannion">
+                    <div class="card card-a-la-une">
+                        <div class="card-image-wrapper">
+                            <img src="images/centre-ville.jpg" alt="Découverte du centre-ville historique de Lannion">
+                            <button class="favorite-btn" aria-label="Ajouter aux favoris">
+                                <i class="far fa-heart"></i><i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        <span class="highlight-star-icon"><i class="fas fa-star"></i></span>
                         <div class="card-content">
                             <h3 class="card-title">Découverte du centre-ville historique de Lannion</h3>
                             <div class="star-rating">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="far fa-star"></i>
-                                <i class="far fa-star"></i>
+                                <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="far fa-star"></i> <i class="far fa-star"></i>
                             </div>
                             <p class="card-description">Les Vedettes des 7 îles proposent des excursions et ...</p>
                         </div>
                         <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
-                    <div class="card">
-                        <img src="images/randonnee.jpg" alt="Randonnée dans les Calanques"> <div class="card-content">
+                    <div class="card card-a-la-une">
+                        <div class="card-image-wrapper">
+                             <img src="images/randonnee.jpg" alt="Randonnée dans les Calanques">
+                             <button class="favorite-btn" aria-label="Ajouter aux favoris">
+                                <i class="far fa-heart"></i><i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        <span class="highlight-star-icon"><i class="fas fa-star"></i></span>
+                        <div class="card-content">
                             <h3 class="card-title">Randonnée dans les Calanques</h3>
                             <div class="star-rating">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star-half-alt"></i> </div>
+                                <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star-half-alt"></i> </div>
                             <p class="card-description">Explorez les paysages à couper le souffle des Calanques de Cassis.</p>
                         </div>
                         <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
-                    <div class="card">
-                        <img src="images/gordes.jpg" alt="Visite de Gordes et Roussillon"> <div class="card-content">
+                    <div class="card card-a-la-une">
+                        <div class="card-image-wrapper">
+                            <img src="images/gordes.jpg" alt="Visite de Gordes et Roussillon">
+                            <button class="favorite-btn" aria-label="Ajouter aux favoris">
+                                <i class="far fa-heart"></i><i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        <span class="highlight-star-icon"><i class="fas fa-star"></i></span>
+                        <div class="card-content">
                             <h3 class="card-title">Visite de Gordes et Roussillon</h3>
                             <div class="star-rating">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="far fa-star"></i>
+                                <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="far fa-star"></i>
                             </div>
                             <p class="card-description">Découvrez le charme des villages perchés du Luberon.</p>
                         </div>
                         <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
-                    <div class="card">
-                        <img src="images/cuisine.jpg" alt="Cours de cuisine provençale"> 
+                    <div class="card card-a-la-une">
+                        <div class="card-image-wrapper">
+                            <img src="images/cuisine.jpg" alt="Cours de cuisine provençale"> 
+                            <button class="favorite-btn" aria-label="Ajouter aux favoris">
+                                <i class="far fa-heart"></i><i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        <span class="highlight-star-icon"><i class="fas fa-star"></i></span>
                         <div class="card-content">
                             <h3 class="card-title">Cours de cuisine provençale</h3>
                             <div class="star-rating">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i>
                             </div>
                             <p class="card-description">Apprenez à cuisiner les plats traditionnels de la Provence.</p>
                         </div>
                         <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
                 </div>
-                <div class="carousel-arrow prev-arrow" style="display:none;" onclick="scrollCards(-1)"><i class="fas fa-chevron-left"></i></div>
-                <div class="carousel-arrow next-arrow" onclick="scrollCards(1)"><i class="fas fa-chevron-right"></i></div>
+                <div class="carousel-arrow prev-arrow" onclick="scrollSpecificCarousel('alaUneCarouselWrapper', -1)"><i class="fas fa-chevron-left"></i></div>
+                <div class="carousel-arrow next-arrow" onclick="scrollSpecificCarousel('alaUneCarouselWrapper', 1)"><i class="fas fa-chevron-right"></i></div>
             </div>
         </section>
 
         <section class="news-section container"> <h2>Nouveautés</h2>
-            <div class="cards-container-wrapper">
-                <div class="cards-container" style="padding: 5px;">
+            <div class="cards-container-wrapper" id="nouveautesCarouselWrapper">
+                <div class="cards-container">
                     <div class="card">
-                        <img src="images/kayak.jpg" alt="Archipel de Bréhat en kayak">
+                        <div class="card-image-wrapper">
+                            <img src="images/kayak.jpg" alt="Archipel de Bréhat en kayak">
+                            <button class="favorite-btn" aria-label="Ajouter aux favoris">
+                                <i class="far fa-heart"></i><i class="fas fa-heart"></i>
+                            </button>
+                        </div>
                         <div class="card-content">
                             <h3 class="card-title">Archipel de Bréhat en kayak</h3>
                             <div class="star-rating">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i>
                             </div>
                             <p class="card-description">Venez passer un moment inoubliable sur l'archipel de Bréhat ...</p>
                         </div>
                         <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
                     <div class="card">
-                        <img src="images/louer_velo_famille.jpg" alt="Balade familiale à vélo">
+                        <div class="card-image-wrapper">
+                            <img src="images/louer_velo_famille.jpg" alt="Balade familiale à vélo">
+                            <button class="favorite-btn" aria-label="Ajouter aux favoris">
+                                <i class="far fa-heart"></i><i class="fas fa-heart"></i>
+                            </button>
+                        </div>
                         <div class="card-content">
                             <h3 class="card-title">Balade familiale à vélo</h3>
                             <div class="star-rating">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="far fa-star"></i>
+                                <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="far fa-star"></i>
                             </div>
                             <p class="card-description">Les sorties sont volontairement limitées entre 15 km et ...</p>
                         </div>
                          <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
                     <div class="card">
-                        <img src="images/centre-ville.jpg" alt="Découverte du centre-ville historique de Lannion">
+                        <div class="card-image-wrapper">
+                            <img src="images/centre-ville.jpg" alt="Découverte du centre-ville historique de Lannion">
+                            <button class="favorite-btn" aria-label="Ajouter aux favoris">
+                                <i class="far fa-heart"></i><i class="fas fa-heart"></i>
+                            </button>
+                        </div>
                         <div class="card-content">
                             <h3 class="card-title">Découverte du centre-ville historique de Lannion</h3>
                             <div class="star-rating">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="far fa-star"></i>
-                                <i class="far fa-star"></i>
+                                <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="far fa-star"></i> <i class="far fa-star"></i>
                             </div>
                             <p class="card-description">Les Vedettes des 7 îles proposent des excursions et ...</p>
                         </div>
                         <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
                     <div class="card">
-                        <img src="images/randonnee.jpg" alt="Randonnée dans les Calanques"> <div class="card-content">
+                        <div class="card-image-wrapper">
+                            <img src="images/randonnee.jpg" alt="Randonnée dans les Calanques">
+                            <button class="favorite-btn" aria-label="Ajouter aux favoris">
+                                <i class="far fa-heart"></i><i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        <div class="card-content">
                             <h3 class="card-title">Randonnée dans les Calanques</h3>
                             <div class="star-rating">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star-half-alt"></i> </div>
+                                <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star-half-alt"></i> </div>
                             <p class="card-description">Explorez les paysages à couper le souffle des Calanques de Cassis.</p>
                         </div>
                         <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
                     <div class="card">
-                        <img src="images/gordes.jpg" alt="Visite de Gordes et Roussillon"> <div class="card-content">
+                        <div class="card-image-wrapper">
+                             <img src="images/gordes.jpg" alt="Visite de Gordes et Roussillon">
+                             <button class="favorite-btn" aria-label="Ajouter aux favoris">
+                                <i class="far fa-heart"></i><i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        <div class="card-content">
                             <h3 class="card-title">Visite de Gordes et Roussillon</h3>
                             <div class="star-rating">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="far fa-star"></i>
+                                <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="far fa-star"></i>
                             </div>
                             <p class="card-description">Découvrez le charme des villages perchés du Luberon.</p>
                         </div>
                         <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
                     <div class="card">
-                        <img src="images/cuisine.jpg" alt="Cours de cuisine provençale"> 
+                        <div class="card-image-wrapper">
+                            <img src="images/cuisine.jpg" alt="Cours de cuisine provençale"> 
+                            <button class="favorite-btn" aria-label="Ajouter aux favoris">
+                                <i class="far fa-heart"></i><i class="fas fa-heart"></i>
+                            </button>
+                        </div>
                         <div class="card-content">
                             <h3 class="card-title">Cours de cuisine provençale</h3>
                             <div class="star-rating">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i>
                             </div>
                             <p class="card-description">Apprenez à cuisiner les plats traditionnels de la Provence.</p>
                         </div>
                         <a href="offre.html" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
                 </div>
-                <div class="carousel-arrow prev-arrow" style="display:none;" onclick="scrollCards(-1)"><i class="fas fa-chevron-left"></i></div>
-                <div class="carousel-arrow next-arrow" onclick="scrollCards(1)"><i class="fas fa-chevron-right"></i></div>
+                <div class="carousel-arrow prev-arrow" onclick="scrollSpecificCarousel('nouveautesCarouselWrapper', -1)"><i class="fas fa-chevron-left"></i></div>
+                <div class="carousel-arrow next-arrow" onclick="scrollSpecificCarousel('nouveautesCarouselWrapper', 1)"><i class="fas fa-chevron-right"></i></div>
+            </div>
+        </section>
+
+        <section class="news-section container"> <h2>Catégories</h2>
+            <div class="cards-container-wrapper" id="categoriesCarouselWrapper">
+                <div class="cards-container">
+                    <div class="category-card">
+                        <img src="images/activite.jpg" alt="Activités">
+                        <h3>Activités</h3>
+                    </div>
+                    <div class="category-card">
+                        <img src="images//visite.jpg" alt="Visites">
+                        <h3>Visites</h3>
+                    </div>
+                    <div class="category-card">
+                        <img src="images/spectacle.jpg" alt="Spectacles">
+                        <h3>Spectacles</h3>
+                    </div>
+                    <div class="category-card">
+                        <img src="images/parcs-d-attraction.jpg" alt="Parcs d'attractions">
+                        <h3>Parcs d'attractions</h3>
+                    </div>
+                    <div class="category-card">
+                        <img src="images/restaurant.jpg" alt="Restauration">
+                        <h3>Restauration</h3>
+                    </div>
+                </div>
+                <div class="carousel-arrow prev-arrow" onclick="scrollSpecificCarousel('categoriesCarouselWrapper', -1)"><i class="fas fa-chevron-left"></i></div>
+                <div class="carousel-arrow next-arrow" onclick="scrollSpecificCarousel('categoriesCarouselWrapper', 1)"><i class="fas fa-chevron-right"></i></div>
+            </div>
+        </section>
+
+        <section class="news-section container"> <h2>Destinations</h2>
+            <div class="cards-container-wrapper" id="destinationsCarouselWrapper">
+                <div class="cards-container">
+                    <div class="destination-card">
+                        <img src="images/avignon.png" alt="Avignon">
+                        <h3>Avignon</h3>
+                    </div>
+                    <div class="destination-card">
+                        <img src="images/marseille.jpg" alt="Marseille">
+                        <h3>Marseille</h3>
+                    </div>
+                    <div class="destination-card">
+                        <img src="images/nice.jpg" alt="Nice">
+                        <h3>Nice</h3>
+                    </div>
+                    <div class="destination-card">
+                        <img src="images/cannes.jpg" alt="Cannes">
+                        <h3>Cannes</h3>
+                    </div>
+                    <div class="destination-card">
+                        <img src="images/toulon.jpg" alt="Toulon">
+                        <h3>Toulon</h3>
+                    </div>
+                </div>
+                <div class="carousel-arrow prev-arrow" onclick="scrollSpecificCarousel('destinationsCarouselWrapper', -1)"><i class="fas fa-chevron-left"></i></div>
+                <div class="carousel-arrow next-arrow" onclick="scrollSpecificCarousel('destinationsCarouselWrapper', 1)"><i class="fas fa-chevron-right"></i></div>
             </div>
         </section>
 
@@ -530,6 +736,7 @@
     <footer>
         <div class="container footer-content">
             <div class="footer-section social-media">
+                 <a href="index.html"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="footer-logo"></a>
                 <div class="social-icons">
                     <a href="#" aria-label="X"><i class="fab fa-x-twitter"></i></a>
                     <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
@@ -567,50 +774,115 @@
 
     <script src="script.js" defer></script>
     <script>
-    function scrollCards(direction) {
-        const container = document.querySelector('.cards-container');
-        const cardWidth = container.querySelector('.card')?.offsetWidth || 300;
-        const gap = parseFloat(getComputedStyle(container).gap) || 20;
-        const scrollAmount = cardWidth + gap;
+    function scrollSpecificCarousel(carouselWrapperId, direction) {
+        const wrapper = document.getElementById(carouselWrapperId);
+        if (!wrapper) {
+            console.error('Carousel wrapper not found:', carouselWrapperId);
+            return;
+        }
+        const container = wrapper.querySelector('.cards-container');
+        if (!container) {
+            console.error('Cards container not found in wrapper:', carouselWrapperId);
+            return;
+        }
+
+        let card = container.querySelector('.card'); 
+        if (!card) { 
+            card = container.querySelector('.category-card, .destination-card');
+        }
         
+        if (!card) { 
+            console.warn('No cards found in container for width calculation:', container);
+            return;
+        }
+
+        const cardWidth = card.offsetWidth;
+        const gapStyle = getComputedStyle(container).gap;
+        const gap = (gapStyle && gapStyle !== 'normal' && !isNaN(parseFloat(gapStyle))) ? parseFloat(gapStyle) : 20; 
+        const scrollAmount = cardWidth + gap;
+
         container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
 
-        const prevArrow = document.querySelector('.prev-arrow');
-        const nextArrow = document.querySelector('.next-arrow');
+        const prevArrow = wrapper.querySelector('.prev-arrow');
+        const nextArrow = wrapper.querySelector('.next-arrow');
 
-        // Délais pour laisser le scroll se terminer avant de vérifier la position
         setTimeout(() => {
-            if (container.scrollLeft <= 0) {
-                prevArrow.style.display = 'none';
-            } else {
-                prevArrow.style.display = 'flex';
+            if (prevArrow) {
+                prevArrow.style.display = container.scrollLeft <= 0 ? 'none' : 'flex';
             }
+            if (nextArrow) {
+                const isAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth - (gap / 2) - 2; 
+                nextArrow.style.display = isAtEnd ? 'none' : 'flex';
 
-            // Petite marge d'erreur pour la comparaison de scrollWidth
-            if (container.scrollLeft + container.clientWidth >= container.scrollWidth - (gap / 2) ) {
-                nextArrow.style.display = 'none';
-            } else {
-                nextArrow.style.display = 'flex';
+                if (container.scrollWidth <= container.clientWidth) {
+                    nextArrow.style.display = 'none';
+                     if (prevArrow) prevArrow.style.display = 'none';
+                }
             }
-        }, 350); // 350ms, un peu plus long que l'animation 'smooth'
+        }, 350); 
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        const container = document.querySelector('.cards-container');
-        if (container) {
-            const prevArrow = document.querySelector('.prev-arrow');
-            if (prevArrow) prevArrow.style.display = 'none'; // Caché au chargement
+        const carouselWrappers = document.querySelectorAll('.cards-container-wrapper');
+        const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
-            const nextArrow = document.querySelector('.next-arrow');
-            if (nextArrow) {
-                // Afficher la flèche "next" seulement si le contenu dépasse
-                if (container.scrollWidth > container.clientWidth) {
-                    nextArrow.style.display = 'flex';
-                } else {
-                    nextArrow.style.display = 'none';
+        carouselWrappers.forEach(wrapper => {
+            const container = wrapper.querySelector('.cards-container');
+            if (!container) return;
+
+            const prevArrow = wrapper.querySelector('.prev-arrow');
+            const nextArrow = wrapper.querySelector('.next-arrow');
+            
+            const updateArrowVisibility = () => {
+                if (isMobile) { 
+                     if(prevArrow) prevArrow.style.display = 'none';
+                     if(nextArrow) nextArrow.style.display = 'none';
+                     return; 
                 }
-            }
+
+                if (container.scrollWidth > container.clientWidth) {
+                    if (prevArrow) {
+                        prevArrow.style.display = container.scrollLeft <= 0 ? 'none' : 'flex';
+                    }
+                    if (nextArrow) {
+                        const isAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth - 2; 
+                        nextArrow.style.display = isAtEnd ? 'none' : 'flex';
+                    }
+                } else {
+                    if (prevArrow) prevArrow.style.display = 'none';
+                    if (nextArrow) nextArrow.style.display = 'none';
+                }
+            };
+            updateArrowVisibility(); 
+        });
+        
+        if (!isMobile) { 
+            window.addEventListener('resize', () => {
+                 carouselWrappers.forEach(wrapper => {
+                    const container = wrapper.querySelector('.cards-container');
+                    if (!container) return;
+                    const prevArrow = wrapper.querySelector('.prev-arrow');
+                    const nextArrow = wrapper.querySelector('.next-arrow');
+                    if (container.scrollWidth > container.clientWidth) {
+                        if (prevArrow) prevArrow.style.display = container.scrollLeft <= 0 ? 'none' : 'flex';
+                        if (nextArrow) nextArrow.style.display = (container.scrollLeft + container.clientWidth >= container.scrollWidth -2) ? 'none' : 'flex';
+                    } else {
+                        if (prevArrow) prevArrow.style.display = 'none';
+                        if (nextArrow) nextArrow.style.display = 'none';
+                    }
+                 });
+            });
         }
+
+        // Add click listener for favorite buttons (basic toggle example)
+        const favoriteButtons = document.querySelectorAll('.favorite-btn');
+        favoriteButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                button.classList.toggle('active');
+                // Here you would typically also send a request to a server
+                // to save the favorite state for the user.
+            });
+        });
     });
     </script>
 
