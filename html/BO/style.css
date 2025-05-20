@@ -42,9 +42,12 @@
     --zone-contenu-hauteur-min: 300px;
 
     --border-radius-bouton: 16px;
+    --border-radius-standard: 8px; /* Ajouté pour cohérence, si besoin ailleurs */
+    --border-radius-petit: 4px; /* Ajouté pour cohérence, si besoin ailleurs */
     --bordure-standard-interface: 1px solid var(--couleur-bordure);
     --bordure-bouton-primaire: 1px solid var(--couleur-principale);
     --bordure-bouton-secondaire: 1px solid var(--couleur-secondaire);
+
 
     --transition-couleur-rapide: color 0.2s ease-in-out;
     --transition-bouton-standard: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
@@ -142,10 +145,17 @@ nav.main-nav ul li a:hover {
     font-weight: var(--font-weight-medium);
 }
 
-.pro-link {
+.pro-link { /* Style pour le lien "Professionnel" dans le header */
     color: var(--couleur-texte);
     padding: calc(var(--espacement-standard) / 2) var(--espacement-standard);
+    /* Autres styles si nécessaire, par exemple pour l'aligner avec .pro-text */
 }
+.pro-text { /* Style pour le texte "Professionnel" à côté du logo */
+    font-weight: var(--font-weight-medium);
+    color: var(--couleur-texte); /* ou une couleur spécifique si besoin */
+    /* Autres styles si nécessaire */
+}
+
 
 .pro-link:hover {
     color: var(--couleur-principale);
@@ -195,7 +205,7 @@ main {
 }
 
 /* Styles du Footer */
-footer {
+footer { /* main-footer a été remplacé par footer pour plus de généricité */
     background-color: var(--couleur-fond-footer);
     color: var(--couleur-texte-footer);
     padding-top: var(--espacement-triple);
@@ -210,17 +220,17 @@ footer {
     flex-wrap: wrap;
     justify-content: space-between;
     gap: var(--espacement-double);
-    padding-bottom: var(--espacement-double);
+    padding-bottom: var(--espacement-double); /* Espace avant le footer-bottom */
     max-width: var(--container-largeur-max);
     margin: 0 auto;
-    padding-left: var(--espacement-double);
+    padding-left: var(--espacement-double); /* Espacement intérieur pour le contenu du footer */
     padding-right: var(--espacement-double);
 }
 
 .footer-section {
     flex: 1;
     min-width: var(--footer-section-largeur-min);
-    margin-bottom: var(--espacement-double);
+    margin-bottom: var(--espacement-double); /* Espace entre les sections sur mobile */
 }
 
 .footer-logo {
@@ -232,17 +242,18 @@ footer {
     color: var(--couleur-icones-sociales);
     margin-right: var(--espacement-standard);
     font-size: var(--font-size-icone-sociale);
-    text-decoration: none;
+    text-decoration: none; /* Assurez-vous qu'il n'y a pas de soulignement par défaut */
 }
 
 .social-media .social-icons a:hover {
-    color: var(--couleur-principale-hover);
+    color: var(--couleur-principale-hover); /* Changement de couleur au survol */
 }
+
 
 .footer-section h3 {
     font-size: var(--font-size-titre-footer);
-    color: var(--couleur-texte);
-    margin-top: 0;
+    color: var(--couleur-texte); /* Utilisation de la couleur de texte principale pour les titres */
+    margin-top: 0; /* Pas de marge en haut du titre de section */
     margin-bottom: var(--espacement-moyen);
     font-weight: var(--font-weight-semibold);
 }
@@ -254,7 +265,7 @@ footer {
 }
 
 .footer-section ul li {
-    margin-bottom: calc(var(--espacement-standard) * 0.8);
+    margin-bottom: calc(var(--espacement-standard) * 0.8); /* Espacement entre les liens */
     font-size: var(--font-size-corps-petit);
 }
 
@@ -265,8 +276,8 @@ footer {
 }
 
 .footer-section ul li a:hover {
-    color: var(--couleur-principale);
-    text-decoration: underline;
+    color: var(--couleur-principale); /* Couleur principale au survol */
+    text-decoration: underline; /* Soulignement pour indiquer l'interactivité */
 }
 
 .footer-bottom {
@@ -274,9 +285,9 @@ footer {
     padding-top: var(--espacement-double);
     border-top: var(--bordure-standard-interface);
     font-size: var(--font-size-corps-petit);
-    max-width: var(--container-largeur-max);
-    margin: 0 auto;
-    padding-left: var(--espacement-double);
+    max-width: var(--container-largeur-max); /* Assure que cette section est aussi limitée en largeur */
+    margin: 0 auto; /* Centrage */
+    padding-left: var(--espacement-double); /* Espacement intérieur */
     padding-right: var(--espacement-double);
 }
 
@@ -284,31 +295,31 @@ footer {
 @media (max-width: 992px) {
     .header-container {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: flex-start; /* Aligne les éléments à gauche */
     }
     header {
-        height: auto;
+        height: auto; /* Hauteur auto pour s'adapter au contenu */
         padding: var(--espacement-moyen) var(--espacement-double);
     }
     .header-left {
-        width: 100%;
-        margin-bottom: var(--espacement-moyen);
+        width: 100%; /* Prend toute la largeur */
+        margin-bottom: var(--espacement-moyen); /* Espace avant la nav */
     }
     nav.main-nav {
-      margin-top: var(--espacement-standard);
+      margin-top: var(--espacement-standard); /* Espace entre logo/pro et la nav */
     }
     .header-right {
         width: 100%;
-        justify-content: flex-start;
-        flex-wrap: wrap;
+        justify-content: flex-start; /* Aligne les boutons à gauche */
+        flex-wrap: wrap; /* Permet aux boutons de passer à la ligne */
     }
-    .header-right a {
+    .header-right a { /* Concerne les boutons et le lien pro-link */
         margin-left: 0;
-        margin-right: var(--espacement-moyen);
-        margin-bottom: var(--espacement-standard);
+        margin-right: var(--espacement-moyen); /* Espace entre les éléments */
+        margin-bottom: var(--espacement-standard); /* Espace si les éléments passent à la ligne */
     }
-    .pro-link { 
-        padding: var(--espacement-standard) 0;
+    .pro-link { /* Spécifique au lien pro s'il est dans header-right */
+        padding: var(--espacement-standard) 0; /* Ajustement du padding si nécessaire */
     }
 
     .footer-content, .footer-bottom {
@@ -319,42 +330,104 @@ footer {
 
 @media (max-width: 768px) {
     .container {
-        width: 95%;
+        width: 95%; /* Plus de largeur sur les petits écrans */
     }
     nav.main-nav ul {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: column; /* Liens de navigation en colonne */
+        align-items: flex-start; /* Alignés à gauche */
     }
     nav.main-nav ul li {
         margin-right: 0;
         margin-bottom: calc(var(--espacement-standard) / 2);
     }
 
-    .header-right .btn {
-        width: calc(50% - (var(--espacement-moyen) / 2) );
-        box-sizing: border-box;
+    .header-right .btn { /* Style pour les boutons dans header-right */
+        width: calc(50% - (var(--espacement-moyen) / 2) ); /* Deux boutons par ligne, avec espacement */
+        box-sizing: border-box; /* Inclut padding et bordure dans la largeur */
     }
-
+     /* Pour que le lien "Espace Professionnel" prenne toute la largeur s'il est seul ou en premier */
      .header-right .pro-link {
-        width: 100%; 
+        width: 100%; /* Prend toute la largeur */
         text-align: left;
-        margin-bottom: var(--espacement-moyen);
-        margin-right: 0; 
+        margin-bottom: var(--espacement-moyen); /* Espace avant les boutons en dessous */
+        margin-right: 0; /* Pas de marge à droite s'il prend toute la largeur */
     }
 
     .footer-content {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
+        flex-direction: column; /* Sections du footer en colonne */
+        align-items: center; /* Centrage du contenu des sections */
+        text-align: center; /* Centrage du texte */
     }
 
     .footer-section {
-        min-width: 100%;
+        min-width: 100%; /* Prend toute la largeur */
         margin-bottom: var(--espacement-double);
     }
 
     .social-media .social-icons {
-        justify-content: center;
+        justify-content: center; /* Centrage des icônes sociales */
         display: flex;
     }
+}
+
+/* Styles améliorés pour les boutons de la section Parc d'Attraction */
+
+/* Style de base pour les boutons dans la section des attractions pour uniformiser */
+#categorie-specific-fields .attraction-group button,
+#categorie-specific-fields #add-attraction {
+    color: var(--couleur-blanche); /* Texte en blanc pour un bon contraste */
+    border: none;
+    border-radius: var(--border-radius-bouton); /* Utilisation du rayon de bordure défini dans la charte */
+    padding: var(--espacement-standard) var(--espacement-moyen); /* Espacement interne cohérent */
+    cursor: pointer;
+    font-size: 0.9em; /* Taille de police cohérente */
+    margin-top: var(--espacement-standard); /* Marge supérieure pour l'espacement */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Transition douce pour le survol */
+    font-weight: var(--font-weight-medium); /* Police légèrement plus épaisse pour la lisibilité */
+    text-transform: none; /* Assurez-vous que le texte n'est pas en majuscules par défaut si non désiré */
+}
+
+#categorie-specific-fields .attraction-group button:hover,
+#categorie-specific-fields #add-attraction:hover {
+    transform: translateY(-2px); /* Léger effet de soulèvement au survol */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Ombre discrète pour effet de profondeur */
+}
+
+
+/* Bouton "Ajouter une Attraction" */
+#categorie-specific-fields #add-attraction {
+    background-color: var(--couleur-principale); /* Couleur principale pour l'action primaire */
+    display: block; /* Permet de gérer la largeur et les marges plus facilement */
+    width: auto; /* ou une largeur fixe si vous préférez, ex: 250px */
+    max-width: 300px; /* Limite la largeur maximale */
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: var(--espacement-moyen); /* Espace en dessous */
+    padding: var(--espacement-moyen) var(--espacement-double); /* Plus de padding pour le bouton principal */
+    font-size: 1em; /* Taille de police légèrement augmentée */
+    font-weight: var(--font-weight-semibold); /* Plus d'emphase */
+}
+
+#categorie-specific-fields #add-attraction:hover {
+    background-color: var(--couleur-principale-hover); /* Utilisation de la couleur de survol définie */
+}
+
+/* Bouton "Ajouter Horaire" dans un groupe d'attraction */
+#categorie-specific-fields .attraction-group .add-horaire {
+    background-color: var(--couleur-principale); /* Couleur principale pour l'ajout */
+}
+
+#categorie-specific-fields .attraction-group .add-horaire:hover {
+    background-color: var(--couleur-principale-hover); /* Assombrissement au survol */
+}
+
+/* Boutons "Supprimer l'Attraction" et "Supprimer Horaire" */
+#categorie-specific-fields .attraction-group .remove-attraction,
+#categorie-specific-fields .attraction-group .remove-horaire {
+    background-color: #dc3545; /* Rouge pour les actions destructrices (déjà utilisé) */
+}
+
+#categorie-specific-fields .attraction-group .remove-attraction:hover,
+#categorie-specific-fields .attraction-group .remove-horaire:hover {
+    background-color: #c82333; /* Rouge plus foncé au survol (déjà utilisé) */
 }
