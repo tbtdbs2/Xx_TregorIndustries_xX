@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PACT - Recherche</title><link rel="icon" href="images/Logo2withoutbg.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa; /* Light gray background for the page */
+        }
+
+        .search-page-container {
+            display: flex;
+            gap: 25px;
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+
+        .filters-sidebar {
+            width: 280px; /* Slightly wider to accommodate content */
+            flex-shrink: 0;
+            background-color: var(--couleur-blanche);
+            padding: 20px;
+            height: fit-content;
+            border-radius: 8px; /* Rounded corners for the sidebar */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Subtle shadow */
+        }
+
+        .filter-group {
+            margin-bottom: 20px;
+        }
+
+        .filter-group h3 {
+            font-size: 1em; /* Adjusted from 1.05em */
+            font-weight: var(--font-weight-semibold);
+            color: var(--couleur-texte);
+            margin-bottom: 12px; /* Increased margin */
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--couleur-bordure); /* Add a subtle separator */
+        }
+        
+        .filter-group label {
+            display: block;
+            margin-bottom: 6px; /* Increased margin */
+            font-size: 0.9em; /* Adjusted from 0.85em */
+            color: var(--couleur-texte-footer);
+        }
+
+        .filter-group input[type="text"],
+        .filter-group input[type="date"],
+        .filter-group select {
+            width: 100%;
+            padding: 10px; /* Increased padding */
+            border: 1px solid var(--couleur-bordure);
+            border-radius: 6px; /* Increased border-radius */
+            font-size: 0.9em;
+            box-sizing: border-box;
+        }
+        
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon input[type="text"] {
+            padding-right: 30px;
+        }
+
+        .input-with-icon .fa-map-marker-alt,
+        .input-with-icon .fa-calendar-alt {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            color: var(--couleur-texte-footer);
+            pointer-events: none;
+        }
+        
+        .filter-group input[type="range"] {
+            width: 100%;
+            margin-top: 5px;
+            background: transparent;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+        }
+
+        .filter-group input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #e0e0e0; /* Lighter gray for track */
+            border-radius: 3px;
+        }
+        .filter-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            border: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: var(--couleur-principale);
+            cursor: pointer;
+            margin-top: -5px;
+        }
+        .filter-group input[type="range"]::-moz-range-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #e0e0e0;
+            border-radius: 3px;
+        }
+        .filter-group input[type="range"]::-moz-range-thumb {
+            border: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: var(--couleur-principale);
+            cursor: pointer;
+        }
+        .filter-group input[type="range"]::-ms-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: transparent;
+            border-color: transparent;
+            color: transparent;
+        }
+        .filter-group input[type="range"]::-ms-fill-lower {
+            background: var(--couleur-principale);
+            border-radius: 3px;
+        }
+        .filter-group input[type="range"]::-ms-fill-upper {
+            background: #e0e0e0;
+            border-radius: 3px;
+        }
+        .filter-group input[type="range"]::-ms-thumb {
+            border: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: var(--couleur-principale);
+            cursor: pointer;
+            margin-top: 0;
+        }
+
+        .active-keywords {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px; /* Increased gap */
+            margin-bottom: 10px; /* Add margin below tags */
+        }
+
+        .keyword-tag {
+            background-color: var(--couleur-secondaire);
+            color: var(--couleur-principale);
+            padding: 5px 10px; /* Adjusted padding */
+            border-radius: 16px; /* More rounded */
+            font-size: 0.85em; /* Adjusted font size */
+            font-weight: var(--font-weight-medium);
+            display: flex;
+            align-items: center;
+        }
+        .keyword-tag .remove-tag {
+            margin-left: 8px; /* Increased margin */
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9em; /* Slightly larger 'x' */
+        }
+        .keyword-tag .remove-tag:hover { color: #cc0000; /* Darker red for hover */ }
+
+
+        .price-range-display {
+            font-size: 0.9em; /* Adjusted font size */
+            color: var(--couleur-texte);
+            margin-top: 8px;
+            text-align: right; /* Align to right as per mockup */
+        }
+
+        .star-rating-filter { display: flex; justify-content: flex-start; gap: 5px; font-size: 1.3em; cursor: pointer; } /* Increased gap and size */
+        .star-rating-filter .fa-star { color: #e0e0e0; }
+        .star-rating-filter .fa-star.selected,
+        .star-rating-filter .fa-star:hover { color: #FFC107; }
+        .star-rating-filter .fa-star:hover ~ .fa-star:not(.selected){ color: #e0e0e0; }
+        .star-rating-filter:hover .fa-star.selected ~ .fa-star:not(.selected){ color: #e0e0e0; }
+
+        .status-filter label { display: inline-flex; align-items: center; margin-right: 15px; font-size: 0.9em; color: var(--couleur-texte); } /* Increased margin */
+        .status-filter input[type="radio"] { margin-right: 5px; accent-color: var(--couleur-principale); }
+
+        .results-area { flex-grow: 1; }
+
+        .search-and-sort-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        
+        .search-bar-results {
+            display: flex;
+            align-items: center;
+            background-color: var(--couleur-blanche);
+            border: 1px solid var(--couleur-bordure);
+            border-radius: 25px; /* More rounded */
+            padding: 0 10px 0 15px; /* Adjusted padding */
+            height: 45px; /* Increased height */
+            flex-grow: 1;
+            min-width: 250px; /* Adjusted min-width */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+        .search-bar-results input[type="text"] {
+            flex-grow: 1;
+            padding: 10px; /* Increased padding */
+            border: none;
+            outline: none;
+            font-size: 0.95em;
+            background-color: transparent;
+        }
+        .search-bar-results button {
+            background-color: transparent;
+            color: var(--couleur-principale);
+            border: none;
+            padding: 10px; /* Increased padding */
+            cursor: pointer;
+            font-size: 1.1em;
+        }
+
+        .sort-options button {
+            background-color: var(--couleur-blanche); /* White background by default */
+            color: var(--couleur-texte);
+            border: 1px solid var(--couleur-bordure);
+            padding: 8px 18px; /* Adjusted padding */
+            border-radius: 20px; /* More rounded */
+            cursor: pointer;
+            font-size: 0.9em; /* Adjusted font size */
+            font-weight: var(--font-weight-medium);
+            margin-left: 8px; /* Adjusted margin */
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+        .sort-options button:hover {
+            border-color: var(--couleur-principale);
+            color: var(--couleur-principale);
+        }
+        .sort-options button.active {
+            background-color: var(--couleur-principale);
+            color: var(--couleur-blanche);
+            border-color: var(--couleur-principale);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* Adjusted minmax for potentially 3 cards */
+            gap: 25px; /* Increased gap */
+        }
+
+        .card {
+            background-color: var(--couleur-blanche);
+            border: 1px solid var(--couleur-bordure);
+            border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            overflow: hidden; /* To ensure child border-radius on image works */
+        }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        .card .card-image-wrapper {
+            position: relative;
+            width: 100%;
+            height: 160px; /* Adjusted height */
+        }
+        .card .card-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* border-radius: 12px 12px 0 0; Removed as card has overflow:hidden */
+        }
+        
+        .favorite-icon-result-card { /* New class for the static star */
+            position: absolute;
+            top: 12px; /* Adjusted position */
+            right: 12px; /* Adjusted position */
+            color: #FFC107; /* Yellow star color */
+            font-size: 1.4em; /* Larger star */
+            text-shadow: 0px 0px 3px rgba(0,0,0,0.2); /* Slight shadow for better visibility */
+        }
+
+        .card .card-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 15px; /* Consistent padding */
+        }
+        .card .card-title {
+            font-size: 1.1em; /* Adjusted font size */
+            font-weight: var(--font-weight-semibold);
+            color: var(--couleur-texte);
+            margin-bottom: 8px; /* Adjusted margin */
+        }
+        .card .star-rating {
+            margin-bottom: 10px; /* Adjusted margin */
+            color: #FFC107;
+            font-size: 0.9em;
+        }
+        .card .star-rating .far.fa-star { color: var(--couleur-bordure); }
+        
+        .card .card-description {
+            font-size: 0.85em; /* Adjusted font size */
+            color: #555; /* Darker gray */
+            line-height: 1.5; /* Adjusted line height */
+            margin-bottom: 12px; /* Adjusted margin */
+            flex-grow: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3; /* Max 3 lines as per mockup observation */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-height: calc(0.85em * 1.5 * 3); /* Reserve space for 3 lines */
+        }
+        .card .card-more {
+            font-size: 0.9em; /* Adjusted font size */
+            color: var(--couleur-principale);
+            text-decoration: none;
+            font-weight: var(--font-weight-medium);
+            align-self: flex-start;
+        }
+        .card .card-more:hover {
+            text-decoration: underline;
+            color: var(--couleur-principale-hover);
+        }
+
+        /* Media Queries for Responsivity */
+        @media (max-width: 992px) { /* Tablet */
+            .search-page-container { flex-direction: column; }
+            .filters-sidebar { width: 100%; margin-bottom: 20px; }
+            .results-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+        }
+        @media (max-width: 768px) { /* Mobile large */
+            .search-and-sort-controls { flex-direction: column; align-items: stretch; }
+            .search-bar-results { width: 100%; margin-bottom: 10px; }
+            .sort-options { display: flex; justify-content: space-between; width: 100%; gap: 5px; }
+            .sort-options button { margin-left: 0; flex-grow: 1; padding: 8px 10px; }
+            .results-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+            .filters-sidebar { width: 100%; padding: 15px;}
+        }
+         @media (max-width: 520px) { /* Mobile étroit */
+            .results-grid { grid-template-columns: 1fr; }
+            .card .card-image-wrapper { height: 180px; } /* Potentially larger image on single column */
+            .card .card-title { font-size: 1.05em; }
+            .card .card-description { -webkit-line-clamp: 3; }
+            .active-keywords { gap: 6px; }
+            .keyword-tag { padding: 4px 8px; font-size: 0.8em;}
+            .sort-options button { font-size: 0.8em; }
+         }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <div class="header-left">
+                <a href="index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="index.php">Accueil</a></li>
+                        <li><a href="recherche.php" class="active">Recherche</a></li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="header-right">
+                <a href="../BO/index.php" class="pro-link desktop-only">Je suis professionnel</a>
+                <a href="creation-compte.php" class="btn btn-secondary desktop-only">S'enregistrer</a>
+                <a href="connexion-compte.php" class="btn btn-primary desktop-only">Se connecter</a>
+                <div class="mobile-icons">
+                    <a href="index.php" class="mobile-icon" aria-label="Accueil"><i class="fas fa-home"></i></a>
+                    <a href="profil.php" class="mobile-icon" aria-label="Profil"><i class="fas fa-user"></i></a>
+                    <button class="mobile-icon hamburger-menu" aria-label="Menu" aria-expanded="false">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <nav class="mobile-nav-links">
+            <ul>
+                <li><a href="index.php">Accueil</a></li>
+                <li><a href="recherche.php" class="active">Recherche</a></li>
+                <li><a href="../BO/index.php">Je suis professionnel</a></li>
+                <li><a href="creation-compte.php">S'enregistrer</a></li>
+                <li><a href="connexion-compte.php">Se connecter</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container content-area search-page-container">
+            <aside class="filters-sidebar">
+                <div class="filter-group">
+                    <h3>Mots clefs</h3>
+                    <div class="active-keywords">
+                        <span class="keyword-tag">Camping <span class="remove-tag">&times;</span></span>
+                        <span class="keyword-tag">Vélos <span class="remove-tag">&times;</span></span>
+                        <span class="keyword-tag">Paris <span class="remove-tag">&times;</span></span>
+                    </div>
+                    <input type="text" id="keywords" name="keywords" placeholder="Ex: randonnée, musée...">
+                </div>
+
+                <div class="filter-group">
+                    <h3>Catégorie</h3>
+                    <select id="category" name="category">
+                        <option value="">Toutes</option>
+                        <option value="activites">Activités</option>
+                        <option value="visites">Visites</option>
+                        <option value="spectacles">Spectacles</option>
+                        <option value="parcs">Parcs d'attractions</option>
+                        <option value="restauration">Restauration</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <h3>Destination</h3>
+                    <div class="input-with-icon">
+                        <input type="text" id="destination" name="destination" placeholder="Localisation">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <h3>Prix</h3>
+                    <input type="range" id="price" name="price" min="0" max="10000" value="10000" step="100">
+                    <div class="price-range-display" id="price-display">€0 - €10000</div>
+                </div>
+
+                <div class="filter-group">
+                    <h3>Date</h3>
+                     <div class="input-with-icon">
+                        <input type="date" id="date" name="date" placeholder="jj/mm/aaaa">
+                        </div>
+                </div>
+
+                <div class="filter-group">
+                    <h3>Notes Minimale</h3>
+                    <div class="star-rating-filter" id="min-rating">
+                        <i class="fas fa-star" data-value="1" title="1 étoile et plus"></i>
+                        <i class="fas fa-star" data-value="2" title="2 étoiles et plus"></i>
+                        <i class="fas fa-star" data-value="3" title="3 étoiles et plus"></i>
+                        <i class="fas fa-star" data-value="4" title="4 étoiles et plus"></i>
+                        <i class="fas fa-star" data-value="5" title="5 étoiles"></i>
+                    </div>
+                    <input type="hidden" id="min-rating-value" name="min_rating_value">
+                </div>
+                 <div class="filter-group"> <h3>Notes Minimale</h3>
+                    <div class="star-rating-filter" id="min-rating-2">
+                        <i class="fas fa-star" data-value="1"></i>
+                        <i class="fas fa-star" data-value="2"></i>
+                        <i class="fas fa-star" data-value="3"></i>
+                        <i class="fas fa-star" data-value="4"></i>
+                        <i class="fas fa-star" data-value="5"></i>
+                    </div>
+                    <input type="hidden" id="min-rating-value-2" name="min_rating_value_2">
+                </div>
+
+
+                <div class="filter-group">
+                    <h3>Statut de l'offre</h3>
+                    <div class="status-filter">
+                        <label for="status-open">
+                            <input type="radio" id="status-open" name="status" value="open" checked> Ouvert
+                        </label>
+                        <label for="status-closed">
+                            <input type="radio" id="status-closed" name="status" value="closed"> Fermé
+                        </label>
+                    </div>
+                </div>
+            </aside>
+
+            <section class="results-area">
+                <div class="search-and-sort-controls">
+                    <div class="search-bar-results">
+                        <input type="text" placeholder="Rechercher">
+                        <button type="submit" aria-label="Rechercher"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div class="sort-options">
+                        <button type="button" class="active" data-sort="note">Note</button>
+                        <button type="button" data-sort="price_asc">Prix croissant</button>
+                        <button type="button" data-sort="price_desc">Prix décroissant</button>
+                    </div>
+                </div>
+
+                <div class="results-grid">
+                    <div class="card">
+                        <div class="card-image-wrapper">
+                            <img src="images/kayak.jpg" alt="Archipel de Bréhat en kayak">
+                            <i class="fas fa-star favorite-icon-result-card"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">Archipel de Bréhat en kayak</h3>
+                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div>
+                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a ...</p>
+                            <a href="offre.php" class="card-more">Voir plus</a>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-image-wrapper">
+                            <img src="images/louer_velo_famille.jpg" alt="Balade familiale à vélo">
+                            <i class="fas fa-star favorite-icon-result-card"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">Balade familiale à vélo</h3>
+                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i><i class="far fa-star"></i></div>
+                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a very short story.</p>
+                            <a href="offre.php" class="card-more">Voir plus</a>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-image-wrapper">
+                            <img src="images/centre-ville.jpg" alt="Découverte du centre-ville historique de Lannion">
+                            <i class="fas fa-star favorite-icon-result-card"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">Découverte du centre-ville historique de Lannion</h3>
+                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i></div>
+                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a ...</p>
+                             <a href="offre.php" class="card-more">Voir plus</a>
+                        </div>
+                    </div>
+                     <div class="card">
+                        <div class="card-image-wrapper">
+                            <img src="images/randonnee.jpg" alt="Randonnée en montagne">
+                            <i class="fas fa-star favorite-icon-result-card"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">Découverte du centre-ville historique de Lannion</h3>
+                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a ...</p>
+                             <a href="offre.php" class="card-more">Voir plus</a>
+                        </div>
+                    </div>
+                     <div class="card">
+                        <div class="card-image-wrapper">
+                            <img src="images/kayak.jpg" alt="Archipel de Bréhat en kayak">
+                             <i class="fas fa-star favorite-icon-result-card"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">Archipel de Bréhat en kayak</h3>
+                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
+                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a very short story. This text might be longer.</p>
+                             <a href="offre.php" class="card-more">Voir plus</a>
+                        </div>
+                    </div>
+                     <div class="card">
+                        <div class="card-image-wrapper">
+                            <img src="images/louer_velo_famille.jpg" alt="Balade familiale à vélo">
+                             <i class="fas fa-star favorite-icon-result-card"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">Balade familiale à vélo</h3>
+                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i></div>
+                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a ...</p>
+                             <a href="offre.php" class="card-more">Voir plus</a>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-image-wrapper">
+                            <img src="images/centre-ville.jpg" alt="Découverte du centre-ville historique de Lannion">
+                             <i class="fas fa-star favorite-icon-result-card"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">Balade familiale à vélo</h3>
+                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div>
+                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a very short story.</p>
+                             <a href="offre.php" class="card-more">Voir plus</a>
+                        </div>
+                    </div>
+                     <div class="card">
+                        <div class="card-image-wrapper">
+                            <img src="images/randonnee.jpg" alt="Randonnée en montagne">
+                             <i class="fas fa-star favorite-icon-result-card"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">Découverte du centre-ville historique de Lannion</h3>
+                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i><i class="far fa-star"></i></div>
+                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a ...</p>
+                             <a href="offre.php" class="card-more">Voir plus</a>
+                        </div>
+                    </div>
+                     <div class="card">
+                        <div class="card-image-wrapper">
+                            <img src="images/kayak.jpg" alt="Archipel de Bréhat en kayak">
+                             <i class="fas fa-star favorite-icon-result-card"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">Archipel de Bréhat en kayak</h3>
+                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i></div>
+                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a very short story.</p>
+                             <a href="offre.php" class="card-more">Voir plus</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-section social-media">
+                <a href="index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="footer-logo"></a>
+                <div class="social-icons">
+                    <a href="#" aria-label="Twitter PACT"><i class="fab fa-x-twitter"></i></a>
+                    <a href="#" aria-label="Instagram PACT"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="YouTube PACT"><i class="fab fa-youtube"></i></a>
+                    <a href="#" aria-label="LinkedIn PACT"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="footer-section links">
+                <h3>Professionnel</h3>
+                <ul>
+                    <li><a href="../BO/index.php">Comment poster une annonce</a></li>
+                    <li><a href="../BO/creation-compte.php">Je crée mon compte pro</a></li>
+                    <li><a href="../BO/connexion-compte.php">Je me connecte en tant que pro</a></li>
+                </ul>
+            </div>
+            <div class="footer-section links">
+                <h3>Découvrir</h3>
+                <ul>
+                    <li><a href="index.php">Accueil</a></li>
+                    <li><a href="recherche.php">Recherche</a></li>
+                </ul>
+            </div>
+            <div class="footer-section links">
+                <h3>Ressources</h3>
+                <ul>
+                    <li><a href="conditions-generales-d-utilisation.php">Conditions générales d'utilisation</a></li>
+                    <li><a href="contact-du-responsable-du-site.php">Contact du responsable du site</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 PACT. Tous droits réservés.</p>
+        </div>
+    </footer>
+    <script src="script.js" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const priceRange = document.getElementById('price');
+            const priceDisplay = document.getElementById('price-display');
+            if (priceRange && priceDisplay) {
+                const updatePriceDisplay = () => {
+                    // Ensure the display format matches "€0 - €10000"
+                    // The mockup shows the max value, so we'll assume the range is always from 0 to current value.
+                    // Or, if it's meant to be a range selector with two thumbs, this would be different.
+                    // Based on single thumb, it's "€0 - €[value]".
+                    priceDisplay.textContent = `€0 - €${priceRange.value}`;
+                }
+                updatePriceDisplay(); // Initial display
+                priceRange.addEventListener('input', updatePriceDisplay);
+            }
+
+            const setupStarRatingFilter = (filterId, valueInputId) => {
+                const starRatingFilter = document.getElementById(filterId);
+                const minRatingValueInput = document.getElementById(valueInputId);
+                if (starRatingFilter && minRatingValueInput) {
+                    const stars = Array.from(starRatingFilter.querySelectorAll('.fa-star'));
+                    
+                    const setStarsVisual = (currentRating) => {
+                        stars.forEach(s => {
+                            const starValue = parseInt(s.dataset.value, 10);
+                            const isSelected = starValue <= currentRating;
+                            s.classList.toggle('selected', isSelected);
+                            // Direct style manipulation for clarity, can be class-based
+                            s.style.color = isSelected ? '#FFC107' : '#e0e0e0'; 
+                        });
+                    };
+
+                    starRatingFilter.addEventListener('click', function(e) {
+                        if (e.target.classList.contains('fa-star') && e.target.dataset.value) {
+                            const rating = e.target.dataset.value;
+                            if (minRatingValueInput.value === rating) { // Clicked on the same star again
+                                minRatingValueInput.value = ""; // Deselect
+                                setStarsVisual(0);
+                            } else {
+                                minRatingValueInput.value = rating;
+                                setStarsVisual(rating);
+                            }
+                        }
+                    });
+
+                    starRatingFilter.addEventListener('mouseover', function(e) {
+                        if (e.target.classList.contains('fa-star') && e.target.dataset.value) {
+                            const ratingHover = parseInt(e.target.dataset.value, 10);
+                            stars.forEach(s => {
+                                if (parseInt(s.dataset.value,10) <= ratingHover) {
+                                    s.style.color = '#FFC107';
+                                } else {
+                                     s.style.color = '#e0e0e0';
+                                }
+                            });
+                        }
+                    });
+
+                    starRatingFilter.addEventListener('mouseout', function() {
+                        setStarsVisual(minRatingValueInput.value || 0); 
+                    });
+                    setStarsVisual(minRatingValueInput.value || 0); // Initial state
+                }
+            };
+
+            setupStarRatingFilter('min-rating', 'min-rating-value');
+            setupStarRatingFilter('min-rating-2', 'min-rating-value-2');
+
+
+            const sortButtons = document.querySelectorAll('.sort-options button');
+            sortButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    sortButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    // Add actual sorting logic here based on this.dataset.sort
+                });
+            });
+
+            // Placeholder for keyword removal functionality
+            document.querySelectorAll('.keyword-tag .remove-tag').forEach(removeBtn => {
+                removeBtn.addEventListener('click', function() {
+                    this.parentElement.remove();
+                    // Add logic to update search results based on removed keyword
+                });
+            });
+        });
+    </script>
+</body>
+</html>
