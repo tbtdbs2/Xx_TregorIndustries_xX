@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACT Pro - Contact</title><link rel="icon" href="images/Logo2withoutbgorange.png">
+    <title>PACT Pro - Recherche</title><link rel="icon" href="images/Logo2withoutbgorange.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,29 +14,29 @@
     <header>
     <div class="container header-container">
         <div class="header-left">
-            <a href="index.html"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
+            <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
             <span class="pro-text">Professionnel</span>
         </div>
 
         <nav class="main-nav">
             <ul>
-                <li><a href="index.html">Accueil</a></li>
-                <li><a href="recherche.html">Offres</a></li>
-                <li><a href="publier-une-offre.html">Publier une offre</a></li>
-                <li><a href="profil.html">Profil</a></li>
+                <li><a href="index.php">Accueil</a></li>
+                <li><a href="recherche.php" class="active">Offres</a></li>
+                <li><a href="publier-une-offre.php">Publier une offre</a></li>
+                <li><a href="profil.php">Profil</a></li>
             </ul>
         </nav>
 
         <div class="header-right">
-            <a href="creation-compte.html" class="btn btn-secondary">S'enregistrer</a>
-            <a href="connexion-compte.html" class="btn btn-primary">Se connecter</a>
+            <a href="creation-compte.php" class="btn btn-secondary">S'enregistrer</a>
+            <a href="connexion-compte.php" class="btn btn-primary">Se connecter</a>
         </div>
     </div>
 </header>
 
     <main>
         <div class="container content-area">
-            <h1>Page de contact du responsable du site</h1>
+            <h1>Page de recherche des offres</h1>
             <p>Contenu principal de la page...</p>
         </div>
     </main>
@@ -54,24 +54,24 @@
             <div class="footer-section links">
                 <h3>Visiteur</h3>
                 <ul>
-                    <li><a href="../FO/index.html">Accueil</a></li>
-                    <li><a href="../FO/recherche.html">Recherche d'offres</a></li>
-                    <li><a href="../FO/connexion-compte.html">Je me connecte en tant que membre</a></li>
+                    <li><a href="../FO/index.php">Accueil</a></li>
+                    <li><a href="../FO/recherche.php">Recherche d'offres</a></li>
+                    <li><a href="../FO/connexion-compte.php">Je me connecte en tant que membre</a></li>
                 </ul>
             </div>
             <div class="footer-section links">
                 <h3>Découvrir</h3>
                 <ul>
-                    <li><a href="index.html">Accueil</a></li>
-                    <li><a href="publier-une-offre.html">Publier une offre</a></li>
-                    <li><a href="profil.html">Profil</a></li>
+                    <li><a href="index.php">Accueil</a></li>
+                    <li><a href="publier-une-offre.php">Publier une offre</a></li>
+                    <li><a href="profil.php">Profil</a></li>
                 </ul>
             </div>
             <div class="footer-section links">
                 <h3>Ressources</h3>
                 <ul>
-                    <li><a href="conditions-generales-d-utilisation.html">Conditions générales d'utilisation</a></li>
-                    <li><a href="contact-du-responsable-du-site.html">Contact du responsable du site</a></li>
+                    <li><a href="conditions-generales-d-utilisation.php">Conditions générales d'utilisation</a></li>
+                    <li><a href="contact-du-responsable-du-site.php">Contact du responsable du site</a></li>
                 </ul>
             </div>
         </div>

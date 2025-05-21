@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACT - Création de compte</title><link rel="icon" href="images/Logo2withoutbg.png">
+    <title>PACT Pro - Création</title><link rel="icon" href="images/Logo2withoutbgorange.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -73,7 +73,8 @@
         .form-group input[type="last-name"],
         .form-group input[type="tel"],
         .form-group input[type="email"],
-        .form-group input[type="password"] {
+        .form-group input[type="password"],
+        #secteur{
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -123,88 +124,87 @@
 </head>
 <body>
     <header>
-        <div class="container header-container">
-            <div class="header-left">
-                <a href="index.html"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
-                <nav class="main-nav">
-                    <ul>
-                        <li><a href="index.html">Accueil</a></li>
-                        <li><a href="recherche.html">Recherche</a></li>
-                    </ul>
-                </nav>
-            </div>
-            <div class="header-right">
-                <a href="../BO/index.html" class="pro-link desktop-only">Je suis professionnel</a>
-                <a href="creation-compte.html" class="btn btn-secondary desktop-only active">S'enregistrer</a>
-                <a href="connexion-compte.html" class="btn btn-primary desktop-only">Se connecter</a>
-                <div class="mobile-icons">
-                    <a href="index.html" class="mobile-icon" aria-label="Accueil"><i class="fas fa-home"></i></a>
-                    <a href="profil.html" class="mobile-icon" aria-label="Profil"><i class="fas fa-user"></i></a>
-                    <button class="mobile-icon hamburger-menu" aria-label="Menu" aria-expanded="false">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                </div>
-            </div>
+    <div class="container header-container">
+        <div class="header-left">
+            <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
+            <span class="pro-text">Professionnel</span>
         </div>
-        <nav class="mobile-nav-links">
+
+        <nav class="main-nav">
             <ul>
-                <li><a href="index.html">Accueil</a></li>
-                <li><a href="recherche.html">Recherche</a></li>
-                <li><a href="../BO/index.html">Je suis professionnel</a></li>
-                <li><a href="creation-compte.html" class="active">S'enregistrer</a></li>
-                <li><a href="connexion-compte.html">Se connecter</a></li>
+                <li><a href="index.php">Accueil</a></li>
+                <li><a href="recherche.php">Offres</a></li>
+                <li><a href="publier-une-offre.php">Publier une offre</a></li>
+                <li><a href="profil.php">Profil</a></li>
             </ul>
         </nav>
-    </header>
+
+        <div class="header-right">
+            <a href="creation-compte.php" class="btn btn-secondary">S'enregistrer</a>
+            <a href="connexion-compte.php" class="btn btn-primary">Se connecter</a>
+        </div>
+    </div>
+</header>
 
     <main>
         <div class="container content-area">
-            <h1>Créer un compte</h1>
-            <p>Rejoignez nous !</p>
+            <h1>Inscription</h1>
+            <p>Le début d'une grande collaboration !</p>
             <div class="register-container">
                 <form class="register-form">
-                    <div class="form-group">
-                        <label for="name">Prénom</label>
-                        <input type="name" id="name" name="name" placeholder="John">
-                    </div>
-                    <div class="form-group">
-                        <label for="last-name">Nom</label>
-                        <input type="last-name" id="last-name" name="last-name" placeholder="Doe">
-                    </div>
                     <div class="form-group full-width">
-                        <label for="email">Email</label>
+                        <label for="email">Email *</label>
                         <input type="email" id="email" name="email" placeholder="adressemail@exemple.com">
                     </div>
-                    <div class="form-group">
-                        <label for="pseudo">Pseudonyme</label>
-                        <input type="text" id="pseudo" name="pseudo" placeholder="john_doe">
-                    </div>
-                    <div class="form-group">
-                        <label for="tel">N° Téléphone</label>
-                        <input type="tel" id="tel" name="tel" placeholder="+33701020304">
+                    <div class="form-group full-width">
+                        <label for="cp-name">Dénomination / Raison sociale *</label>
+                        <input type="text" id="cp-name" name="cp-name" placeholder="Toto Enterprise">
                     </div>
                     <div class="form-group full-width">
-                        <label for="adresse">Adresse postale</label>
+                        <label for="adresse">Adresse postale *</label>
                         <input type="text" id="adresse" name="adresse" placeholder="1 impasse Victor Hugo">
                     </div>
                     <div class="form-group">
-                        <label for="ville">Ville</label>
+                        <label for="ville">Ville *</label>
                         <input type="text" id="ville" name="ville" placeholder="Lannion">
                     </div>
                     <div class="form-group">
-                        <label for="code_postal">Code Postal</label>
+                        <label for="code_postal">Code Postal *</label>
                         <input type="text" id="code_postal" name="code_postal" placeholder="22300">
                     </div>
+                    <div class="form-group full-width">
+                        <label for="siren">Numéro de SIREN</label>
+                        <input type="text" id="siren" name="siren" placeholder="123 456 789 0000">
+                    </div>
                     <div class="form-group">
-                        <label for="password">Mot de passe</label>
+                        <label for="secteur">Secteur d'activité *</label>
+                        <select id="secteur" name="secteur">
+                            <option value="particulier">Privé</option>
+                            <option value="professionnel">Public</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="tel">N° Téléphone *</label>
+                        <input type="tel" id="tel" name="tel" placeholder="+33701020304">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="password">Mot de passe *</label>
                         <input type="password" id="password" name="password" placeholder="Mot de passe">
                     </div>
-                    <div class="form-group">
-                        <label for="password_confirm">Confirmation de mot de passe</label>
+                    <div class="form-group full-width">
+                        <label for="password_confirm">Confirmation de mot de passe *</label>
                         <input type="password" id="password_confirm" name="password_confirm" placeholder="Mot de passe">
                     </div>
+                    <div class="form-group full-width">
+                        <label for="iban">IBAN</label>
+                        <input type="text" id="iban" name="iban" placeholder="FROO 1234 5678 9123 4567 8912 345">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="bic">BIC</label>
+                        <input type="text" id="bic" name="bic" placeholder="CEPAFRPP751">
+                    </div>
                     <div class="register-button-container">
-                        <a href="#" class="already-registered">J'ai déjà un compte</a>
+                        <a href="#" class="already-registered">J'ai déjà un compte professionnel</a>
                         <button type="submit" class="register-button">S'inscrire</button>
                     </div>
                 </form>
@@ -215,34 +215,34 @@
     <footer>
         <div class="container footer-content">
             <div class="footer-section social-media">
-                <a href="index.html"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="footer-logo"></a>
                 <div class="social-icons">
-                    <a href="#" aria-label="Twitter PACT"><i class="fab fa-x-twitter"></i></a>
-                    <a href="#" aria-label="Instagram PACT"><i class="fab fa-instagram"></i></a>
-                    <a href="#" aria-label="YouTube PACT"><i class="fab fa-youtube"></i></a>
-                    <a href="#" aria-label="LinkedIn PACT"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" aria-label="X"><i class="fab fa-x"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
                 </div>
             </div>
             <div class="footer-section links">
-                <h3>Professionnel</h3>
+                <h3>Visiteur</h3>
                 <ul>
-                    <li><a href="../BO/index.html">Comment poster une annonce</a></li>
-                    <li><a href="../BO/creation-compte.html">Je crée mon compte pro</a></li>
-                    <li><a href="../BO/connexion-compte.html">Je me connecte en tant que pro</a></li>
+                    <li><a href="../FO/index.php">Accueil</a></li>
+                    <li><a href="../FO/recherche.php">Recherche d'offres</a></li>
+                    <li><a href="../FO/connexion-compte.php">Je me connecte en tant que membre</a></li>
                 </ul>
             </div>
             <div class="footer-section links">
                 <h3>Découvrir</h3>
                 <ul>
-                    <li><a href="index.html">Accueil</a></li>
-                    <li><a href="recherche.html">Recherche</a></li>
+                    <li><a href="index.php">Accueil</a></li>
+                    <li><a href="publier-une-offre.php">Publier une offre</a></li>
+                    <li><a href="profil.php">Profil</a></li>
                 </ul>
             </div>
             <div class="footer-section links">
                 <h3>Ressources</h3>
                 <ul>
-                    <li><a href="conditions-generales-d-utilisation.html">Conditions générales d'utilisation</a></li>
-                    <li><a href="contact-du-responsable-du-site.html">Contact du responsable du site</a></li>
+                    <li><a href="conditions-generales-d-utilisation.php">Conditions générales d'utilisation</a></li>
+                    <li><a href="contact-du-responsable-du-site.php">Contact du responsable du site</a></li>
                 </ul>
             </div>
         </div>

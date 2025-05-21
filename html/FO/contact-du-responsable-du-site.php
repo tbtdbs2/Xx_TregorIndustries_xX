@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACT - Conditions Générales d'Utilisation</title><link rel="icon" href="images/Logo2withoutbg.png">
+    <title>PACT - Contact</title><link rel="icon" href="images/Logo2withoutbg.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,21 +14,21 @@
     <header>
         <div class="container header-container">
             <div class="header-left">
-                <a href="index.html"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
+                <a href="index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
                 <nav class="main-nav">
                     <ul>
-                        <li><a href="index.html">Accueil</a></li>
-                        <li><a href="recherche.html">Recherche</a></li>
+                        <li><a href="index.php">Accueil</a></li>
+                        <li><a href="recherche.php">Recherche</a></li>
                     </ul>
                 </nav>
             </div>
             <div class="header-right">
-                <a href="../BO/index.html" class="pro-link desktop-only">Je suis professionnel</a>
-                <a href="creation-compte.html" class="btn btn-secondary desktop-only">S'enregistrer</a>
-                <a href="connexion-compte.html" class="btn btn-primary desktop-only">Se connecter</a>
+                <a href="../BO/index.php" class="pro-link desktop-only">Je suis professionnel</a>
+                <a href="creation-compte.php" class="btn btn-secondary desktop-only">S'enregistrer</a>
+                <a href="connexion-compte.php" class="btn btn-primary desktop-only">Se connecter</a>
                 <div class="mobile-icons">
-                    <a href="index.html" class="mobile-icon" aria-label="Accueil"><i class="fas fa-home"></i></a>
-                    <a href="profil.html" class="mobile-icon" aria-label="Profil"><i class="fas fa-user"></i></a>
+                    <a href="index.php" class="mobile-icon" aria-label="Accueil"><i class="fas fa-home"></i></a>
+                    <a href="profil.php" class="mobile-icon" aria-label="Profil"><i class="fas fa-user"></i></a>
                     <button class="mobile-icon hamburger-menu" aria-label="Menu" aria-expanded="false">
                         <i class="fas fa-bars"></i>
                     </button>
@@ -37,26 +37,26 @@
         </div>
         <nav class="mobile-nav-links">
             <ul>
-                <li><a href="index.html">Accueil</a></li>
-                <li><a href="recherche.html">Recherche</a></li>
-                <li><a href="../BO/index.html">Je suis professionnel</a></li>
-                <li><a href="creation-compte.html">S'enregistrer</a></li>
-                <li><a href="connexion-compte.html">Se connecter</a></li>
+                <li><a href="index.php">Accueil</a></li>
+                <li><a href="recherche.php">Recherche</a></li>
+                <li><a href="../BO/index.php">Je suis professionnel</a></li>
+                <li><a href="creation-compte.php">S'enregistrer</a></li>
+                <li><a href="connexion-compte.php">Se connecter</a></li>
                 </ul>
         </nav>
     </header>
 
     <main>
         <div class="container content-area">
-            <h1>Conditions Générales d'Utilisation</h1>
-            <p>Texte des conditions générales d'utilisation...</p>
+            <h1>Contact du responsable du site</h1>
+            <p>Informations de contact ou formulaire de contact...</p>
             </div>
     </main>
 
     <footer>
         <div class="container footer-content">
             <div class="footer-section social-media">
-                <a href="index.html"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="footer-logo"></a>
+                <a href="index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="footer-logo"></a>
                 <div class="social-icons">
                     <a href="#" aria-label="Twitter PACT"><i class="fab fa-x-twitter"></i></a>
                     <a href="#" aria-label="Instagram PACT"><i class="fab fa-instagram"></i></a>
@@ -67,23 +67,23 @@
             <div class="footer-section links">
                 <h3>Professionnel</h3>
                 <ul>
-                    <li><a href="../BO/index.html">Comment poster une annonce</a></li>
-                    <li><a href="../BO/creation-compte.html">Je crée mon compte pro</a></li>
-                    <li><a href="../BO/connexion-compte.html">Je me connecte en tant que pro</a></li>
+                    <li><a href="../BO/index.php">Comment poster une annonce</a></li>
+                    <li><a href="../BO/creation-compte.php">Je crée mon compte pro</a></li>
+                    <li><a href="../BO/connexion-compte.php">Je me connecte en tant que pro</a></li>
                 </ul>
             </div>
             <div class="footer-section links">
                 <h3>Découvrir</h3>
                 <ul>
-                    <li><a href="index.html">Accueil</a></li>
-                    <li><a href="recherche.html">Recherche</a></li>
+                    <li><a href="index.php">Accueil</a></li>
+                    <li><a href="recherche.php">Recherche</a></li>
                 </ul>
             </div>
             <div class="footer-section links">
                 <h3>Ressources</h3>
                 <ul>
-                    <li><a href="conditions-generales-d-utilisation.html" class="active">Conditions générales d'utilisation</a></li>
-                    <li><a href="contact-du-responsable-du-site.html">Contact du responsable du site</a></li>
+                    <li><a href="conditions-generales-d-utilisation.php">Conditions générales d'utilisation</a></li>
+                    <li><a href="contact-du-responsable-du-site.php" class="active">Contact du responsable du site</a></li>
                 </ul>
             </div>
         </div>

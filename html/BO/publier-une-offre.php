@@ -324,20 +324,20 @@
     <header>
         <div class="container header-container">
             <div class="header-left">
-                <a href="index.html"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
+                <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
                 <span class="pro-text">Professionnel</span>
             </div>
             <nav class="main-nav">
                 <ul>
-                    <li><a href="index.html">Accueil</a></li>
-                    <li><a href="recherche.html">Offres</a></li>
-                    <li><a href="publier-une-offre.html" class="active">Publier une offre</a></li>
-                    <li><a href="profil.html">Profil</a></li>
+                    <li><a href="index.php">Accueil</a></li>
+                    <li><a href="recherche.php">Offres</a></li>
+                    <li><a href="publier-une-offre.php" class="active">Publier une offre</a></li>
+                    <li><a href="profil.php">Profil</a></li>
                 </ul>
             </nav>
             <div class="header-right">
-                <a href="creation-compte.html" class="btn btn-secondary">S'enregistrer</a>
-                <a href="connexion-compte.html" class="btn btn-primary">Se connecter</a>
+                <a href="creation-compte.php" class="btn btn-secondary">S'enregistrer</a>
+                <a href="connexion-compte.php" class="btn btn-primary">Se connecter</a>
             </div>
         </div>
     </header>
@@ -619,9 +619,9 @@
             <p>© <?php echo date("Y"); ?> Tous droits réservés</p>
             <nav>
                 <ul>
-                    <li><a href="mentions-legales.html">Mentions légales</a></li>
-                    <li><a href="confidentialite.html">Politique de confidentialité</a></li>
-                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="mentions-legales.php">Mentions légales</a></li>
+                    <li><a href="confidentialite.php">Politique de confidentialité</a></li>
+                    <li><a href="contact.php">Contact</a></li>
                 </ul>
             </nav>
         </div>
