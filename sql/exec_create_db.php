@@ -1,6 +1,6 @@
 <?php
 // Charger les variables d'environnement
-$env = parse_ini_file('.env');
+$env = parse_ini_file(__DIR__ . '/../.env');
 
 // Extraire les infos de connexion
 $host =     $env['HOST'];
