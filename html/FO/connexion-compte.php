@@ -2,7 +2,7 @@
 
 session_start(); // Démarre la session PHP (doit être la première chose)
 
-require_once 'db.php';
+require_once __DIR__ . '/../../includes/db.php';
 
 $login_error = ''; // Variable pour stocker les messages d'erreur de connexion
 
