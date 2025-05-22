@@ -97,7 +97,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
 
             } catch (PDOException $e) {
-                $login_error = "Une erreur est survenue lors de la connexion. Veuillez réessayer plus tard.";
+                $login_error = "Erreur de connexion. Veuillez réessayer plus tard.";
                 error_log("Erreur PDO dans connexion-compte.php: " . $e->getMessage());
             }
         }
