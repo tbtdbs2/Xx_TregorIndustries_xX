@@ -1,9 +1,123 @@
+<?php
+// Active l'affichage des erreurs PHP pour le débogage (à désactiver en production)
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+
+session_start(); // Démarre la session PHP pour gérer l'authentification
+
+
+$login_error = ''; // Variable pour stocker les messages d'erreur de connexion
+
+
+// --- Chargement du fichier .env ---
+$env_path = __DIR__ . '/../../.env'; // Chemin vers le fichier .env (ajuste si nécessaire)
+
+
+// Vérifie si le fichier .env existe et peut être lu
+if (!file_exists($env_path) || !is_readable($env_path)) {
+    $login_error = "Erreur de configuration : Le fichier .env est introuvable ou inaccessible.";
+    // En production, tu pourrais logguer cette erreur et afficher un message générique.
+} else {
+    $env_parsed = parse_ini_file($env_path);
+
+
+    if ($env_parsed === false) {
+        $login_error = "Erreur de configuration : Problème de format dans le fichier .env.";
+        // En production, loggue cette erreur.
+    } else {
+        // Récupère les informations de connexion à la base de données du .env
+        $host = $env_parsed['HOST'] ?? null;
+        $db_user = $env_parsed['DB_USER'] ?? null;
+        $mariadb_password = $env_parsed['MARIADB_PASSWORD'] ?? null;
+        $mariadb_port = $env_parsed['MARIADB_PORT'] ?? '3306'; // Port par défaut si non défini
+        $db_name = $env_parsed['DB_NAME'] ?? null;
+
+
+        // Vérifie si les variables essentielles sont définies
+        if (!$host || !$db_user || !$mariadb_password || !$db_name) {
+            $login_error = "Erreur de configuration : Informations de base de données manquantes dans le .env.";
+        }
+    }
+}
+
+
+
+
+// --- Traitement du formulaire de connexion ---
+if ($_SERVER["REQUEST_METHOD"] == "POST" && empty($login_error)) {
+    // Vérifie si l'email et le mot de passe ont été soumis
+    if (isset($_POST['email']) && isset($_POST['password'])) {
+        $email = trim($_POST['email']);
+        $password = $_POST['password']; // Ne pas trimmer le mot de passe, les espaces peuvent faire partie du mdp.
+
+
+        // Validation du format de l'email côté serveur
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $login_error = "Le format de l'adresse email est invalide.";
+        } else {
+            // Tente de se connecter à la base de données et de vérifier les identifiants
+            try {
+                // Création de l'objet PDO pour la connexion à la base de données
+                $pdo = new PDO(
+                    "mysql:host=$host;port=$mariadb_port;dbname=$db_name;charset=utf8mb4",
+                    $db_user,
+                    $mariadb_password,
+                    [
+                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, // Active le mode d'erreur pour les exceptions
+                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC // Récupère les résultats sous forme de tableau associatif
+                    ]
+                );
+
+
+                // Prépare la requête pour récupérer l'utilisateur par son email
+                $stmt = $pdo->prepare("SELECT id, email, password FROM utilisateurs WHERE email = :email");
+                $stmt->execute(['email' => $email]);
+                $user = $stmt->fetch(); // Récupère la première ligne de résultat
+
+
+                // Vérifie si un utilisateur a été trouvé et si le mot de passe correspond
+                if ($user && password_verify($password, $user['password'])) {
+                    // Mot de passe correct : Démarrer la session et rediriger l'utilisateur
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['user_email'] = $user['email'];
+
+
+                    // Gérer l'option "Rester connecté" (non implémenté ici, nécessiterait des cookies sécurisés)
+                    // if (isset($_POST['remember'])) {
+                    //     // Implémenter la logique "remember me" avec des tokens sécurisés
+                    // }
+
+
+                    header("Location: profil.php"); // Redirige vers la page de profil après connexion réussie
+                    exit(); // Assure que le script s'arrête après la redirection
+                } else {
+                    // Email ou mot de passe incorrect (message générique pour des raisons de sécurité)
+                    $login_error = "Email ou mot de passe incorrect.";
+                }
+
+
+            } catch (PDOException $e) {
+                // Capture les erreurs de connexion ou de requête à la base de données
+                $login_error = "Une erreur est survenue lors de la connexion. Veuillez réessayer plus tard.";
+                // En développement, tu peux afficher le message complet pour le débogage :
+                // $login_error .= " Détails: " . $e->getMessage();
+                // En production, tu devrais enregistrer l'erreur dans un fichier de log.
+            }
+        }
+    } else {
+        $login_error = "Veuillez saisir votre email et votre mot de passe.";
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACT - Connexion</title><link rel="icon" href="images/Logo2withoutbg.png">
+    <title>PACT - Connexion</title>
+    <link rel="icon" href="images/Logo2withoutbg.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -22,13 +136,16 @@
             errorMessage.style.position = 'static';
             errorMessage.style.zIndex = 'auto';
 
+
             const emailGroup = emailInput.parentNode;
             emailGroup.insertBefore(errorMessage, emailInput.nextSibling);
+
 
             if (form) {
                 form.addEventListener('submit', function(event) {
                     const emailValue = emailInput.value.trim();
                     const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+
 
                     if (!emailRegex.test(emailValue)) {
                         event.preventDefault();
@@ -39,6 +156,7 @@
                         emailInput.classList.remove('error');
                     }
                 });
+
 
                 const style = document.createElement('style');
                 style.textContent = `
@@ -51,13 +169,13 @@
         });
     </script>
     <style>
-        /* Vos styles CSS restent inchangés */
         .content-area {
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 40px;
         }
+
 
         .login-container {
             background-color: #fff;
@@ -72,11 +190,13 @@
             justify-content: center;
         }
 
+
         .content-area h1 {
             color: #000000;
             margin-bottom: 10px;
             font-size: 36px;
         }
+
 
         .content-area p{
             color: #000000;
@@ -85,6 +205,7 @@
             font-weight: 500;
         }
 
+
         .login-form {
             display: flex;
             flex-direction: column;
@@ -92,11 +213,13 @@
             width: 100%;
         }
 
+
         .form-group {
             display: flex;
             flex-direction: column;
             text-align: left;
         }
+
 
         .form-group label {
             color: #333;
@@ -104,6 +227,7 @@
             font-size: 14px;
             font-weight: 500;
         }
+
 
         .form-group input[type="email"],
         .form-group input[type="password"] {
@@ -113,9 +237,9 @@
             font-size: 16px;
         }
 
+
         .login-button {
             background-color:var(--couleur-principale);
-            
             color: #fff;
             border: none;
             padding: 12px 20px;
@@ -126,9 +250,11 @@
             transition: background-color 0.3s ease;
         }
 
+
         .login-button:hover {
             background-color: var(--couleur-principale-hover);
         }
+
 
         .options {
             display: flex;
@@ -139,26 +265,31 @@
             width: 100%;
         }
 
+
         .options div {
             display: flex;
             align-items: center;
             margin-bottom: 5px;
         }
 
+
         .options label {
             color: #333;
             font-weight: normal;
         }
 
+
         .options input[type="checkbox"] {
             margin-right: 5px;
         }
+
 
         .forgot-password {
             text-decoration: underline;
             color: #000;
             margin-top: 5px;
         }
+
 
         .forgot-password:hover {
             text-decoration: underline;
@@ -201,19 +332,30 @@
         </nav>
     </header>
 
+
     <main>
         <div class="container content-area">
             <h1>Connexion</h1>
             <p>Bon retour parmi nous !</p>
+
+
+            <?php
+            // Affichage du message d'erreur pour l'utilisateur
+            if (!empty($login_error)) {
+                echo '<p style="color: red; text-align: center; margin-bottom: 15px;">' . $login_error . '</p>';
+            }
+            ?>
+
+
             <div class="login-container">
-                <form class="login-form">
+                <form class="login-form" action="connexion-compte.php" method="POST">
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input type="email" id="email" name="email" placeholder="adressemail@exemple.com">
+                        <input type="email" id="email" name="email" placeholder="adressemail@exemple.com" required value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
                     </div>
                     <div class="form-group">
                         <label for="password">Mot de passe</label>
-                        <input type="password" id="password" name="password">
+                        <input type="password" id="password" name="password" required>
                     </div>
                     <button type="submit" class="login-button">Connexion</button>
                     <div class="options">
