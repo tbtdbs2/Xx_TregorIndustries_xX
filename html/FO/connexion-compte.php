@@ -1,9 +1,142 @@
+<?php
+// Active l'affichage des erreurs PHP pour le débogage (à désactiver en production)
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+session_start(); // Démarre la session PHP
+
+$login_error = '';
+
+// --- Chargement du fichier .env ---
+$env_path = __DIR__ . '/../../.env'; // Chemin vers le fichier .env (ajuste si nécessaire)
+
+if (!file_exists($env_path) || !is_readable($env_path)) {
+    $login_error = "Erreur de configuration : Le fichier .env est introuvable ou inaccessible.";
+} else {
+    $env_parsed = parse_ini_file($env_path);
+    if ($env_parsed === false) {
+        $login_error = "Erreur de configuration : Problème de format dans le fichier .env.";
+    } else {
+        $host = $env_parsed['HOST'] ?? null;
+        $db_user = $env_parsed['DB_USER'] ?? null;
+        $mariadb_password = $env_parsed['MARIADB_PASSWORD'] ?? null;
+        $mariadb_port = $env_parsed['MARIADB_PORT'] ?? '3306';
+        $db_name = $env_parsed['DB_NAME'] ?? null;
+
+        if (!$host || !$db_user || !$mariadb_password || !$db_name) {
+            $login_error = "Erreur de configuration : Informations de base de données manquantes dans le .env.";
+        }
+    }
+}
+
+
+// --- Traitement du formulaire de connexion ---
+if ($_SERVER["REQUEST_METHOD"] == "POST" && empty($login_error)) {
+    if (isset($_POST['email']) && isset($_POST['password'])) {
+        $email = trim($_POST['email']);
+        $password = $_POST['password'];
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $login_error = "Le format de l'adresse email est invalide.";
+        } else {
+            try {
+                $pdo = new PDO(
+                    "mysql:host=$host;port=$mariadb_port;dbname=$db_name;charset=utf8mb4",
+                    $db_user,
+                    $mariadb_password,
+                    [
+                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+                    ]
+                );
+
+                // 1. Récupérer l'utilisateur
+                $stmt = $pdo->prepare("SELECT id, email, password FROM utilisateurs WHERE email = :email");
+                $stmt->execute(['email' => $email]);
+                $user = $stmt->fetch();
+
+                if ($user && password_verify($password, $user['password'])) {
+                    // --- AUTHENTIFICATION RÉUSSIE ---
+
+                    session_regenerate_id(true); // Prévention de la fixation de session
+
+                    // Stockage des informations utilisateur en session
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['user_email'] = $user['email'];
+
+                    // ====================================================================
+                    // GESTION DU TOKEN DANS LA TABLE auth_tokens (version simplifiée)
+                    // ====================================================================
+
+                    // Générer un token unique pour cette session (plus sécurisé s'il est long)
+                    $session_token = bin2hex(random_bytes(64)); // 128 caractères hexadécimaux
+
+                    // Hacher le token avant de le stocker (même si ton champ est "token", stocke le hachage)
+                    // Si tu ne PEUX VRAIMENT PAS ajouter de champ `token_hash`, alors renomme le champ
+                    // `token` en `token_hash` et utilise le hachage. Ne jamais stocker en clair.
+                    $token_to_store = hash('sha256', $session_token); // Hachage du token brut
+
+                    // Supprimer les anciens tokens de l'utilisateur (si tu en gères plusieurs)
+                    // OU mettre à jour l'unique token pour cet email
+                    $stmt_delete_old_token = $pdo->prepare("DELETE FROM auth_tokens WHERE email = :email");
+                    $stmt_delete_old_token->execute(['email' => $user['email']]);
+
+                    // Insérer le nouveau token haché lié à l'email
+                    $stmt_insert_token = $pdo->prepare(
+                        "INSERT INTO auth_tokens (email, token) VALUES (:email, :token_hash)"
+                    );
+                    $stmt_insert_token->execute([
+                        'email' => $user['email'],
+                        'token_hash' => $token_to_store // Stocke le HASH du token ici
+                    ]);
+
+                    // Stocker le token BRUT (non haché) dans la session pour l'utilisation et la comparaison futures
+                    $_SESSION['session_token'] = $session_token;
+
+                    // Si l'option "Rester connecté" est cochée, définir un cookie HTTP-only avec le token brut
+                    // Ce cookie sera utilisé si la session PHP expire et que l'utilisateur revient
+                    if (isset($_POST['remember']) && $_POST['remember'] == 'on') {
+                        setcookie(
+                            'remember_me',
+                            $session_token, // Le token brut est envoyé au client
+                            [
+                                'expires' => time() + (86400 * 30), // Expire dans 30 jours
+                                'path' => '/',
+                                'httponly' => true,
+                                'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
+                                'samesite' => 'Lax'
+                            ]
+                        );
+                    }
+
+                    // Redirection après connexion réussie
+                    header("Location: profil.php");
+                    exit();
+
+                } else {
+                    $login_error = "Email ou mot de passe incorrect.";
+                }
+
+            } catch (PDOException $e) {
+                $login_error = "Une erreur est survenuwe lors de la connexion. Veuillez réessayer plus tard.";
+                // En développement, tu peux afficher le message complet pour le débogage :
+                // $login_error .= " Détails: " . $e->getMessage();
+            }
+        }
+    } else {
+        $login_error = "Veuillez saisir votre email et votre mot de passe.";
+    }
+}
+// ... (reste du code HTML) ...
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACT - Connexion</title><link rel="icon" href="images/Logo2withoutbg.png">
+    <title>PACT - Connexion</title>
+    <link rel="icon" href="images/Logo2withoutbg.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -51,7 +184,6 @@
         });
     </script>
     <style>
-        /* Vos styles CSS restent inchangés */
         .content-area {
             display: flex;
             flex-direction: column;
@@ -115,7 +247,6 @@
 
         .login-button {
             background-color:var(--couleur-principale);
-            
             color: #fff;
             border: none;
             padding: 12px 20px;
@@ -170,10 +301,10 @@
     <header>
         <div class="container header-container">
             <div class="header-left">
-                <a href="../index.html"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
+                <a href="index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
                 <nav class="main-nav">
                     <ul>
-                        <li><a href="../index.html">Accueil</a></li>
+                        <li><a href="index.php">Accueil</a></li>
                         <li><a href="recherche.php">Recherche</a></li>
                     </ul>
                 </nav>
@@ -205,15 +336,23 @@
         <div class="container content-area">
             <h1>Connexion</h1>
             <p>Bon retour parmi nous !</p>
+
+            <?php
+            // Affichage du message d'erreur pour l'utilisateur
+            if (!empty($login_error)) {
+                echo '<p style="color: red; text-align: center; margin-bottom: 15px;">' . $login_error . '</p>';
+            }
+            ?>
+
             <div class="login-container">
-                <form class="login-form">
+                <form class="login-form" action="connexion-compte.php" method="POST">
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input type="email" id="email" name="email" placeholder="adressemail@exemple.com">
+                        <input type="email" id="email" name="email" placeholder="adressemail@exemple.com" required value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
                     </div>
                     <div class="form-group">
                         <label for="password">Mot de passe</label>
-                        <input type="password" id="password" name="password">
+                        <input type="password" id="password" name="password" required>
                     </div>
                     <button type="submit" class="login-button">Connexion</button>
                     <div class="options">
@@ -227,7 +366,6 @@
             </div>
         </div>
     </main>
-
 
     <footer>
         <div class="container footer-content">
@@ -251,7 +389,7 @@
             <div class="footer-section links">
                 <h3>Découvrir</h3>
                 <ul>
-                    <li><a href="../index.html">Accueil</a></li>
+                    <li><a href="index.php">Accueil</a></li>
                     <li><a href="recherche.php">Recherche</a></li>
                 </ul>
             </div>
