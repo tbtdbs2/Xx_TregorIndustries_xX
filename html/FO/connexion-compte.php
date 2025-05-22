@@ -1,21 +1,8 @@
 <?php
-// HTML/FO/connexion-compte.php
-
-// Active l'affichage des erreurs PHP pour le débogage (à désactiver en production)
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 
 session_start(); // Démarre la session PHP (doit être la première chose)
 
-// --- Définition des identifiants de base de données ---
-// ATTENTION: Pour la production, il est recommandé de charger ces identifiants
-// depuis un fichier de configuration sécurisé (ex: .env) en dehors du répertoire public.
-define('DB_HOST', '127.0.0.1');
-define('DB_PORT', '3306');
-define('DB_NAME', 'sae');
-define('DB_USER', 'root');
-define('DB_PASSWORD', '');
+require_once 'db.php';
 
 $login_error = ''; // Variable pour stocker les messages d'erreur de connexion
 
@@ -38,16 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $login_error = "Le format de l'adresse email est invalide.";
         } else {
             try {
-                // Tente de se connecter à la base de données en utilisant les constantes définies
-                $pdo = new PDO(
-                    "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=utf8mb4",
-                    DB_USER,
-                    DB_PASSWORD,
-                    [
-                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, // Active le mode d'erreur pour les exceptions
-                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC // Récupère les résultats sous forme de tableau associatif
-                    ]
-                );
+                
 
                 // Prépare et exécute la requête pour récupérer l'utilisateur par son email
                 $stmt = $pdo->prepare("SELECT id, email, password FROM comptes_membre WHERE email = :email");
