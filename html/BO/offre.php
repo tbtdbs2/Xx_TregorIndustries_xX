@@ -643,15 +643,15 @@
                 <a href="../index.html"><img src="images/Logowithoutbgorange.png" alt="Logo PACT" class="logo"></a>
                 <nav class="main-nav">
                     <ul>
-                        <li><a href="../index.html">Accueil</a></li>
-                        <li><a href="recherche.php" class="active">Recherche</a></li>
+                        <li><a href="../BO/index.php">Accueil</a></li>
+                        <li><a href="../BO/recherche.php" class="active">Recherche</a></li>
                     </ul>
                 </nav>
             </div>
             <div class="header-right">
                 <a href="../BO/index.php" class="pro-link desktop-only">Je suis professionnel</a>
-                <a href="creation-compte.php" class="btn btn-secondary desktop-only">S'enregistrer</a>
-                <a href="connexion-compte.php" class="btn btn-primary desktop-only">Se connecter</a>
+                <a href="../BO/creation-compte.php" class="btn btn-secondary desktop-only">S'enregistrer</a>
+                <a href="../BO/connexion-compte.php" class="btn btn-primary desktop-only">Se connecter</a>
                 <div class="mobile-icons">
                     <a href="index.php" class="mobile-icon" aria-label="Accueil"><i class="fas fa-home"></i></a>
                     <a href="profil.php" class="mobile-icon" aria-label="Profil"><i class="fas fa-user"></i></a>
@@ -675,7 +675,7 @@
     <main class="main-content-offre">
         <div class="container">
             <div class="breadcrumb-bar">
-                <a href="recherche.php"><i class="fas fa-arrow-left"></i></a>
+                <a href="../BO/recherche.php"><i class="fas fa-arrow-left"></i></a>
                 </div>
 
             <div class="offre-container">
@@ -951,7 +951,7 @@
     <footer>
         <div class="container footer-content">
             <div class="footer-section social-media">
-                <a href="index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="footer-logo"></a>
+                <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo PACT" class="footer-logo"></a>
                 <div class="social-icons">
                     <a href="#" aria-label="Twitter PACT"><i class="fab fa-x-twitter"></i></a>
                     <a href="#" aria-label="Instagram PACT"><i class="fab fa-instagram"></i></a>
@@ -970,8 +970,8 @@
             <div class="footer-section links">
                 <h3>Découvrir</h3>
                 <ul>
-                    <li><a href="../index.html">Accueil</a></li>
-                    <li><a href="recherche.php">Recherche</a></li>
+                    <li><a href="../BO/index.php">Accueil</a></li>
+                    <li><a href="../BO/recherche.php">Recherche</a></li>
                 </ul>
             </div>
             <div class="footer-section links">
