@@ -284,10 +284,10 @@
     <header>
         <div class="container header-container">
             <div class="header-left">
-                <a href="index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
+                <a href="../index.html"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
                 <nav class="main-nav">
                     <ul>
-                        <li><a href="index.php">Accueil</a></li>
+                        <li><a href="../index.html">Accueil</a></li>
                         <li><a href="recherche.php" class="active">Recherche</a></li>
                     </ul>
                 </nav>
@@ -520,7 +520,7 @@
     <footer>
         <div class="container footer-content">
             <div class="footer-section social-media">
-                <a href="index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="footer-logo"></a>
+                <a href="../index.html"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="footer-logo"></a>
                 <div class="social-icons">
                     <a href="#" aria-label="Twitter PACT"><i class="fab fa-x-twitter"></i></a>
                     <a href="#" aria-label="Instagram PACT"><i class="fab fa-instagram"></i></a>
@@ -539,7 +539,7 @@
             <div class="footer-section links">
                 <h3>Découvrir</h3>
                 <ul>
-                    <li><a href="index.php">Accueil</a></li>
+                    <li><a href="../index.html">Accueil</a></li>
                     <li><a href="recherche.php">Recherche</a></li>
                 </ul>
             </div>

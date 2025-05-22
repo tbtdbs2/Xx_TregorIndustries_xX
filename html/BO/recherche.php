@@ -589,9 +589,9 @@
             <div class="footer-section links">
                 <h3>Professionnel</h3>
                 <ul>
-                    <li><a href="../BO/index.php">Comment poster une annonce</a></li>
-                    <li><a href="../BO/creation-compte.php">Je crée mon compte pro</a></li>
-                    <li><a href="../BO/connexion-compte.php">Je me connecte en tant que pro</a></li>
+                    <li><a href="../index.html">Accueil</a></li>
+                    <li><a href="../FO/recherche.php">Recherche d'offres</a></li>
+                    <li><a href="../FO/connexion-compte.php">Je me connecte en tant que membre</a></li>
                 </ul>
             </div>
             <div class="footer-section links">

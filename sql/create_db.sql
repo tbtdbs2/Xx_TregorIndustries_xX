@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : mariadb:3306
--- Généré le : mar. 20 mai 2025 à 09:13
+-- Généré le : mer. 21 mai 2025 à 15:00
 -- Version du serveur : 11.0.6-MariaDB-ubu2204
 -- Version de PHP : 8.2.28
 
@@ -20,6 +20,8 @@ SET time_zone = "+00:00";
 --
 -- Base de données : `sae`
 --
+CREATE DATABASE IF NOT EXISTS `sae` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `sae`;
 
 -- --------------------------------------------------------
 
@@ -27,8 +29,9 @@ SET time_zone = "+00:00";
 -- Structure de la table `activites`
 --
 
+DROP TABLE IF EXISTS `activites`;
 CREATE TABLE `activites` (
-  `categorie_id` uuid NOT NULL,
+  `categorie_id` char(36) NOT NULL,
   `duration` int(11) NOT NULL,
   `minimum_price` float NOT NULL,
   `required_age` int(11) NOT NULL
@@ -40,9 +43,10 @@ CREATE TABLE `activites` (
 -- Structure de la table `activites_prestations_incluses`
 --
 
+DROP TABLE IF EXISTS `activites_prestations_incluses`;
 CREATE TABLE `activites_prestations_incluses` (
-  `activite_id` uuid NOT NULL,
-  `prestation_id` uuid NOT NULL
+  `activite_id` char(36) NOT NULL,
+  `prestation_id` char(36) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -51,9 +55,10 @@ CREATE TABLE `activites_prestations_incluses` (
 -- Structure de la table `activites_prestations_non_incluses`
 --
 
+DROP TABLE IF EXISTS `activites_prestations_non_incluses`;
 CREATE TABLE `activites_prestations_non_incluses` (
-  `activite_id` uuid NOT NULL,
-  `prestation_id` uuid NOT NULL
+  `activite_id` char(36) NOT NULL,
+  `prestation_id` char(36) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -62,8 +67,9 @@ CREATE TABLE `activites_prestations_non_incluses` (
 -- Structure de la table `adresses`
 --
 
+DROP TABLE IF EXISTS `adresses`;
 CREATE TABLE `adresses` (
-  `id` uuid NOT NULL,
+  `id` char(36) NOT NULL,
   `street` varchar(32) NOT NULL,
   `postal_code` varchar(5) NOT NULL,
   `city` varchar(32) NOT NULL
@@ -75,10 +81,24 @@ CREATE TABLE `adresses` (
 -- Structure de la table `attractions`
 --
 
+DROP TABLE IF EXISTS `attractions`;
 CREATE TABLE `attractions` (
-  `id` uuid NOT NULL,
-  `parc_attractions_id` uuid NOT NULL,
+  `id` char(36) NOT NULL,
+  `parc_attractions_id` char(36) NOT NULL,
   `name` varchar(64) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `auth_tokens`
+--
+
+DROP TABLE IF EXISTS `auth_tokens`;
+CREATE TABLE `auth_tokens` (
+  `id` char(36) NOT NULL,
+  `email` varchar(64) NOT NULL,
+  `token` varchar(256) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -87,10 +107,11 @@ CREATE TABLE `attractions` (
 -- Structure de la table `avis`
 --
 
+DROP TABLE IF EXISTS `avis`;
 CREATE TABLE `avis` (
-  `id` uuid NOT NULL,
-  `membre_id` uuid NOT NULL,
-  `offre_id` uuid NOT NULL,
+  `id` char(36) NOT NULL,
+  `membre_id` char(36) NOT NULL,
+  `offre_id` char(36) NOT NULL,
   `title` varchar(64) NOT NULL,
   `comment` varchar(512) NOT NULL,
   `rating` float NOT NULL,
@@ -108,8 +129,9 @@ CREATE TABLE `avis` (
 -- Structure de la table `categories`
 --
 
+DROP TABLE IF EXISTS `categories`;
 CREATE TABLE `categories` (
-  `id` uuid NOT NULL,
+  `id` char(36) NOT NULL,
   `type` enum('activite','visite','spectacle','parc_attractions','restauration') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -119,9 +141,10 @@ CREATE TABLE `categories` (
 -- Structure de la table `comptes_membre`
 --
 
+DROP TABLE IF EXISTS `comptes_membre`;
 CREATE TABLE `comptes_membre` (
-  `id` uuid NOT NULL,
-  `adresse_id` uuid NOT NULL,
+  `id` char(36) NOT NULL,
+  `adresse_id` char(36) NOT NULL,
   `email` varchar(64) NOT NULL,
   `password` varchar(128) NOT NULL,
   `phone` varchar(32) NOT NULL,
@@ -136,9 +159,10 @@ CREATE TABLE `comptes_membre` (
 -- Structure de la table `comptes_pro`
 --
 
+DROP TABLE IF EXISTS `comptes_pro`;
 CREATE TABLE `comptes_pro` (
-  `id` uuid NOT NULL,
-  `adresse_id` uuid NOT NULL,
+  `id` char(36) NOT NULL,
+  `adresse_id` char(36) NOT NULL,
   `email` varchar(64) NOT NULL,
   `password` varchar(128) NOT NULL,
   `phone` varchar(32) NOT NULL,
@@ -155,9 +179,10 @@ CREATE TABLE `comptes_pro` (
 -- Structure de la table `horaires_activites`
 --
 
+DROP TABLE IF EXISTS `horaires_activites`;
 CREATE TABLE `horaires_activites` (
-  `id` uuid NOT NULL,
-  `activite_id` uuid NOT NULL,
+  `id` char(36) NOT NULL,
+  `activite_id` char(36) NOT NULL,
   `date` date NOT NULL,
   `start_time` time NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -168,9 +193,10 @@ CREATE TABLE `horaires_activites` (
 -- Structure de la table `horaires_attractions`
 --
 
+DROP TABLE IF EXISTS `horaires_attractions`;
 CREATE TABLE `horaires_attractions` (
-  `id` uuid NOT NULL,
-  `attraction_id` uuid NOT NULL,
+  `id` char(36) NOT NULL,
+  `attraction_id` char(36) NOT NULL,
   `day` enum('lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche') NOT NULL,
   `start_time` time NOT NULL,
   `end_time` time NOT NULL
@@ -182,10 +208,11 @@ CREATE TABLE `horaires_attractions` (
 -- Structure de la table `horaires_restaurants`
 --
 
+DROP TABLE IF EXISTS `horaires_restaurants`;
 CREATE TABLE `horaires_restaurants` (
-  `id` uuid NOT NULL,
-  `restauration_id` uuid NOT NULL,
-  `day` set('lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche') NOT NULL,
+  `id` char(36) NOT NULL,
+  `restauration_id` char(36) NOT NULL,
+  `day` enum('lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche') NOT NULL,
   `start_time` time NOT NULL,
   `end_time` time NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -196,8 +223,9 @@ CREATE TABLE `horaires_restaurants` (
 -- Structure de la table `langues`
 --
 
+DROP TABLE IF EXISTS `langues`;
 CREATE TABLE `langues` (
-  `id` uuid NOT NULL,
+  `id` char(36) NOT NULL,
   `language` varchar(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -207,11 +235,12 @@ CREATE TABLE `langues` (
 -- Structure de la table `offres`
 --
 
+DROP TABLE IF EXISTS `offres`;
 CREATE TABLE `offres` (
-  `id` uuid NOT NULL,
-  `categorie_id` uuid NOT NULL,
-  `adresse_id` uuid NOT NULL,
-  `pro_id` uuid NOT NULL,
+  `id` char(36) NOT NULL,
+  `categorie_id` char(36) NOT NULL,
+  `adresse_id` char(36) NOT NULL,
+  `pro_id` char(36) NOT NULL,
   `title` varchar(32) NOT NULL,
   `summary` varchar(128) NOT NULL,
   `description` varchar(512) DEFAULT NULL,
@@ -232,9 +261,10 @@ CREATE TABLE `offres` (
 -- Structure de la table `offres_tags`
 --
 
+DROP TABLE IF EXISTS `offres_tags`;
 CREATE TABLE `offres_tags` (
-  `offre_id` uuid NOT NULL,
-  `tag_id` uuid NOT NULL
+  `offre_id` char(36) NOT NULL,
+  `tag_id` char(36) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -243,8 +273,9 @@ CREATE TABLE `offres_tags` (
 -- Structure de la table `options`
 --
 
+DROP TABLE IF EXISTS `options`;
 CREATE TABLE `options` (
-  `id` uuid NOT NULL,
+  `id` char(36) NOT NULL,
   `name` varchar(32) NOT NULL,
   `price` float NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -255,8 +286,9 @@ CREATE TABLE `options` (
 -- Structure de la table `parcs_attractions`
 --
 
+DROP TABLE IF EXISTS `parcs_attractions`;
 CREATE TABLE `parcs_attractions` (
-  `categorie_id` uuid NOT NULL,
+  `categorie_id` char(36) NOT NULL,
   `minimum_price` float NOT NULL,
   `required_age` int(11) NOT NULL,
   `attraction_nb` int(11) NOT NULL,
@@ -269,9 +301,10 @@ CREATE TABLE `parcs_attractions` (
 -- Structure de la table `photos_avis`
 --
 
+DROP TABLE IF EXISTS `photos_avis`;
 CREATE TABLE `photos_avis` (
-  `id` uuid NOT NULL,
-  `avis_id` uuid NOT NULL,
+  `id` char(36) NOT NULL,
+  `avis_id` char(36) NOT NULL,
   `url` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -281,9 +314,10 @@ CREATE TABLE `photos_avis` (
 -- Structure de la table `photos_offres`
 --
 
+DROP TABLE IF EXISTS `photos_offres`;
 CREATE TABLE `photos_offres` (
-  `id` uuid NOT NULL,
-  `offre_id` uuid NOT NULL,
+  `id` char(36) NOT NULL,
+  `offre_id` char(36) NOT NULL,
   `url` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -293,8 +327,9 @@ CREATE TABLE `photos_offres` (
 -- Structure de la table `prestations`
 --
 
+DROP TABLE IF EXISTS `prestations`;
 CREATE TABLE `prestations` (
-  `id` uuid NOT NULL,
+  `id` char(36) NOT NULL,
   `name` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -304,8 +339,9 @@ CREATE TABLE `prestations` (
 -- Structure de la table `repas`
 --
 
+DROP TABLE IF EXISTS `repas`;
 CREATE TABLE `repas` (
-  `id` uuid NOT NULL,
+  `id` char(36) NOT NULL,
   `name` varchar(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -315,10 +351,11 @@ CREATE TABLE `repas` (
 -- Structure de la table `reponses_pro`
 --
 
+DROP TABLE IF EXISTS `reponses_pro`;
 CREATE TABLE `reponses_pro` (
-  `id` uuid NOT NULL,
-  `pro_id` uuid NOT NULL,
-  `avis_id` uuid NOT NULL,
+  `id` char(36) NOT NULL,
+  `pro_id` char(36) NOT NULL,
+  `avis_id` char(36) NOT NULL,
   `content` varchar(512) NOT NULL,
   `published_at` timestamp NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -329,8 +366,9 @@ CREATE TABLE `reponses_pro` (
 -- Structure de la table `restaurations`
 --
 
+DROP TABLE IF EXISTS `restaurations`;
 CREATE TABLE `restaurations` (
-  `categorie_id` uuid NOT NULL,
+  `categorie_id` char(36) NOT NULL,
   `menu_url` text NOT NULL,
   `price_range` enum('€','€€','€€€') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -341,9 +379,10 @@ CREATE TABLE `restaurations` (
 -- Structure de la table `restaurations_repas`
 --
 
+DROP TABLE IF EXISTS `restaurations_repas`;
 CREATE TABLE `restaurations_repas` (
-  `restauration_id` uuid NOT NULL,
-  `repas_id` uuid NOT NULL
+  `restauration_id` char(36) NOT NULL,
+  `repas_id` char(36) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -352,9 +391,10 @@ CREATE TABLE `restaurations_repas` (
 -- Structure de la table `souscriptions`
 --
 
+DROP TABLE IF EXISTS `souscriptions`;
 CREATE TABLE `souscriptions` (
-  `offre_id` uuid NOT NULL,
-  `option_id` uuid NOT NULL,
+  `offre_id` char(36) NOT NULL,
+  `option_id` char(36) NOT NULL,
   `duration` int(11) NOT NULL,
   `taken_date` date NOT NULL,
   `launch_date` date NOT NULL
@@ -366,8 +406,9 @@ CREATE TABLE `souscriptions` (
 -- Structure de la table `spectacles`
 --
 
+DROP TABLE IF EXISTS `spectacles`;
 CREATE TABLE `spectacles` (
-  `categorie_id` uuid NOT NULL,
+  `categorie_id` char(36) NOT NULL,
   `duration` int(11) NOT NULL,
   `minimum_price` float NOT NULL,
   `date` date NOT NULL,
@@ -381,9 +422,10 @@ CREATE TABLE `spectacles` (
 -- Structure de la table `statuts`
 --
 
+DROP TABLE IF EXISTS `statuts`;
 CREATE TABLE `statuts` (
-  `id` uuid NOT NULL,
-  `offre_id` uuid NOT NULL,
+  `id` char(36) NOT NULL,
+  `offre_id` char(36) NOT NULL,
   `status` tinyint(1) NOT NULL,
   `changed_at` timestamp NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -394,8 +436,9 @@ CREATE TABLE `statuts` (
 -- Structure de la table `tags`
 --
 
+DROP TABLE IF EXISTS `tags`;
 CREATE TABLE `tags` (
-  `id` uuid NOT NULL,
+  `id` char(36) NOT NULL,
   `name` varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -405,8 +448,9 @@ CREATE TABLE `tags` (
 -- Structure de la table `visites`
 --
 
+DROP TABLE IF EXISTS `visites`;
 CREATE TABLE `visites` (
-  `categorie_id` uuid NOT NULL,
+  `categorie_id` char(36) NOT NULL,
   `duration` int(11) NOT NULL,
   `minimum_price` float NOT NULL,
   `date` date NOT NULL,
@@ -420,9 +464,10 @@ CREATE TABLE `visites` (
 -- Structure de la table `visites_langues`
 --
 
+DROP TABLE IF EXISTS `visites_langues`;
 CREATE TABLE `visites_langues` (
-  `visite_id` uuid NOT NULL,
-  `langue_id` uuid NOT NULL
+  `visite_id` char(36) NOT NULL,
+  `langue_id` char(36) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -461,6 +506,13 @@ ALTER TABLE `adresses`
 ALTER TABLE `attractions`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_attractions_parcs_attractions` (`parc_attractions_id`);
+
+--
+-- Index pour la table `auth_tokens`
+--
+ALTER TABLE `auth_tokens`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `email` (`email`);
 
 --
 -- Index pour la table `avis`
