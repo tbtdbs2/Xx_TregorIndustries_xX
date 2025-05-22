@@ -324,20 +324,20 @@
     <header>
         <div class="container header-container">
             <div class="header-left">
-                <a href="index.html"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
+                <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
                 <span class="pro-text">Professionnel</span>
             </div>
             <nav class="main-nav">
                 <ul>
-                    <li><a href="index.html">Accueil</a></li>
-                    <li><a href="recherche.html">Offres</a></li>
-                    <li><a href="publier-une-offre.html" class="active">Publier une offre</a></li>
-                    <li><a href="profil.html">Profil</a></li>
+                    <li><a href="index.php">Accueil</a></li>
+                    <li><a href="recherche.php">Offres</a></li>
+                    <li><a href="publier-une-offre.php" class="active">Publier une offre</a></li>
+                    <li><a href="profil.php">Profil</a></li>
                 </ul>
             </nav>
             <div class="header-right">
-                <a href="creation-compte.html" class="btn btn-secondary">S'enregistrer</a>
-                <a href="connexion-compte.html" class="btn btn-primary">Se connecter</a>
+                <a href="creation-compte.php" class="btn btn-secondary">S'enregistrer</a>
+                <a href="connexion-compte.php" class="btn btn-primary">Se connecter</a>
             </div>
         </div>
     </header>
@@ -614,16 +614,42 @@
             ?>
         </div>
     </main>
-    <footer class="main-footer">
+    <footer>
         <div class="container footer-content">
-            <p>© <?php echo date("Y"); ?> Tous droits réservés</p>
-            <nav>
+            <div class="footer-section social-media">
+                <div class="social-icons">
+                    <a href="#" aria-label="X"><i class="fab fa-x"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="footer-section links">
+                <h3>Visiteur</h3>
                 <ul>
-                    <li><a href="mentions-legales.html">Mentions légales</a></li>
-                    <li><a href="confidentialite.html">Politique de confidentialité</a></li>
-                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="../index.html">Accueil</a></li>
+                    <li><a href="../FO/recherche.php">Recherche d'offres</a></li>
+                    <li><a href="../FO/connexion-compte.php">Je me connecte en tant que membre</a></li>
                 </ul>
-            </nav>
+            </div>
+            <div class="footer-section links">
+                <h3>Découvrir</h3>
+                <ul>
+                    <li><a href="index.php">Accueil</a></li>
+                    <li><a href="publier-une-offre.php">Publier une offre</a></li>
+                    <li><a href="profil.php">Profil</a></li>
+                </ul>
+            </div>
+            <div class="footer-section links">
+                <h3>Ressources</h3>
+                <ul>
+                    <li><a href="conditions-generales-d-utilisation.php">Conditions générales d'utilisation</a></li>
+                    <li><a href="contact-du-responsable-du-site.php">Contact du responsable du site</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 PACT. Tous droits réservés.</p>
         </div>
     </footer>
     <script>
