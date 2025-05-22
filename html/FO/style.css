@@ -51,6 +51,12 @@
 }
 
 /* Styles généraux du corps */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     font-family: var(--police-principale);

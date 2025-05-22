@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
-            background-color: #f8f9fa; /* Light gray background for the page */
+            background-color: #f8f9fa; 
         }
 
         .search-page-container {
@@ -22,13 +22,13 @@
         }
 
         .filters-sidebar {
-            width: 280px; /* Slightly wider to accommodate content */
+            width: 280px; 
             flex-shrink: 0;
             background-color: var(--couleur-blanche);
             padding: 20px;
             height: fit-content;
-            border-radius: 8px; /* Rounded corners for the sidebar */
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Subtle shadow */
+            border-radius: 8px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
         }
 
         .filter-group {
@@ -36,18 +36,18 @@
         }
 
         .filter-group h3 {
-            font-size: 1em; /* Adjusted from 1.05em */
+            font-size: 1em; 
             font-weight: var(--font-weight-semibold);
             color: var(--couleur-texte);
-            margin-bottom: 12px; /* Increased margin */
+            margin-bottom: 12px; 
             padding-bottom: 6px;
-            border-bottom: 1px solid var(--couleur-bordure); /* Add a subtle separator */
+            border-bottom: 1px solid var(--couleur-bordure); 
         }
         
         .filter-group label {
             display: block;
-            margin-bottom: 6px; /* Increased margin */
-            font-size: 0.9em; /* Adjusted from 0.85em */
+            margin-bottom: 6px; 
+            font-size: 0.9em; 
             color: var(--couleur-texte-footer);
         }
 
@@ -55,9 +55,9 @@
         .filter-group input[type="date"],
         .filter-group select {
             width: 100%;
-            padding: 10px; /* Increased padding */
+            padding: 10px; 
             border: 1px solid var(--couleur-bordure);
-            border-radius: 6px; /* Increased border-radius */
+            border-radius: 6px; 
             font-size: 0.9em;
             box-sizing: border-box;
         }
@@ -80,115 +80,50 @@
             pointer-events: none;
         }
         
-        .filter-group input[type="range"] {
-            width: 100%;
+        .price-input-container {
+            display: flex;
+            align-items: flex-end; 
+            gap: 8px; 
             margin-top: 5px;
-            background: transparent;
-            -webkit-appearance: none;
-            appearance: none;
-            height: 8px;
         }
-
-        .filter-group input[type="range"]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 6px;
-            cursor: pointer;
-            background: #e0e0e0; /* Lighter gray for track */
-            border-radius: 3px;
-        }
-        .filter-group input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            border: none;
-            height: 16px;
-            width: 16px;
-            border-radius: 50%;
-            background: var(--couleur-principale);
-            cursor: pointer;
-            margin-top: -5px;
-        }
-        .filter-group input[type="range"]::-moz-range-track {
-            width: 100%;
-            height: 6px;
-            cursor: pointer;
-            background: #e0e0e0;
-            border-radius: 3px;
-        }
-        .filter-group input[type="range"]::-moz-range-thumb {
-            border: none;
-            height: 16px;
-            width: 16px;
-            border-radius: 50%;
-            background: var(--couleur-principale);
-            cursor: pointer;
-        }
-        .filter-group input[type="range"]::-ms-track {
-            width: 100%;
-            height: 6px;
-            cursor: pointer;
-            background: transparent;
-            border-color: transparent;
-            color: transparent;
-        }
-        .filter-group input[type="range"]::-ms-fill-lower {
-            background: var(--couleur-principale);
-            border-radius: 3px;
-        }
-        .filter-group input[type="range"]::-ms-fill-upper {
-            background: #e0e0e0;
-            border-radius: 3px;
-        }
-        .filter-group input[type="range"]::-ms-thumb {
-            border: none;
-            height: 16px;
-            width: 16px;
-            border-radius: 50%;
-            background: var(--couleur-principale);
-            cursor: pointer;
-            margin-top: 0;
-        }
-
-        .active-keywords {
+        .price-input-field {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px; /* Increased gap */
-            margin-bottom: 10px; /* Add margin below tags */
+            flex-direction: column; 
+            flex-grow: 1;
+        }
+        .price-input-field label {
+            font-size: 0.8em; 
+            margin-bottom: 4px;
+            color: var(--couleur-texte-footer);
+        }
+        .price-input-container input[type="number"] {
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid var(--couleur-bordure);
+            border-radius: 6px;
+            font-size: 0.9em;
+            box-sizing: border-box;
+            -moz-appearance: textfield; 
+        }
+        .price-input-container input[type="number"]::-webkit-outer-spin-button,
+        .price-input-container input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none; 
+            margin: 0;
+        }
+        .price-input-separator {
+            font-size: 1em;
+            color: var(--couleur-texte-footer);
+            padding-bottom: 10px; 
         }
 
-        .keyword-tag {
-            background-color: var(--couleur-secondaire);
-            color: var(--couleur-principale);
-            padding: 5px 10px; /* Adjusted padding */
-            border-radius: 16px; /* More rounded */
-            font-size: 0.85em; /* Adjusted font size */
-            font-weight: var(--font-weight-medium);
-            display: flex;
-            align-items: center;
-        }
-        .keyword-tag .remove-tag {
-            margin-left: 8px; /* Increased margin */
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.9em; /* Slightly larger 'x' */
-        }
-        .keyword-tag .remove-tag:hover { color: #cc0000; /* Darker red for hover */ }
-
-
-        .price-range-display {
-            font-size: 0.9em; /* Adjusted font size */
-            color: var(--couleur-texte);
-            margin-top: 8px;
-            text-align: right; /* Align to right as per mockup */
-        }
-
-        .star-rating-filter { display: flex; justify-content: flex-start; gap: 5px; font-size: 1.3em; cursor: pointer; } /* Increased gap and size */
+        .star-rating-filter { display: flex; justify-content: flex-start; gap: 5px; font-size: 1.3em; cursor: pointer; } 
         .star-rating-filter .fa-star { color: #e0e0e0; }
         .star-rating-filter .fa-star.selected,
-        .star-rating-filter .fa-star:hover { color: #FFC107; }
+        .star-rating-filter .fa-star:hover { color: var(--couleur-principale); } 
         .star-rating-filter .fa-star:hover ~ .fa-star:not(.selected){ color: #e0e0e0; }
         .star-rating-filter:hover .fa-star.selected ~ .fa-star:not(.selected){ color: #e0e0e0; }
 
-        .status-filter label { display: inline-flex; align-items: center; margin-right: 15px; font-size: 0.9em; color: var(--couleur-texte); } /* Increased margin */
+        .status-filter label { display: inline-flex; align-items: center; margin-right: 15px; font-size: 0.9em; color: var(--couleur-texte); } 
         .status-filter input[type="radio"] { margin-right: 5px; accent-color: var(--couleur-principale); }
 
         .results-area { flex-grow: 1; }
@@ -200,16 +135,16 @@
             align-items: center;
             background-color: var(--couleur-blanche);
             border: 1px solid var(--couleur-bordure);
-            border-radius: 25px; /* More rounded */
-            padding: 0 10px 0 15px; /* Adjusted padding */
-            height: 45px; /* Increased height */
+            border-radius: 25px; 
+            padding: 0 10px 0 15px; 
+            height: 45px; 
             flex-grow: 1;
-            min-width: 250px; /* Adjusted min-width */
+            min-width: 250px; 
             box-shadow: 0 1px 3px rgba(0,0,0,0.03);
         }
         .search-bar-results input[type="text"] {
             flex-grow: 1;
-            padding: 10px; /* Increased padding */
+            padding: 10px; 
             border: none;
             outline: none;
             font-size: 0.95em;
@@ -219,21 +154,21 @@
             background-color: transparent;
             color: var(--couleur-principale);
             border: none;
-            padding: 10px; /* Increased padding */
+            padding: 10px; 
             cursor: pointer;
             font-size: 1.1em;
         }
 
         .sort-options button {
-            background-color: var(--couleur-blanche); /* White background by default */
+            background-color: var(--couleur-blanche); 
             color: var(--couleur-texte);
             border: 1px solid var(--couleur-bordure);
-            padding: 8px 18px; /* Adjusted padding */
-            border-radius: 20px; /* More rounded */
+            padding: 8px 18px; 
+            border-radius: 20px; 
             cursor: pointer;
-            font-size: 0.9em; /* Adjusted font size */
+            font-size: 0.9em; 
             font-weight: var(--font-weight-medium);
-            margin-left: 8px; /* Adjusted margin */
+            margin-left: 8px; 
             transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
         }
         .sort-options button:hover {
@@ -248,8 +183,8 @@
 
         .results-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* Adjusted minmax for potentially 3 cards */
-            gap: 25px; /* Increased gap */
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
+            gap: 25px; 
         }
 
         .card {
@@ -261,65 +196,55 @@
             flex-direction: column;
             justify-content: space-between;
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            overflow: hidden; /* To ensure child border-radius on image works */
+            overflow: hidden; 
         }
         .card:hover { transform: translateY(-5px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
         .card .card-image-wrapper {
             position: relative;
             width: 100%;
-            height: 160px; /* Adjusted height */
+            height: 160px; 
         }
         .card .card-image-wrapper img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            /* border-radius: 12px 12px 0 0; Removed as card has overflow:hidden */
         }
         
-        .favorite-icon-result-card { /* New class for the static star */
-            position: absolute;
-            top: 12px; /* Adjusted position */
-            right: 12px; /* Adjusted position */
-            color: #FFC107; /* Yellow star color */
-            font-size: 1.4em; /* Larger star */
-            text-shadow: 0px 0px 3px rgba(0,0,0,0.2); /* Slight shadow for better visibility */
-        }
-
         .card .card-content {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            padding: 15px; /* Consistent padding */
+            padding: 15px; 
         }
         .card .card-title {
-            font-size: 1.1em; /* Adjusted font size */
+            font-size: 1.1em; 
             font-weight: var(--font-weight-semibold);
             color: var(--couleur-texte);
-            margin-bottom: 8px; /* Adjusted margin */
+            margin-bottom: 8px; 
         }
         .card .star-rating {
-            margin-bottom: 10px; /* Adjusted margin */
-            color: #FFC107;
+            margin-bottom: 10px; 
+            color: var(--couleur-principale); 
             font-size: 0.9em;
         }
         .card .star-rating .far.fa-star { color: var(--couleur-bordure); }
         
         .card .card-description {
-            font-size: 0.85em; /* Adjusted font size */
-            color: #555; /* Darker gray */
-            line-height: 1.5; /* Adjusted line height */
-            margin-bottom: 12px; /* Adjusted margin */
+            font-size: 0.85em; 
+            color: #555; 
+            line-height: 1.5; 
+            margin-bottom: 12px; 
             flex-grow: 1;
             display: -webkit-box;
-            -webkit-line-clamp: 3; /* Max 3 lines as per mockup observation */
+            -webkit-line-clamp: 3; 
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
-            min-height: calc(0.85em * 1.5 * 3); /* Reserve space for 3 lines */
+            min-height: calc(0.85em * 1.5 * 3); 
         }
         .card .card-more {
-            font-size: 0.9em; /* Adjusted font size */
+            font-size: 0.9em; 
             color: var(--couleur-principale);
             text-decoration: none;
             font-weight: var(--font-weight-medium);
@@ -330,27 +255,27 @@
             color: var(--couleur-principale-hover);
         }
 
-        /* Media Queries for Responsivity */
-        @media (max-width: 992px) { /* Tablet */
+        @media (max-width: 992px) { 
             .search-page-container { flex-direction: column; }
             .filters-sidebar { width: 100%; margin-bottom: 20px; }
             .results-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
         }
-        @media (max-width: 768px) { /* Mobile large */
+        @media (max-width: 768px) { 
             .search-and-sort-controls { flex-direction: column; align-items: stretch; }
             .search-bar-results { width: 100%; margin-bottom: 10px; }
             .sort-options { display: flex; justify-content: space-between; width: 100%; gap: 5px; }
             .sort-options button { margin-left: 0; flex-grow: 1; padding: 8px 10px; }
             .results-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
             .filters-sidebar { width: 100%; padding: 15px;}
+            .price-input-container { flex-direction: column; align-items: stretch; gap: 10px; }
+            .price-input-separator { display: none; }
+            .price-input-field label { font-size: 0.9em; }
         }
-         @media (max-width: 520px) { /* Mobile étroit */
+         @media (max-width: 520px) { 
             .results-grid { grid-template-columns: 1fr; }
-            .card .card-image-wrapper { height: 180px; } /* Potentially larger image on single column */
+            .card .card-image-wrapper { height: 180px; } 
             .card .card-title { font-size: 1.05em; }
             .card .card-description { -webkit-line-clamp: 3; }
-            .active-keywords { gap: 6px; }
-            .keyword-tag { padding: 4px 8px; font-size: 0.8em;}
             .sort-options button { font-size: 0.8em; }
          }
     </style>
@@ -359,10 +284,10 @@
     <header>
         <div class="container header-container">
             <div class="header-left">
-                <a href="index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
+                <a href="../index.html"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
                 <nav class="main-nav">
                     <ul>
-                        <li><a href="index.php">Accueil</a></li>
+                        <li><a href="../index.html">Accueil</a></li>
                         <li><a href="recherche.php" class="active">Recherche</a></li>
                     </ul>
                 </nav>
@@ -394,15 +319,6 @@
     <main>
         <div class="container content-area search-page-container">
             <aside class="filters-sidebar">
-                <div class="filter-group">
-                    <h3>Mots clefs</h3>
-                    <div class="active-keywords">
-                        <span class="keyword-tag">Camping <span class="remove-tag">&times;</span></span>
-                        <span class="keyword-tag">Vélos <span class="remove-tag">&times;</span></span>
-                        <span class="keyword-tag">Paris <span class="remove-tag">&times;</span></span>
-                    </div>
-                    <input type="text" id="keywords" name="keywords" placeholder="Ex: randonnée, musée...">
-                </div>
 
                 <div class="filter-group">
                     <h3>Catégorie</h3>
@@ -426,8 +342,17 @@
 
                 <div class="filter-group">
                     <h3>Prix</h3>
-                    <input type="range" id="price" name="price" min="0" max="10000" value="10000" step="100">
-                    <div class="price-range-display" id="price-display">€0 - €10000</div>
+                    <div class="price-input-container">
+                        <div class="price-input-field">
+                            <label for="price-min-input">Min €</label>
+                            <input type="number" id="price-min-input" name="price_min_input" min="0" step="1" placeholder="0">
+                        </div>
+                        <span class="price-input-separator">-</span>
+                        <div class="price-input-field">
+                            <label for="price-max-input">Max €</label>
+                            <input type="number" id="price-max-input" name="price_max_input" min="0" step="1" placeholder="Max">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="filter-group">
@@ -448,15 +373,16 @@
                     </div>
                     <input type="hidden" id="min-rating-value" name="min_rating_value">
                 </div>
-                 <div class="filter-group"> <h3>Notes Minimale</h3>
-                    <div class="star-rating-filter" id="min-rating-2">
-                        <i class="fas fa-star" data-value="1"></i>
-                        <i class="fas fa-star" data-value="2"></i>
-                        <i class="fas fa-star" data-value="3"></i>
-                        <i class="fas fa-star" data-value="4"></i>
-                        <i class="fas fa-star" data-value="5"></i>
+
+                <div class="filter-group"> <h3>Notes Maximale</h3>
+                    <div class="star-rating-filter" id="max-rating">
+                        <i class="fas fa-star" data-value="1" title="1 étoile maximum"></i>
+                        <i class="fas fa-star" data-value="2" title="2 étoiles maximum"></i>
+                        <i class="fas fa-star" data-value="3" title="3 étoiles maximum"></i>
+                        <i class="fas fa-star" data-value="4" title="4 étoiles maximum"></i>
+                        <i class="fas fa-star" data-value="5" title="5 étoiles maximum"></i>
                     </div>
-                    <input type="hidden" id="min-rating-value-2" name="min_rating_value_2">
+                    <input type="hidden" id="max-rating-value" name="max_rating_value">
                 </div>
 
 
@@ -490,7 +416,6 @@
                     <div class="card">
                         <div class="card-image-wrapper">
                             <img src="images/kayak.jpg" alt="Archipel de Bréhat en kayak">
-                            <i class="fas fa-star favorite-icon-result-card"></i>
                         </div>
                         <div class="card-content">
                             <h3 class="card-title">Archipel de Bréhat en kayak</h3>
@@ -502,7 +427,6 @@
                     <div class="card">
                         <div class="card-image-wrapper">
                             <img src="images/louer_velo_famille.jpg" alt="Balade familiale à vélo">
-                            <i class="fas fa-star favorite-icon-result-card"></i>
                         </div>
                         <div class="card-content">
                             <h3 class="card-title">Balade familiale à vélo</h3>
@@ -514,7 +438,6 @@
                     <div class="card">
                         <div class="card-image-wrapper">
                             <img src="images/centre-ville.jpg" alt="Découverte du centre-ville historique de Lannion">
-                            <i class="fas fa-star favorite-icon-result-card"></i>
                         </div>
                         <div class="card-content">
                             <h3 class="card-title">Découverte du centre-ville historique de Lannion</h3>
@@ -526,7 +449,6 @@
                      <div class="card">
                         <div class="card-image-wrapper">
                             <img src="images/randonnee.jpg" alt="Randonnée en montagne">
-                            <i class="fas fa-star favorite-icon-result-card"></i>
                         </div>
                         <div class="card-content">
                             <h3 class="card-title">Découverte du centre-ville historique de Lannion</h3>
@@ -538,7 +460,6 @@
                      <div class="card">
                         <div class="card-image-wrapper">
                             <img src="images/kayak.jpg" alt="Archipel de Bréhat en kayak">
-                             <i class="fas fa-star favorite-icon-result-card"></i>
                         </div>
                         <div class="card-content">
                             <h3 class="card-title">Archipel de Bréhat en kayak</h3>
@@ -550,7 +471,6 @@
                      <div class="card">
                         <div class="card-image-wrapper">
                             <img src="images/louer_velo_famille.jpg" alt="Balade familiale à vélo">
-                             <i class="fas fa-star favorite-icon-result-card"></i>
                         </div>
                         <div class="card-content">
                             <h3 class="card-title">Balade familiale à vélo</h3>
@@ -562,7 +482,6 @@
                     <div class="card">
                         <div class="card-image-wrapper">
                             <img src="images/centre-ville.jpg" alt="Découverte du centre-ville historique de Lannion">
-                             <i class="fas fa-star favorite-icon-result-card"></i>
                         </div>
                         <div class="card-content">
                             <h3 class="card-title">Balade familiale à vélo</h3>
@@ -574,7 +493,6 @@
                      <div class="card">
                         <div class="card-image-wrapper">
                             <img src="images/randonnee.jpg" alt="Randonnée en montagne">
-                             <i class="fas fa-star favorite-icon-result-card"></i>
                         </div>
                         <div class="card-content">
                             <h3 class="card-title">Découverte du centre-ville historique de Lannion</h3>
@@ -586,7 +504,6 @@
                      <div class="card">
                         <div class="card-image-wrapper">
                             <img src="images/kayak.jpg" alt="Archipel de Bréhat en kayak">
-                             <i class="fas fa-star favorite-icon-result-card"></i>
                         </div>
                         <div class="card-content">
                             <h3 class="card-title">Archipel de Bréhat en kayak</h3>
@@ -603,7 +520,7 @@
     <footer>
         <div class="container footer-content">
             <div class="footer-section social-media">
-                <a href="index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="footer-logo"></a>
+                <a href="../index.html"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="footer-logo"></a>
                 <div class="social-icons">
                     <a href="#" aria-label="Twitter PACT"><i class="fab fa-x-twitter"></i></a>
                     <a href="#" aria-label="Instagram PACT"><i class="fab fa-instagram"></i></a>
@@ -622,7 +539,7 @@
             <div class="footer-section links">
                 <h3>Découvrir</h3>
                 <ul>
-                    <li><a href="index.php">Accueil</a></li>
+                    <li><a href="../index.html">Accueil</a></li>
                     <li><a href="recherche.php">Recherche</a></li>
                 </ul>
             </div>
@@ -641,44 +558,56 @@
     <script src="script.js" defer></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const priceRange = document.getElementById('price');
-            const priceDisplay = document.getElementById('price-display');
-            if (priceRange && priceDisplay) {
-                const updatePriceDisplay = () => {
-                    // Ensure the display format matches "€0 - €10000"
-                    // The mockup shows the max value, so we'll assume the range is always from 0 to current value.
-                    // Or, if it's meant to be a range selector with two thumbs, this would be different.
-                    // Based on single thumb, it's "€0 - €[value]".
-                    priceDisplay.textContent = `€0 - €${priceRange.value}`;
-                }
-                updatePriceDisplay(); // Initial display
-                priceRange.addEventListener('input', updatePriceDisplay);
-            }
+            const priceMinNumberInput = document.getElementById('price-min-input');
+            const priceMaxNumberInput = document.getElementById('price-max-input');
 
-            const setupStarRatingFilter = (filterId, valueInputId) => {
+            if (priceMinNumberInput && priceMaxNumberInput) {
+                const validateAndHandlePriceInputs = () => {
+                    let minVal = parseFloat(priceMinNumberInput.value);
+                    let maxVal = parseFloat(priceMaxNumberInput.value);
+
+                    if (!isNaN(minVal) && !isNaN(maxVal) && minVal > maxVal) {
+                        console.warn("Le prix minimum (" + minVal + ") ne peut pas être supérieur au prix maximum (" + maxVal + ").");
+                    }
+                };
+
+                priceMinNumberInput.addEventListener('input', validateAndHandlePriceInputs);
+                priceMaxNumberInput.addEventListener('input', validateAndHandlePriceInputs);
+            }
+            
+            const couleurPrincipale = getComputedStyle(document.documentElement).getPropertyValue('--couleur-principale').trim();
+
+            const setupStarRatingFilter = (filterId, valueInputId, isMaxRating = false) => {
+                const ratingValueInput = document.getElementById(valueInputId); // Renommé pour clarté
                 const starRatingFilter = document.getElementById(filterId);
-                const minRatingValueInput = document.getElementById(valueInputId);
-                if (starRatingFilter && minRatingValueInput) {
+                
+                if (starRatingFilter && ratingValueInput) {
                     const stars = Array.from(starRatingFilter.querySelectorAll('.fa-star'));
                     
                     const setStarsVisual = (currentRating) => {
                         stars.forEach(s => {
                             const starValue = parseInt(s.dataset.value, 10);
-                            const isSelected = starValue <= currentRating;
+                            let isSelected = false;
+                            
+                            // La logique de sélection visuelle est la même : on colore jusqu'à l'étoile cliquée.
+                            // L'interprétation (min/max) se fait au moment du filtrage des données.
+                            if (currentRating > 0) {
+                                isSelected = starValue <= currentRating;
+                            }
+
                             s.classList.toggle('selected', isSelected);
-                            // Direct style manipulation for clarity, can be class-based
-                            s.style.color = isSelected ? '#FFC107' : '#e0e0e0'; 
+                            s.style.color = isSelected ? couleurPrincipale : '#e0e0e0'; 
                         });
                     };
 
                     starRatingFilter.addEventListener('click', function(e) {
                         if (e.target.classList.contains('fa-star') && e.target.dataset.value) {
                             const rating = e.target.dataset.value;
-                            if (minRatingValueInput.value === rating) { // Clicked on the same star again
-                                minRatingValueInput.value = ""; // Deselect
+                            if (ratingValueInput.value === rating) { 
+                                ratingValueInput.value = ""; 
                                 setStarsVisual(0);
                             } else {
-                                minRatingValueInput.value = rating;
+                                ratingValueInput.value = rating;
                                 setStarsVisual(rating);
                             }
                         }
@@ -688,8 +617,10 @@
                         if (e.target.classList.contains('fa-star') && e.target.dataset.value) {
                             const ratingHover = parseInt(e.target.dataset.value, 10);
                             stars.forEach(s => {
-                                if (parseInt(s.dataset.value,10) <= ratingHover) {
-                                    s.style.color = '#FFC107';
+                                const starValue = parseInt(s.dataset.value, 10);
+                                // La logique de survol colore aussi jusqu'à l'étoile survolée.
+                                if (starValue <= ratingHover) {
+                                    s.style.color = couleurPrincipale;
                                 } else {
                                      s.style.color = '#e0e0e0';
                                 }
@@ -698,14 +629,14 @@
                     });
 
                     starRatingFilter.addEventListener('mouseout', function() {
-                        setStarsVisual(minRatingValueInput.value || 0); 
+                        setStarsVisual(ratingValueInput.value || 0); 
                     });
-                    setStarsVisual(minRatingValueInput.value || 0); // Initial state
+                    setStarsVisual(ratingValueInput.value || 0); 
                 }
             };
 
-            setupStarRatingFilter('min-rating', 'min-rating-value');
-            setupStarRatingFilter('min-rating-2', 'min-rating-value-2');
+            setupStarRatingFilter('min-rating', 'min-rating-value', false); // false pour Note Minimale
+            setupStarRatingFilter('max-rating', 'max-rating-value', true);  // true pour Note Maximale (même si la logique visuelle JS est la même ici)
 
 
             const sortButtons = document.querySelectorAll('.sort-options button');
@@ -713,15 +644,6 @@
                 button.addEventListener('click', function() {
                     sortButtons.forEach(btn => btn.classList.remove('active'));
                     this.classList.add('active');
-                    // Add actual sorting logic here based on this.dataset.sort
-                });
-            });
-
-            // Placeholder for keyword removal functionality
-            document.querySelectorAll('.keyword-tag .remove-tag').forEach(removeBtn => {
-                removeBtn.addEventListener('click', function() {
-                    this.parentElement.remove();
-                    // Add logic to update search results based on removed keyword
                 });
             });
         });

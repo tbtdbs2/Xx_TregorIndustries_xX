@@ -12,7 +12,7 @@
     <style>
         /* Styles spécifiques à la page offre */
         body {
-            background-color: var(--couleur-blanche); /* Mockup has white background */
+            background-color: var(--couleur-blanche);
         }
 
         .main-content-offre {
@@ -24,26 +24,24 @@
             align-items: center;
             margin-bottom: 25px;
             margin-top: 5px;
-            padding-left: 15px; /* Align with content padding */
+            padding-left: 15px;
         }
 
         .breadcrumb-bar a {
-            color: var(--couleur-texte); /* Back arrow is black in mockup */
+            color: var(--couleur-texte);
             text-decoration: none;
-            font-size: 1.2em; /* Slightly larger arrow */
+            font-size: 1.2em;
             display: flex;
             align-items: center;
         }
         .breadcrumb-bar a:hover {
             color: var(--couleur-principale);
         }
-        /* Removed icon from breadcrumb text, just arrow */
 
         .offre-container {
             background-color: var(--couleur-blanche);
-            padding: 0 15px; /* Padding applied to inner elements or globally to container */
+            padding: 0 15px;
             border-radius: 8px;
-            /* Removed box-shadow from main container to match mockup */
         }
 
         .offre-header {
@@ -53,25 +51,25 @@
             margin-bottom: 20px;
         }
 
-        .offre-header-main .title {
-            font-size: 1.6em; /* Adjusted to mockup */
+        .offre-purchase-details .title {
+            font-size: 1.6em;
             font-weight: var(--font-weight-semibold);
             color: var(--couleur-texte);
-            margin-bottom: 2px; /* Reduced margin */
+            margin-bottom: 2px;
         }
 
-        .offre-header-main .provider {
-            font-size: 0.9em; /* Adjusted to mockup */
+        .offre-purchase-details .provider {
+            font-size: 0.9em;
             color: var(--couleur-texte-footer);
-            margin-bottom: 8px; /* Space before tags */
+            margin-bottom: 8px;
         }
 
-        .offre-header-main .tags span {
-            background-color: #eef8f8; /* Light blueish background for tags */
+        .offre-purchase-details .tags span {
+            background-color: #eef8f8;
             color: var(--couleur-principale);
-            padding: 6px 14px; /* Slightly adjusted padding */
+            padding: 6px 14px;
             border-radius: 16px;
-            font-size: 0.75em; /* Smaller font for tags */
+            font-size: 0.75em;
             font-weight: var(--font-weight-medium);
             margin-right: 8px;
             display: inline-block;
@@ -79,53 +77,56 @@
         }
 
         .offre-favorite-btn {
+            position: absolute; /* MODIFIED */
+            top: 20px;          /* ADDED */
+            right: 20px;         /* ADDED */
             background: none;
             border: none;
-            color: var(--couleur-principale); /* Heart is main color */
-            font-size: 2em; /* Larger heart icon */
+            color: var(--couleur-principale);
+            font-size: 2em;
             cursor: pointer;
-            padding: 0; /* Remove padding to align better */
-            margin-top: 5px; /* Align with title */
+            padding: 0;
+            /* margin-top: 5px; /* REMOVED/COMMENTED OUT */
+            z-index: 5; /* Optional: Added to ensure visibility */
         }
          .offre-favorite-btn:hover {
             color: var(--couleur-principale-hover);
         }
-        .offre-favorite-btn .fas.fa-heart { /* Filled heart */
+        .offre-favorite-btn .fas.fa-heart {
             display: none;
         }
-        .offre-favorite-btn.active .far.fa-heart { /* Empty heart */
+        .offre-favorite-btn.active .far.fa-heart {
             display: none;
         }
-        .offre-favorite-btn.active .fas.fa-heart { /* Filled heart */
+        .offre-favorite-btn.active .fas.fa-heart {
             display: inline-block;
         }
 
-
         .offre-gallery-and-purchase {
             display: flex;
-            gap: 30px; /* Increased gap */
+            gap: 30px;
             margin-bottom: 30px;
         }
 
         .offre-gallery {
-            flex: 0 0 60%; /* Gallery takes more space */
+            flex: 0 0 60%;
             position: relative;
             overflow: hidden;
-            border-radius: 8px; /* Rounded corners for gallery */
+            border-radius: 8px;
         }
 
-        .gallery-image-container {
+        .gallery-image-container { /* Cette règle peut être fusionnée ou supprimée si redéfinie plus bas pour le carrousel */
             display: flex;
-            height: 450px; /* Increased height for the main image */
+            height: 450px;
         }
 
-        .gallery-image-container img {
+        .gallery-image-container img { /* Cette règle peut être fusionnée ou supprimée si redéfinie plus bas pour le carrousel */
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
         }
-        .gallery-arrow { /* Mockup shows arrows */
+        .gallery-arrow {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
@@ -143,31 +144,32 @@
 
 
         .offre-purchase-details {
-            flex: 0 0 calc(40% - 30px); /* Remaining space minus gap */
-            background-color: var(--couleur-blanche); /* White background */
+            position: relative; /* ADDED */
+            flex: 0 0 calc(40% - 30px);
+            background-color: var(--couleur-blanche);
             padding: 20px;
             border-radius: 8px;
             display: flex;
             flex-direction: column;
-            border: 1px solid var(--couleur-bordure); /* Border as in mockup */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Subtle shadow */
+            border: 1px solid var(--couleur-bordure);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
         .offre-purchase-details .price {
-            font-size: 2em; /* Adjusted to mockup */
+            font-size: 2em;
             font-weight: var(--font-weight-semibold);
             color: var(--couleur-texte);
-            margin-bottom: 5px; /* Reduced margin */
+            margin-bottom: 5px;
         }
-        .offre-purchase-details .price-info { /* Not present in mockup, can be removed or kept */
+        .offre-purchase-details .price-info {
             font-size: 0.8em;
             color: var(--couleur-texte-footer);
             margin-bottom: 15px;
         }
 
         .offre-purchase-details .summary-title {
-            font-size: 1em; /* "Résumé" */
-            font-weight: var(--font-weight-semibold); /* Bolder */
+            font-size: 1em;
+            font-weight: var(--font-weight-semibold);
             color: var(--couleur-texte);
             margin-bottom: 8px;
         }
@@ -179,11 +181,54 @@
             flex-grow: 1;
         }
 
+        .offre-purchase-details .title { /* Répétition, déjà définie plus haut */
+            font-size: 1.6em;
+            font-weight: var(--font-weight-semibold);
+            color: var(--couleur-texte);
+            margin-bottom: 2px;
+        }
+
+        .offre-purchase-details .provider { /* Répétition, déjà définie plus haut */
+            font-size: 0.9em;
+            color: var(--couleur-texte-footer);
+            margin-bottom: 8px;
+        }
+
+        .offre-purchase-details .tags {
+            margin-bottom: 10px;
+        }
+
+        .offre-purchase-details .tags span { /* Répétition, déjà définie plus haut */
+            background-color: #eef8f8;
+            color: var(--couleur-principale);
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 0.75em;
+            font-weight: var(--font-weight-medium);
+            margin-right: 8px;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+
+        .offre-purchase-details .price { /* Répétition, déjà définie plus haut */
+            font-size: 2em;
+            font-weight: var(--font-weight-semibold);
+            color: var(--couleur-texte);
+            margin-bottom: 5px;
+            margin-top: 0;
+        }
+
+        .offre-purchase-details .price-info { /* Répétition, déjà définie plus haut */
+            font-size: 0.8em;
+            color: var(--couleur-texte-footer);
+            margin-bottom: 15px;
+        }
+
         .btn-acces-site {
             background-color: var(--couleur-principale);
             color: var(--couleur-blanche);
             padding: 12px 20px;
-            border-radius: 8px; /* Matching mockup button radius */
+            border-radius: 8px;
             text-decoration: none;
             text-align: center;
             font-weight: var(--font-weight-medium);
@@ -197,19 +242,18 @@
 
         .offre-detailed-info {
             display: flex;
-            gap: 30px; /* Increased gap */
+            gap: 30px;
             margin-bottom: 30px;
         }
 
         .offre-description-text {
-            flex: 0 0 60%; /* Description takes more space */
+            flex: 0 0 60%;
         }
-         .offre-description-text h2 { /* Title "Archipel de Bréhat en kayak" */
+         .offre-description-text h2 {
             font-size: 1.3em;
             font-weight: var(--font-weight-semibold);
             color: var(--couleur-texte);
             margin-bottom: 10px;
-            /* Removed border from here */
         }
         .offre-description-text p {
             font-size: 0.95em;
@@ -218,17 +262,17 @@
             margin-bottom: 15px;
         }
 
-        .offre-additional-details { /* Contact/Address/Hours block */
-            flex: 0 0 calc(40% - 30px); /* Remaining space */
+        .offre-additional-details {
+            flex: 0 0 calc(40% - 30px);
             background-color: var(--couleur-blanche);
             padding: 20px;
             border-radius: 8px;
             border: 1px solid var(--couleur-bordure);
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-         .offre-additional-details h3 { /* "Horaires d'ouverture", "Adresse", "Contact" */
-            font-size: 1em; /* Adjusted size */
-            font-weight: var(--font-weight-semibold); /* Bolder */
+         .offre-additional-details h3 {
+            font-size: 1em;
+            font-weight: var(--font-weight-semibold);
             color: var(--couleur-texte);
             margin-bottom: 12px;
          }
@@ -239,13 +283,13 @@
             font-size: 0.9em;
             color: var(--couleur-texte-footer);
         }
-        .detail-item i { /* Icons for details */
-            color: var(--couleur-texte); /* Icons are black in mockup */
+        .detail-item i {
+            color: var(--couleur-texte);
             margin-right: 10px;
             font-size: 1.1em;
             width: 20px;
             text-align: center;
-            margin-top: 1px; /* Fine-tune alignment */
+            margin-top: 1px;
         }
         .detail-item span {
             flex: 1;
@@ -253,7 +297,7 @@
         }
         .map-placeholder {
             width: 100%;
-            height: 200px; /* Adjusted height */
+            height: 200px;
             background-color: #e9ecef;
             border-radius: 8px;
             display: flex;
@@ -261,7 +305,7 @@
             justify-content: center;
             color: #6c757d;
             margin-top: 15px;
-            overflow: hidden; /* Ensure image respects border radius */
+            overflow: hidden;
         }
          .map-placeholder img {
             width: 100%;
@@ -271,37 +315,33 @@
         }
 
         .offre-avis-section {
-            margin-top: 40px; /* More space before reviews */
-            border-top: 1px solid var(--couleur-bordure); /* Separator line */
+            margin-top: 40px;
+            border-top: 1px solid var(--couleur-bordure);
             padding-top: 30px;
         }
-        .offre-avis-section > h2 { /* "Avis avec photos" - main title for section */
+        .offre-avis-section > h2 {
             font-size: 1.3em;
             font-weight: var(--font-weight-semibold);
             color: var(--couleur-texte);
             margin-bottom: 20px;
-            /* border-bottom: 1px solid var(--couleur-bordure); */
-            /* padding-bottom: 8px; */
         }
-        .avis-tabs { /* "Note", "Recommandation" */
+        .avis-tabs {
             display: flex;
-            gap: 0; /* No gap, borders will separate */
+            gap: 0;
             margin-bottom: 25px;
-            border: 1px solid var(--couleur-bordure); /* Border around tab container */
+            border: 1px solid var(--couleur-bordure);
             border-radius: 8px;
-            overflow: hidden; /* To clip button borders */
-            width: fit-content; /* Make it only as wide as its content */
+            overflow: hidden;
+            width: fit-content;
         }
         .avis-tabs button {
-            padding: 10px 20px; /* Adjusted padding */
+            padding: 10px 20px;
             border: none;
-            /* border-right: 1px solid var(--couleur-bordure); */ /* Separator between tabs */
-            background-color: var(--couleur-blanche); /* Default tab background */
+            background-color: var(--couleur-blanche);
             cursor: pointer;
-            font-size: 0.9em; /* Adjusted size */
+            font-size: 0.9em;
             font-weight: var(--font-weight-medium);
             color: var(--couleur-texte-footer);
-           /* border-bottom: 3px solid transparent; */ /* Removed bottom border for this style */
             transition: background-color 0.3s ease, color 0.3s ease;
         }
          .avis-tabs button:not(:last-child) {
@@ -309,25 +349,22 @@
         }
 
         .avis-tabs button.active, .avis-tabs button:hover {
-            background-color: var(--couleur-principale); /* Active/hover tab background */
-            color: var(--couleur-blanche); /* Active/hover tab text color */
-           /* border-bottom-color: var(--couleur-principale); */
+            background-color: var(--couleur-principale);
+            color: var(--couleur-blanche);
         }
-        /* .avis-tabs button:last-child { border-right: none; } */
-
 
         .avis-card {
-            background-color: var(--couleur-blanche); /* White background for card */
-            padding: 20px; /* Increased padding */
+            background-color: var(--couleur-blanche);
+            padding: 20px;
             border-radius: 8px;
-            margin-bottom: 20px; /* Increased margin */
-            border: 1px solid var(--couleur-bordure); /* Border around each review card */
-            display: flex;
-            gap: 20px; /* Increased gap */
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04); /* Subtle shadow for cards */
+            margin-bottom: 20px;
+            border: 1px solid var(--couleur-bordure);
+            display: flex; /* Modifié en JS pour pagination, mais flex par défaut */
+            gap: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         }
         .avis-avatar img {
-            width: 40px; /* Slightly smaller avatar */
+            width: 40px;
             height: 40px;
             border-radius: 50%;
             object-fit: cover;
@@ -341,25 +378,32 @@
             align-items: center;
             margin-bottom: 8px;
         }
-        .avis-user-info .name { /* This is the review title "Parfait", "Merci" */
+        .avis-user-info .name {
             font-weight: var(--font-weight-semibold);
             color: var(--couleur-texte);
             font-size: 1em;
         }
-        .avis-user-info .username-date { /* Container for actual username and date */
+        .avis-user-info .username-date {
              font-size: 0.85em;
              color: #6c757d;
              margin-top: 3px;
         }
-        /* .avis-user-info .date {
-            font-size: 0.8em;
-            color: #6c757d;
-             margin-left: 0; Separated to new line
-        } */
-        .avis-rating { display: flex; align-items: center; } /* Ensure stars align */
-        .avis-rating .fa-star { color: #FFC107; font-size: 0.9em; margin-left: 2px; }
-        .avis-rating .fa-star.empty { color: #e0e0e0; }
-        .avis-header-icons { /* For flag and other icons on top right of review card */
+
+        .avis-rating {
+            display: flex;
+            align-items: center;
+            font-size: 0.9em;
+        }
+        .avis-rating .fas.fa-star,
+        .avis-rating .fas.fa-star-half-alt {
+            color: var(--couleur-principale);
+            margin-left: 2px;
+        }
+        .avis-rating .far.fa-star {
+            color: var(--couleur-bordure);
+            margin-left: 2px;
+        }
+        .avis-header-icons {
             color: #999;
             font-size: 1em;
         }
@@ -371,12 +415,12 @@
             font-size: 0.9em;
             color: var(--couleur-texte-footer);
             line-height: 1.6;
-            margin-bottom: 12px; /* Increased margin */
+            margin-bottom: 12px;
         }
         .avis-actions {
             display: flex;
             align-items: center;
-            gap: 15px; /* Gap between like/dislike */
+            gap: 15px;
         }
         .avis-actions button {
             background: none;
@@ -384,105 +428,194 @@
             color: #6c757d;
             cursor: pointer;
             font-size: 0.9em;
-            padding: 0; /* Remove padding */
+            padding: 0;
             display: flex;
             align-items: center;
         }
          .avis-actions button i {
             margin-right: 6px;
-            font-size: 1.1em; /* Slightly larger icons */
+            font-size: 1.1em;
         }
         .avis-actions button:hover { color: var(--couleur-principale); }
-        .avis-actions .report-action { /* For "Signaler" if it needs to be separate */
-            margin-left: auto; /* Pushes it to the right if needed */
+        .avis-actions .report-action {
+            margin-left: auto;
         }
 
-        .avis-footer { /* Container for "Laisser un avis" button and navigation */
+        .avis-footer {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-top: 10px; /* Space above this section */
+            margin-top: 10px;
         }
 
         .btn-laisser-avis {
-            background-color: var(--couleur-principale); /* Matches mockup button */
+            background-color: var(--couleur-principale);
             color: var(--couleur-blanche);
-            padding: 10px 25px; /* Adjusted padding */
-            border-radius: 8px; /* Matches mockup button radius */
+            padding: 10px 25px;
+            border-radius: 8px;
             text-decoration: none;
             text-align: center;
             font-weight: var(--font-weight-medium);
             transition: background-color 0.3s ease, color 0.3s ease;
             display: inline-block;
-            margin-bottom: 25px; /* Space below button, before arrows */
+            margin-bottom: 25px;
             border: none;
-            /* border: 1px solid var(--couleur-secondaire-hover-border); */
         }
         .btn-laisser-avis:hover {
             background-color: var(--couleur-principale-hover);
-            /* color: var(--couleur-principale-hover); */
         }
 
         .avis-navigation {
             display: flex;
-            justify-content: space-between; /* Pushes arrows to edges */
+            justify-content: space-between;
             align-items: center;
-            width: 100px; /* Fixed width for the arrow container for centering */
-            margin: 0 auto; /* Center the arrows */
+            width: 100px;
+            margin: 0 auto;
         }
         .avis-navigation button {
             background: none;
             border: none;
-            color: var(--couleur-texte); /* Arrows are black */
-            font-size: 1.2em; /* Adjusted size */
+            color: var(--couleur-texte);
+            font-size: 1.2em;
             cursor: pointer;
             padding: 5px;
         }
         .avis-navigation button:hover { color: var(--couleur-principale); }
         .avis-navigation button:disabled { color: #ccc; cursor: not-allowed; }
 
+        /* Styles pour le conteneur EXTERNE du carrousel d'images */
+        .offre-gallery.cards-container-wrapper { /* S'assure que c'est bien .offre-gallery qui a ces styles */
+            flex: 0 0 60%; 
+            position: relative;
+            overflow: hidden; 
+            border-radius: 8px;
+        }
 
-        /* Responsive adjustments */
+        /* MODIFICATIONS POUR LE CAROUSEL CI-DESSOUS */
+        /* Styles pour le conteneur INTERNE qui défile (contient les images) */
+        .gallery-image-container.cards-container {
+            display: flex;
+            height: 450px; /* Conservez votre hauteur définie */
+            overflow-x: auto; /* Permet le défilement horizontal */
+            -webkit-overflow-scrolling: touch; /* Améliore le défilement sur iOS */
+            scrollbar-width: none; /* Masque la barre de défilement standard (Firefox) */
+            -ms-overflow-style: none;  /* Masque la barre de défilement standard (IE/Edge) */
+            border-radius: inherit; /* Hérite du border-radius du parent */
+
+            /* NOUVEAU : Ajout du scroll snapping */
+            scroll-snap-type: x mandatory; /* Force l'alignement sur l'axe X */
+        }
+        .gallery-image-container.cards-container::-webkit-scrollbar {
+            display: none; /* Masque la barre de défilement standard (Chrome/Safari/Opera) */
+        }
+
+        /* Styles pour CHAQUE image dans le carrousel */
+        .gallery-image-container.cards-container img {
+            flex: 0 0 100%; /* Chaque image occupe 100% de la largeur du conteneur visible */
+            width: 100%;    /* S'assure que l'image remplit l'espace alloué par flex-basis */
+            height: 100%;   /* L'image prend toute la hauteur de son parent */
+            object-fit: cover; /* L'image couvre l'espace, quitte à être rognée, sans distorsion */
+
+            /* NOUVEAU : Alignement pour le scroll snapping */
+            scroll-snap-align: start; /* Aligne le début de l'image avec le début du conteneur de défilement.
+                                         Vous pourriez aussi utiliser 'center' si vous préférez centrer l'image. */
+        }
+        /* FIN DES MODIFICATIONS POUR LE CAROUSEL */
+
+
+        /* Styles pour les flèches de navigation (identiques à index.php pour l'apparence) */
+        .carousel-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--couleur-bordure);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex; /* Garder flex pour centrer l'icône */
+            align-items: center;
+            justify-content: center;
+            color: var(--couleur-principale);
+            font-size: 1.5em;
+            cursor: pointer;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: background-color 0.2s ease, color 0.2s ease, opacity 0.3s ease, visibility 0.3s ease; /* Ajout de transitions pour affichage/masquage */
+        }
+        .carousel-arrow:hover {
+            background-color: var(--couleur-blanche);
+            color: var(--couleur-principale-hover);
+        }
+        .carousel-arrow.prev-arrow {
+            left: 15px;
+        }
+        .carousel-arrow.next-arrow {
+            right: 15px;
+        }
+        
+        /* Styles responsives pour la galerie */
+        @media (max-width: 992px) {
+            .offre-gallery.cards-container-wrapper {
+                flex-basis: 100%; 
+                height: 350px;
+            }
+            /* S'assurer que le conteneur d'images interne s'adapte aussi si nécessaire */
+            .gallery-image-container.cards-container {
+                height: 350px; /* Adapter la hauteur ici aussi */
+                 /* width: 100%; /* Inutile si flex-basis:100% sur le parent suffit */
+            }
+        }
+        @media (max-width: 768px) {
+             .offre-gallery.cards-container-wrapper {
+                height: 280px;
+            }
+            .gallery-image-container.cards-container {
+                height: 280px; /* Adapter la hauteur ici aussi */
+            }
+        }
+
         @media (max-width: 992px) {
             .offre-gallery-and-purchase, .offre-detailed-info {
                 flex-direction: column;
             }
-            .offre-gallery, .offre-purchase-details,
+            .offre-gallery, .offre-purchase-details, /* .offre-gallery est maintenant .offre-gallery.cards-container-wrapper */
             .offre-description-text, .offre-additional-details {
-                flex-basis: auto; /* Reset flex-basis */
+                flex-basis: auto; /* flex-basis: 100% est déjà géré pour .offre-gallery.cards-container-wrapper */
             }
-            .offre-gallery { height: 350px; }
-            .breadcrumb-bar, .offre-container { padding-left: 0; padding-right: 0;} /* Remove side padding for smaller screens if container fluid */
+            /* .offre-gallery { height: 350px; } /* Redondant si .offre-gallery.cards-container-wrapper a la hauteur */
+            .breadcrumb-bar, .offre-container { padding-left: 0; padding-right: 0;}
         }
         @media (max-width: 768px) {
             .offre-header { flex-direction: column; align-items: flex-start;}
-            .offre-favorite-btn { margin-top:10px; font-size: 1.8em; align-self: flex-start;} /* Mockup has it top right, adjust as needed */
-            .gallery-image-container { height: 280px; }
+             .offre-favorite-btn {
+                font-size: 1.8em; 
+            }
+            /* .gallery-image-container { height: 280px; } /* Redondant si .gallery-image-container.cards-container a la hauteur */
             .offre-purchase-details .price { font-size: 1.8em; }
-            .offre-container { padding: 0 10px; } /* Small padding for mobile */
+            .offre-container { padding: 0 10px; }
 
             .avis-card {
                 flex-direction: column;
-                align-items: flex-start; /* Align items to the start */
+                align-items: flex-start;
             }
             .avis-avatar {
                 margin-bottom: 10px;
-                /* text-align: left; */ /* Align avatar to left */
             }
             .avis-header {
-                flex-direction: row; /* Keep header items in a row */
-                align-items: center; /* Align items center in the header */
-                width: 100%; /* Make header take full width */
+                flex-direction: row;
+                align-items: center;
+                width: 100%;
             }
             .avis-user-info {
-                flex-grow: 1; /* Allow user info to take available space */
+                flex-grow: 1;
             }
             .avis-rating {
-                margin-top: 0; /* Remove top margin */
-                margin-left: 10px; /* Add some space if too close */
+                margin-top: 0;
+                margin-left: 10px;
             }
              .avis-header-icons {
-                margin-left: auto; /* Push icons to the right */
+                margin-left: auto;
             }
             .avis-tabs { width: 100%; }
             .avis-tabs button { flex-grow: 1; text-align: center; }
@@ -494,10 +627,10 @@
     <header>
         <div class="container header-container">
             <div class="header-left">
-                <a href="index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
+                <a href="../index.html"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
                 <nav class="main-nav">
                     <ul>
-                        <li><a href="index.php">Accueil</a></li>
+                        <li><a href="../index.html">Accueil</a></li>
                         <li><a href="recherche.php" class="active">Recherche</a></li>
                     </ul>
                 </nav>
@@ -533,8 +666,25 @@
                 </div>
 
             <div class="offre-container">
-                <div class="offre-header">
-                    <div class="offre-header-main">
+                <div class="offre-gallery-and-purchase">
+                    <div class="offre-gallery cards-container-wrapper" id="offreImageCarouselWrapper">
+                        <div class="gallery-image-container cards-container">
+                            <img src="images/kayak.jpg" alt="Kayak dans l'archipel de Bréhat - Vue 1">
+                            <img src="images/louer_velo_famille.jpg" alt="Vélo en famille - Vue 2"> 
+                            <img src="images/centre-ville.jpg" alt="Centre ville - Vue 3">
+                        </div>
+                        <button class="carousel-arrow prev-arrow" onclick="scrollOffreCarousel('offreImageCarouselWrapper', -1)" aria-label="Précédent">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="carousel-arrow next-arrow" onclick="scrollOffreCarousel('offreImageCarouselWrapper', 1)" aria-label="Suivant">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="offre-purchase-details">
+                        <button class="offre-favorite-btn" aria-label="Ajouter aux favoris">
+                            <i class="far fa-heart"></i>
+                            <i class="fas fa-heart"></i>
+                        </button>
                         <h1 class="title">Archipel de Bréhat en kayak</h1>
                         <p class="provider">Planète Kayak</p>
                         <div class="tags">
@@ -543,22 +693,6 @@
                             <span>Famille</span>
                             <span>Plein air</span>
                         </div>
-                    </div>
-                    <button class="offre-favorite-btn" aria-label="Ajouter aux favoris">
-                        <i class="far fa-heart"></i>
-                        <i class="fas fa-heart"></i>
-                    </button>
-                </div>
-
-                <div class="offre-gallery-and-purchase">
-                    <div class="offre-gallery">
-                        <div class="gallery-image-container">
-                            <img src="images/kayak.jpg" alt="Kayak dans l'archipel de Bréhat">
-                            </div>
-                        <button class="gallery-arrow prev" aria-label="Précédent"><i class="fas fa-chevron-left"></i></button>
-                        <button class="gallery-arrow next" aria-label="Suivant"><i class="fas fa-chevron-right"></i></button>
-                    </div>
-                    <div class="offre-purchase-details">
                         <p class="price">€50</p>
                         <h3 class="summary-title">Résumé</h3>
                         <p class="summary-text">Montrer que l'on peut réaliser localement de belles balades à vélo, en empruntant de petites routes tranquilles et sans trop de montées.</p>
@@ -593,7 +727,7 @@
                             <span>Téléphone : +33700000000</span>
                         </div>
                         <div class="map-placeholder">
-                            <img src="images/map_placeholder.png" alt="Carte de localisation">
+                            <img src="images/map.png" alt="Carte de localisation">
                         </div>
                     </div>
                 </div>
@@ -607,13 +741,13 @@
                     <div class="avis-list">
                         <div class="avis-card">
                             <div class="avis-avatar">
-                                <img src="images/avatar1.jpg" alt="Avatar Alicia">
+                                <img src="images/bertrand.jpg" alt="Avatar Bertrand">
                             </div>
                             <div class="avis-content">
                                 <div class="avis-header">
                                     <div class="avis-user-info">
                                         <span class="name">Parfait</span>
-                                        <div class="username-date">Alicia - 26 mars 2024</div>
+                                        <div class="username-date">Bertrand - 26 mars 2024</div>
                                     </div>
                                     <div class="avis-rating">
                                         <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
@@ -634,7 +768,7 @@
 
                         <div class="avis-card">
                             <div class="avis-avatar">
-                                <img src="images/avatar2.jpg" alt="Avatar Benoît">
+                                <img src="images/benoit.jpg" alt="Avatar Benoît">
                             </div>
                             <div class="avis-content">
                                 <div class="avis-header">
@@ -643,7 +777,7 @@
                                         <div class="username-date">Benoît - 24 mars 2024</div>
                                     </div>
                                     <div class="avis-rating">
-                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star empty"></i>
+                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
                                     </div>
                                     <div class="avis-header-icons">
                                         <i class="fas fa-flag" title="Signaler l'avis"></i>
@@ -660,13 +794,13 @@
                         </div>
                          <div class="avis-card">
                             <div class="avis-avatar">
-                                <img src="images/avatar3.jpg" alt="Avatar Luigi">
+                                <img src="images/yannick.jpg" alt="Avatar Yannick">
                             </div>
                             <div class="avis-content">
                                 <div class="avis-header">
                                     <div class="avis-user-info">
                                         <span class="name">Génial !</span>
-                                        <div class="username-date">Luigi - 18 mars 2024</div>
+                                        <div class="username-date">Yannick - 18 mars 2024</div>
                                     </div>
                                     <div class="avis-rating">
                                         <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
@@ -684,11 +818,115 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="avis-card">
+                            <div class="avis-avatar">
+                                <img src="images/avatar4.jpg" alt="Avatar Claire">
+                            </div>
+                            <div class="avis-content">
+                                <div class="avis-header">
+                                    <div class="avis-user-info">
+                                        <span class="name">Inoubliable</span>
+                                        <div class="username-date">Claire - 15 mars 2024</div>
+                                    </div>
+                                    <div class="avis-rating">
+                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                    </div>
+                                    <div class="avis-header-icons">
+                                        <i class="fas fa-flag" title="Signaler l'avis"></i>
+                                    </div>
+                                </div>
+                                <div class="avis-comment">
+                                    <p>Une expérience à vivre absolument. Le guide était passionnant et les paysages à couper le souffle.</p>
+                                </div>
+                                <div class="avis-actions">
+                                    <button><i class="fas fa-thumbs-up"></i></button>
+                                    <button><i class="fas fa-thumbs-down"></i></button>
+                                    </div>
+                            </div>
+                        </div>
+                        <div class="avis-card">
+                            <div class="avis-avatar">
+                                <img src="images/avatar5.jpg" alt="Avatar Marc">
+                            </div>
+                            <div class="avis-content">
+                                <div class="avis-header">
+                                    <div class="avis-user-info">
+                                        <span class="name">Bonne activité</span>
+                                        <div class="username-date">Marc - 12 mars 2024</div>
+                                    </div>
+                                    <div class="avis-rating">
+                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>
+                                    </div>
+                                    <div class="avis-header-icons">
+                                        <i class="fas fa-flag" title="Signaler l'avis"></i>
+                                    </div>
+                                </div>
+                                <div class="avis-comment">
+                                    <p>C'était sympa, mais le matériel mériterait un petit coup de neuf. L'endroit reste très beau.</p>
+                                </div>
+                                <div class="avis-actions">
+                                    <button><i class="fas fa-thumbs-up"></i></button>
+                                    <button><i class="fas fa-thumbs-down"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                         <div class="avis-card">
+                            <div class="avis-avatar">
+                                <img src="images/avatar6.jpg" alt="Avatar Sophie">
+                            </div>
+                            <div class="avis-content">
+                                <div class="avis-header">
+                                    <div class="avis-user-info">
+                                        <span class="name">Très relaxant</span>
+                                        <div class="username-date">Sophie - 10 mars 2024</div>
+                                    </div>
+                                    <div class="avis-rating">
+                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                     <div class="avis-header-icons">
+                                        <i class="fas fa-flag" title="Signaler l'avis"></i>
+                                    </div>
+                                </div>
+                                <div class="avis-comment">
+                                    <p>Idéal pour se déconnecter. Le calme de l'archipel est vraiment appréciable.</p>
+                                </div>
+                                <div class="avis-actions">
+                                    <button><i class="fas fa-thumbs-up"></i></button>
+                                    <button><i class="fas fa-thumbs-down"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="avis-card">
+                            <div class="avis-avatar">
+                                <img src="images/avatar7.jpg" alt="Avatar Julien">
+                            </div>
+                            <div class="avis-content">
+                                <div class="avis-header">
+                                    <div class="avis-user-info">
+                                        <span class="name">A refaire !</span>
+                                        <div class="username-date">Julien - 05 mars 2024</div>
+                                    </div>
+                                    <div class="avis-rating">
+                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                    </div>
+                                    <div class="avis-header-icons">
+                                        <i class="fas fa-flag" title="Signaler l'avis"></i>
+                                    </div>
+                                </div>
+                                <div class="avis-comment">
+                                    <p>Nous avons passé un excellent moment en famille. Les enfants ont adoré et nous aussi !</p>
+                                </div>
+                                <div class="avis-actions">
+                                    <button><i class="fas fa-thumbs-up"></i></button>
+                                    <button><i class="fas fa-thumbs-down"></i></button>
+                                    </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="avis-footer">
                         <a href="#" class="btn-laisser-avis">Laisser un avis</a>
                         <div class="avis-navigation">
-                            <button class="prev-avis" aria-label="Avis précédents" disabled><i class="fas fa-chevron-left"></i></button>
+                            <button class="prev-avis" aria-label="Avis précédents"><i class="fas fa-chevron-left"></i></button>
                             <button class="next-avis" aria-label="Avis suivants"><i class="fas fa-chevron-right"></i></button>
                         </div>
                     </div>
@@ -719,7 +957,7 @@
             <div class="footer-section links">
                 <h3>Découvrir</h3>
                 <ul>
-                    <li><a href="index.php">Accueil</a></li>
+                    <li><a href="../index.html">Accueil</a></li>
                     <li><a href="recherche.php">Recherche</a></li>
                 </ul>
             </div>
@@ -743,71 +981,167 @@
             if (favoriteButton) {
                 favoriteButton.addEventListener('click', function() {
                     this.classList.toggle('active');
-                    // Mettre à jour l'attribut aria-pressed pour l'accessibilité
                     const isPressed = this.classList.contains('active');
                     this.setAttribute('aria-pressed', isPressed);
                 });
-                // Initialiser aria-pressed au cas où l'état est déjà actif (ex: chargé depuis BDD)
                  const isInitiallyPressed = favoriteButton.classList.contains('active');
                  favoriteButton.setAttribute('aria-pressed', isInitiallyPressed);
             }
 
             // Avis tabs
             const avisTabsContainer = document.querySelector('.avis-tabs');
-            const avisList = document.querySelector('.avis-list');
             if (avisTabsContainer) {
                 const tabs = avisTabsContainer.querySelectorAll('button');
                 tabs.forEach(tab => {
                     tab.addEventListener('click', function() {
                         tabs.forEach(t => t.classList.remove('active'));
                         this.classList.add('active');
-                        // Placeholder: Add logic here to filter/load reviews based on this.dataset.tab
-                        console.log(`Onglet sélectionné: ${this.dataset.tab}`);
-                        // Example: avisList.innerHTML = `Chargement des avis pour ${this.dataset.tab}...`;
+                        // console.log(`Onglet sélectionné: ${this.dataset.tab}`);
                     });
                 });
             }
 
-            // Avis navigation (simple simulation)
+            // Avis pagination
+            const avisListContainer = document.querySelector('.avis-list');
+            const allAvisCards = avisListContainer ? Array.from(avisListContainer.querySelectorAll('.avis-card')) : [];
             const prevAvisBtn = document.querySelector('.prev-avis');
             const nextAvisBtn = document.querySelector('.next-avis');
+            
             let currentAvisPage = 1;
-            const totalAvisPages = 3; // Example, replace with actual total pages
+            const avisPerPage = 3; // Nombre d'avis à afficher par page
+            let totalAvisPages = 0;
+
+            function displayCurrentAvisPage() {
+                if (!avisListContainer || allAvisCards.length === 0) return;
+
+                const startIndex = (currentAvisPage - 1) * avisPerPage;
+                const endIndex = startIndex + avisPerPage;
+
+                allAvisCards.forEach((card, index) => {
+                    if (index >= startIndex && index < endIndex) {
+                        card.style.display = 'flex'; // Ou 'block' selon le style initial des cartes
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
 
             function updateAvisNavigation() {
-                if(prevAvisBtn) prevAvisBtn.disabled = currentAvisPage === 1;
-                if(nextAvisBtn) nextAvisBtn.disabled = currentAvisPage === totalAvisPages;
-                // Placeholder: Add logic to display reviews for 'currentAvisPage'
-                console.log(`Page d'avis actuelle: ${currentAvisPage}`);
+                if (!prevAvisBtn || !nextAvisBtn) return;
+
+                totalAvisPages = Math.ceil(allAvisCards.length / avisPerPage);
+
+                prevAvisBtn.disabled = currentAvisPage === 1;
+                nextAvisBtn.disabled = currentAvisPage === totalAvisPages || allAvisCards.length === 0;
+                
+                if (allAvisCards.length > 0) {
+                    displayCurrentAvisPage();
+                } else { // S'il n'y a aucun avis
+                    if(avisListContainer) avisListContainer.innerHTML = "<p>Aucun avis pour le moment.</p>";
+                }
+                // console.log(`Page d'avis actuelle: ${currentAvisPage}, Total pages: ${totalAvisPages}`);
+            }
+            
+            if (allAvisCards.length > 0) { // S'il y a des avis, initialiser la pagination
+                if (prevAvisBtn) {
+                    prevAvisBtn.addEventListener('click', () => {
+                        if (currentAvisPage > 1) {
+                            currentAvisPage--;
+                            updateAvisNavigation();
+                        }
+                    });
+                }
+
+                if (nextAvisBtn) {
+                    nextAvisBtn.addEventListener('click', () => {
+                        if (currentAvisPage < totalAvisPages) {
+                            currentAvisPage++;
+                            updateAvisNavigation();
+                        }
+                    });
+                }
+                updateAvisNavigation(); // Appel initial pour afficher la première page et définir l'état des boutons
+            } else if (prevAvisBtn && nextAvisBtn) { // S'il n'y a pas d'avis, désactiver les boutons
+                 updateAvisNavigation(); // Appel pour gérer le cas où il n'y a pas d'avis
+            }
+            // Fin Avis pagination
+
+
+            // Initialisation des flèches pour le carrousel d'images de l'offre
+            const offreCarouselWrapper = document.getElementById('offreImageCarouselWrapper');
+            if (offreCarouselWrapper) {
+                const imageContainer = offreCarouselWrapper.querySelector('.gallery-image-container.cards-container');
+
+                updateOffreCarouselArrowsVisibility(offreCarouselWrapper);
+
+                if (imageContainer) {
+                    let scrollEndTimer;
+                    imageContainer.addEventListener('scroll', function() {
+                        clearTimeout(scrollEndTimer);
+                        scrollEndTimer = setTimeout(function() {
+                            updateOffreCarouselArrowsVisibility(offreCarouselWrapper);
+                        }, 100); 
+                    });
+                }
+            }
+        });
+
+        function scrollOffreCarousel(carouselWrapperId, direction) {
+            const wrapper = document.getElementById(carouselWrapperId);
+            if (!wrapper) {
+                // console.error('Carousel wrapper not found:', carouselWrapperId);
+                return;
+            }
+            const container = wrapper.querySelector('.gallery-image-container.cards-container');
+            if (!container) {
+                // console.error('Image container not found in wrapper:', carouselWrapperId);
+                return;
             }
 
-            if (prevAvisBtn) {
-                prevAvisBtn.addEventListener('click', () => {
-                    if (currentAvisPage > 1) {
-                        currentAvisPage--;
-                        updateAvisNavigation();
-                    }
-                });
+            const scrollAmount = wrapper.clientWidth; 
+            container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+        }
+
+        function updateOffreCarouselArrowsVisibility(wrapperElement) {
+            const container = wrapperElement.querySelector('.gallery-image-container.cards-container');
+            if (!container) {
+                return;
             }
 
-            if (nextAvisBtn) {
-                nextAvisBtn.addEventListener('click', () => {
-                    if (currentAvisPage < totalAvisPages) {
-                        currentAvisPage++;
-                        updateAvisNavigation();
-                    }
-                });
-            }
-            // updateAvisNavigation(); // Call to set initial state
+            const prevArrow = wrapperElement.querySelector('.carousel-arrow.prev-arrow');
+            const nextArrow = wrapperElement.querySelector('.carousel-arrow.next-arrow');
 
-            // Gallery arrows (simple simulation)
-            const gallery = document.querySelector('.offre-gallery');
-            if (gallery) {
-                const prevGalleryBtn = gallery.querySelector('.prev');
-                const nextGalleryBtn = gallery.querySelector('.next');
-                // Placeholder: Add gallery image switching logic here
-                if(prevGalleryBtn) prevGalleryBtn.addEventListener('click', () => console.log('Galerie: Précédent'));
-                if(nextGalleryBtn) nextGalleryBtn.addEventListener('click', () => console.log('Galerie: Suivant'));
+            if (!prevArrow || !nextArrow) {
+                return;
+            }
+
+            const scrollLeft = container.scrollLeft;
+            const scrollWidth = container.scrollWidth;
+            const clientWidth = container.clientWidth;
+            const tolerance = 1.5; 
+
+            if (scrollLeft <= tolerance) {
+                prevArrow.style.display = 'none';
+            } else {
+                prevArrow.style.display = 'flex'; 
+            }
+
+            if (scrollLeft + clientWidth >= scrollWidth - tolerance) {
+                nextArrow.style.display = 'none';
+            } else {
+                nextArrow.style.display = 'flex';
+            }
+
+            if (scrollWidth <= clientWidth + tolerance) {
+                prevArrow.style.display = 'none';
+                nextArrow.style.display = 'none';
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            const offreCarouselWrapper = document.getElementById('offreImageCarouselWrapper');
+            if (offreCarouselWrapper) {
+                updateOffreCarouselArrowsVisibility(offreCarouselWrapper);
             }
         });
     </script>

@@ -1225,7 +1225,7 @@ if (session_status() == PHP_SESSION_NONE) {
             <div class="footer-section links">
                 <h3>Visiteur</h3>
                 <ul>
-                    <li><a href="../FO/index.php">Accueil</a></li>
+                    <li><a href="../index.html">Accueil</a></li>
                     <li><a href="../FO/recherche.php">Recherche d'offres</a></li>
                     <li><a href="../FO/connexion-compte.php">Je me connecte en tant que membre</a></li>
                 </ul>
