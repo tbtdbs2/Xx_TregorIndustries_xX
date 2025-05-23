@@ -31,6 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt = $pdo->prepare("SELECT id, email, password FROM comptes_membre WHERE email = :email");
                 $stmt->execute(['email' => $email]);
                 $user = $stmt->fetch(); // Récupère la première ligne de résultat
+                
 
                 // Vérifie si un utilisateur a été trouvé et si le mot de passe correspond
                 if ($user && password_verify($password, $user['password'])) {
