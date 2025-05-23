@@ -1057,7 +1057,7 @@ if (session_status() == PHP_SESSION_NONE) {
 
         <div class="header-right">
             <a href="profil.php" class="btn btn-secondary">Mon profil</a>
-            <a href="" class="btn btn-primary">Se déconnecter</a>
+            <a href="connexion-compte.php" class="btn btn-primary">Se déconnecter</a>
         </div>
     </div>
     </header>
