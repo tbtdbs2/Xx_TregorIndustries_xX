@@ -21,18 +21,17 @@
         <nav class="main-nav">
             <ul>
                 <li><a href="index.php">Accueil</a></li>
-                <li><a href="recherche.php">Offres</a></li>
+                <li><a href="recherche.php">Mes Offres</a></li>
                 <li><a href="publier-une-offre.php">Publier une offre</a></li>
-                <li><a href="profil.php">Profil</a></li>
             </ul>
         </nav>
 
         <div class="header-right">
-            <a href="creation-compte.php" class="btn btn-secondary">S'enregistrer</a>
-            <a href="connexion-compte.php" class="btn btn-primary">Se connecter</a>
+            <a href="profil.php" class="btn btn-secondary">Mon profil</a>
+            <a href="" class="btn btn-primary">Se déconnecter</a>
         </div>
     </div>
-</header>
+    </header>
 
     <main>
         <div class="container content-area">
