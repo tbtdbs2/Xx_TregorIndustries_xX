@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Vos styles CSS restent inchangés */
         .content-area {
             display: flex;
             flex-direction: column;
@@ -24,7 +23,7 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             text-align: center;
-            width: 600px; /* Ajuster la largeur pour mieux correspondre à l'image */
+            width: 600px; 
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -44,9 +43,9 @@
         }
 
         .register-form {
-            display: grid; /* Utilisation de grid pour un placement plus précis */
-            grid-template-columns: repeat(2, 1fr); /* Création de deux colonnes de largeur égale */
-            gap: 15px 20px; /* Espacement vertical et horizontal entre les éléments */
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 15px 20px;
             width: 100%;
         }
 
@@ -56,14 +55,13 @@
             text-align: left;
         }
 
-        /* Occuper deux colonnes pour les éléments sur une seule ligne */
         .form-group.full-width {
             grid-column: 1 / -1;
         }
 
         .form-group label {
             color: #333;
-            margin-bottom: 5px; /* Réduction de la marge pour un aspect plus compact */
+            margin-bottom: 5px;
             font-size: 14px;
             font-weight: 500;
         }
@@ -81,10 +79,10 @@
         }
 
         .register-button-container {
-            grid-column: 1 / -1; /* Le bouton occupe toute la largeur */
+            grid-column: 1 / -1;
             display: flex;
-            flex-direction: row;
-            justify-content: space-between; /* Alignement à droite du bouton */
+            flex-direction: row; 
+            justify-content: space-between; 
             margin-top: 20px;
         }
 
@@ -92,7 +90,7 @@
             background-color:var(--couleur-principale);
             color: #fff;
             border: none;
-            padding: 15px 30px; /* Réduction du padding pour un bouton moins grand */
+            padding: 15px 30px;
             border-radius: 16px;
             cursor: pointer;
             font-size: 16px;
@@ -104,21 +102,89 @@
             background-color: var(--couleur-principale-hover);
         }
 
-        .already-registered-container {
-            grid-column: 1 / -1; /* "J'ai déjà un compte" occupe toute la largeur */
-            text-align: left;
-            margin-top: 20px;
-        }
-
         .already-registered {
             text-decoration: underline;
             color: #000;
+            align-self: center; /
         }
 
         .already-registered:hover {
             text-decoration: underline;
             color: #000;
         }
+
+        /* Styles responsives pour le formulaire */
+        @media (max-width: 768px) {
+            .content-area {
+                padding: 20px; 
+            }
+
+            .register-container {
+                width: 90%; 
+                padding: 30px 20px; 
+            }
+
+            .content-area h1 {
+                font-size: 28px; 
+            }
+
+            .content-area p {
+                font-size: 18px; 
+                margin-bottom: 25px;
+            }
+
+            .register-form {
+                grid-template-columns: 1fr; 
+                gap: 15px 0; 
+            }
+
+            .form-group label {
+                font-size: 13px;
+            }
+
+            .form-group input[type="name"],
+            .form-group input[type="text"],
+            .form-group input[type="last-name"],
+            .form-group input[type="tel"],
+            .form-group input[type="email"],
+            .form-group input[type="password"] {
+                padding: 12px;
+                font-size: 15px;
+            }
+
+            .register-button-container {
+                flex-direction: column-reverse; 
+                align-items: stretch; 
+                gap: 15px; 
+                margin-top: 25px;
+            }
+
+            .register-button-container .already-registered {
+                text-align: center; 
+                margin-bottom: 5px; 
+            }
+
+            .register-button {
+                width: 100%; 
+                padding: 14px 20px;
+            }
+        }
+
+        @media (max-width: 480px) { 
+            .content-area {
+                padding: 15px;
+            }
+            .register-container {
+                padding: 25px 15px;
+            }
+            .content-area h1 {
+                font-size: 24px;
+            }
+            .content-area p {
+                font-size: 16px;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -213,43 +279,7 @@
     </main>
 
     <footer>
-        <div class="container footer-content">
-            <div class="footer-section social-media">
-                <a href="index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="footer-logo"></a>
-                <div class="social-icons">
-                    <a href="#" aria-label="Twitter PACT"><i class="fab fa-x-twitter"></i></a>
-                    <a href="#" aria-label="Instagram PACT"><i class="fab fa-instagram"></i></a>
-                    <a href="#" aria-label="YouTube PACT"><i class="fab fa-youtube"></i></a>
-                    <a href="#" aria-label="LinkedIn PACT"><i class="fab fa-linkedin-in"></i></a>
-                </div>
-            </div>
-            <div class="footer-section links">
-                <h3>Professionnel</h3>
-                <ul>
-                    <li><a href="../BO/index.php">Comment poster une annonce</a></li>
-                    <li><a href="../BO/creation-compte.php">Je crée mon compte pro</a></li>
-                    <li><a href="../BO/connexion-compte.php">Je me connecte en tant que pro</a></li>
-                </ul>
-            </div>
-            <div class="footer-section links">
-                <h3>Découvrir</h3>
-                <ul>
-                    <li><a href="../index.html">Accueil</a></li>
-                    <li><a href="recherche.php">Recherche</a></li>
-                </ul>
-            </div>
-            <div class="footer-section links">
-                <h3>Ressources</h3>
-                <ul>
-                    <li><a href="conditions-generales-d-utilisation.php">Conditions générales d'utilisation</a></li>
-                    <li><a href="contact-du-responsable-du-site.php">Contact du responsable du site</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2025 PACT. Tous droits réservés.</p>
-        </div>
-    </footer>
+        </footer>
     <script src="script.js" defer></script>
 </body>
 </html>

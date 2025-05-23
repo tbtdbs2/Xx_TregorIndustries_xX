@@ -139,9 +139,8 @@
         }
 
         /* Section Mes Offres BO */
-        .news-section-bo { /* Réutilisation de la classe FO pour la structure générale */
+        .news-section-bo {
             padding: var(--espacement-triple) var(--espacement-double);
-            background-color: #f8f9fa; /* Fond légèrement différent pour distinguer */
         }
 
         .news-section-bo h2 {
@@ -399,18 +398,17 @@
         <nav class="main-nav">
             <ul>
                 <li><a href="index.php" class="active">Accueil</a></li>
-                <li><a href="recherche.php">Offres</a></li>
+                <li><a href="recherche.php">Mes Offres</a></li>
                 <li><a href="publier-une-offre.php">Publier une offre</a></li>
-                <li><a href="profil.php">Profil</a></li>
             </ul>
         </nav>
 
         <div class="header-right">
-            <a href="creation-compte.php" class="btn btn-secondary">S'enregistrer</a>
-            <a href="connexion-compte.php" class="btn btn-primary">Se connecter</a>
+            <a href="profil.php" class="btn btn-secondary">Mon profil</a>
+            <a href="" class="btn btn-primary">Se déconnecter</a>
         </div>
     </div>
-</header>
+    </header>
 
 <main style="padding: 0px;">
     <section class="hero-section-bo">
@@ -419,19 +417,19 @@
             <p>Gérez vos offres, suivez vos performances et interagissez avec vos clients.</p>
             <div class="bo-quick-stats">
                 <div class="stat-card">
-                    <h3>Vos Offres Actives</h3>
-                    <p class="stat-number">5</p> 
+                    <h3>Offres Totales</h3>
+                    <p class="stat-number">3</p> 
                     <a href="recherche.php" class="stat-link">Voir mes offres <i class="fas fa-arrow-right fa-xs"></i></a>
                 </div>
                 <div class="stat-card">
-                    <h3>Vues ce mois-ci</h3>
-                    <p class="stat-number">1,234</p>
-                    <a href="#stats-detail" class="stat-link">Détails des vues <i class="fas fa-arrow-right fa-xs"></i></a>
+                    <h3>Offres Actives</h3>
+                    <p class="stat-number">2</p> 
+                    <a href="recherche.php" class="stat-link">Voir mes offres <i class="fas fa-arrow-right fa-xs"></i></a>
                 </div>
                 <div class="stat-card">
-                    <h3>Nouveaux Avis</h3>
+                    <h3>Avis sur mes offres</h3>
                     <p class="stat-number">12</p>
-                    <a href="#avis-section" class="stat-link">Voir les avis <i class="fas fa-arrow-right fa-xs"></i></a>
+                    <a href="recherche.php" class="stat-link">Voir les offres<i class="fas fa-arrow-right fa-xs"></i></a>
                 </div>
             </div>
         </div>
@@ -457,8 +455,8 @@
             </a>
             <a href="#stats-detail" class="action-card">
                 <i class="fas fa-chart-line"></i>
-                <h3>Voir mes Statistiques</h3>
-                <p>Analysez les performances de vos offres et l'engagement des utilisateurs.</p>
+                <h3>Accéder au site pour les visiteurs</h3>
+                <p>Regardez les offres proposer par les autres professionel.</p>
             </a>
         </div>
     </section>
@@ -469,11 +467,10 @@
             <div class="cards-container">
                 <div class="card card-bo">
                     <div class="card-image-wrapper">
-                        <img src="images/kayak-pro.jpg" alt="Mon offre Kayak"> </div>
+                        <img src="images/kayak.jpg" alt="Mon offre Kayak"> </div>
                     <div class="card-content">
                         <h3 class="card-title">Archipel de Bréhat en kayak</h3>
                         <p class="card-status-bo">Statut : <span class="status-active">Actif</span></p>
-                        <p class="card-views-bo">Vues ce mois : <strong>256</strong></p>
                         <div class="card-actions-bo">
                             <a href="offre.php?id=1" class="btn-bo-card btn-bo-view">Voir</a>
                             <a href="publier-une-offre.php?edit_id=1" class="btn-bo-card btn-bo-edit">Modifier</a>
@@ -482,11 +479,10 @@
                 </div>
                 <div class="card card-bo">
                     <div class="card-image-wrapper">
-                        <img src="images/rando-pro.jpg" alt="Ma Randonnée Guidée"> </div>
+                        <img src="images/randonnee.jpg" alt="Ma Randonnée Guidée"> </div>
                     <div class="card-content">
                         <h3 class="card-title">Randonnée Guidée Montagnes</h3>
                         <p class="card-status-bo">Statut : <span class="status-inactive">Inactif</span></p>
-                        <p class="card-views-bo">Vues ce mois : <strong>88</strong></p>
                         <div class="card-actions-bo">
                             <a href="offre.php?id=2" class="btn-bo-card btn-bo-view">Voir</a>
                             <a href="publier-une-offre.php?edit_id=2" class="btn-bo-card btn-bo-edit">Modifier</a>
@@ -495,11 +491,10 @@
                 </div>
                  <div class="card card-bo">
                     <div class="card-image-wrapper">
-                        <img src="images/cuisine-pro.jpg" alt="Cours de Cuisine Locale"> </div>
+                        <img src="images/cuisine.jpg" alt="Cours de Cuisine Locale"> </div>
                     <div class="card-content">
                         <h3 class="card-title">Cours de Cuisine Locale</h3>
                         <p class="card-status-bo">Statut : <span class="status-active">Actif</span></p>
-                        <p class="card-views-bo">Vues ce mois : <strong>150</strong></p>
                         <div class="card-actions-bo">
                             <a href="offre.php?id=3" class="btn-bo-card btn-bo-view">Voir</a>
                             <a href="publier-une-offre.php?edit_id=3" class="btn-bo-card btn-bo-edit">Modifier</a>
