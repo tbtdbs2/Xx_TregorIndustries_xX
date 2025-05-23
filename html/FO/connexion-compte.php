@@ -36,6 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt->execute(['email' => $email]);
                 $user = $stmt->fetch(); // Récupère la première ligne de résultat
                 
+
                 // Vérifie si un utilisateur a été trouvé et si le mot de passe correspond
                 //if ($user && password_verify($password, $user['password'])) {
                 if ($user && $password === $user['password']) {

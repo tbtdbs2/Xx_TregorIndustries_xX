@@ -2,33 +2,158 @@
 // Démarrer la session (doit être au TOUT DÉBUT du fichier)
 session_start();
 
+require_once __DIR__ . '/../../includes/db.php';
+
+$update_message = '';
+$validation_errors_from_session = []; // Pour les erreurs de validation serveur
+$submitted_data_from_session = []; // Pour repeupler le formulaire après erreur serveur
+
+// Récupérer les erreurs de validation et les données soumises de la session, si elles existent
+if (isset($_GET['validation_error']) && $_GET['validation_error'] === 'true') {
+    $validation_errors_from_session = $_SESSION['validation_errors'] ?? [];
+    $submitted_data_from_session = $_SESSION['submitted_post_data'] ?? [];
+    unset($_SESSION['validation_errors'], $_SESSION['submitted_post_data']); // Nettoyer la session
+}
+
+// --- GESTION DE LA MISE À JOUR DU PROFIL (POST REQUEST) ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
+    $userIdToUpdate = $_SESSION['user_id'];
+    $adresseIdToUpdate = $_POST['actual_adresse_id'] ?? null;
+
+    // --- Validation des données ---
+    $errors = [];
+    $submitted_data = $_POST; // Conserver toutes les données POST
+
+    // Pseudonyme
+    if (empty(trim($submitted_data['pseudonyme'] ?? ''))) {
+        $errors['pseudonyme'] = 'Le pseudonyme est requis.';
+    }
+
+    // Prénom
+    if (empty(trim($submitted_data['prenom'] ?? ''))) {
+        $errors['prenom'] = 'Le prénom est requis.';
+    } elseif (!preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/u', $submitted_data['prenom'])) {
+        $errors['prenom'] = 'Le prénom contient des caractères non autorisés.';
+    }
+
+    // Nom
+    if (empty(trim($submitted_data['nom'] ?? ''))) {
+        $errors['nom'] = 'Le nom est requis.';
+    } elseif (!preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/u', $submitted_data['nom'])) {
+        $errors['nom'] = 'Le nom contient des caractères non autorisés.';
+    }
+    
+    // Adresse Postale
+    if (empty(trim($submitted_data['adresse_postale'] ?? ''))) {
+        $errors['adresse_postale'] = 'L\'adresse postale est requise.';
+    }
+
+    // Ville
+    if (empty(trim($submitted_data['ville'] ?? ''))) {
+        $errors['ville'] = 'La ville est requise.';
+    } elseif (!preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/u', $submitted_data['ville'])) {
+        $errors['ville'] = 'Le nom de la ville contient des caractères non autorisés.';
+    }
+
+    // Code Postal
+    if (empty(trim($submitted_data['code_postal'] ?? ''))) {
+        $errors['code_postal'] = 'Le code postal est requis.';
+    } elseif (!preg_match('/^\d{5}$/', $submitted_data['code_postal'])) {
+        $errors['code_postal'] = 'Le code postal doit être composé de 5 chiffres.';
+    }
+
+    // Email
+    if (empty(trim($submitted_data['email'] ?? ''))) {
+        $errors['email'] = 'L\'email est requis.';
+    } elseif (!filter_var($submitted_data['email'], FILTER_VALIDATE_EMAIL)) {
+        $errors['email'] = 'Le format de l\'email est invalide.';
+    }
+    
+    // Téléphone (vérification anti-lettres existante)
+    $telephone_val_from_post = $submitted_data['telephone'] ?? null;
+    if (!empty($telephone_val_from_post) && preg_match('/[a-zA-ZÀ-ÿ]/u', $telephone_val_from_post)) { // Ajout de À-ÿ et modificateur u
+        $errors['telephone'] = 'Le numéro de téléphone ne peut pas contenir de lettres.';
+    }
+
+    // S'il y a des erreurs de validation
+    if (!empty($errors)) {
+        $_SESSION['validation_errors'] = $errors;
+        $_SESSION['submitted_post_data'] = $submitted_data;
+        header('Location: profil.php?validation_error=true');
+        exit;
+    }
+
+    // Si pas d'erreurs de validation, procéder à la mise à jour DB
+    if (!$adresseIdToUpdate) { 
+         error_log("Tentative de mise à jour du profil sans actual_adresse_id pour user ID " . $userIdToUpdate);
+         header('Location: profil.php?update=error_no_address_id');
+         exit;
+    }
+
+    try {
+
+            $pdo->beginTransaction();
+
+            $sqlAdresse = "UPDATE adresses SET street = :street, city = :city, postal_code = :postal_code WHERE id = :adresse_id_val";
+            $stmtAdresse = $pdo->prepare($sqlAdresse);
+            $stmtAdresse->bindParam(':street', $submitted_data['adresse_postale']);
+            $stmtAdresse->bindParam(':city', $submitted_data['ville']);
+            $stmtAdresse->bindParam(':postal_code', $submitted_data['code_postal']);
+            $stmtAdresse->bindParam(':adresse_id_val', $adresseIdToUpdate);
+            $stmtAdresse->execute();
+
+            $sqlMembre = "UPDATE comptes_membre SET alias = :pseudonyme, firstname = :prenom, lastname = :nom, email = :email, phone = :telephone WHERE id = :userId";
+            $stmtMembre = $pdo->prepare($sqlMembre);
+            $stmtMembre->bindParam(':pseudonyme', $submitted_data['pseudonyme']);
+            $stmtMembre->bindParam(':prenom', $submitted_data['prenom']);
+            $stmtMembre->bindParam(':nom', $submitted_data['nom']);
+            $stmtMembre->bindParam(':email', $submitted_data['email']);
+            $stmtMembre->bindParam(':telephone', $submitted_data['telephone']);
+            $stmtMembre->bindParam(':userId', $userIdToUpdate);
+            $stmtMembre->execute();
+
+            $pdo->commit();
+            header('Location: profil.php?update=success');
+            exit;
+
+    } catch (PDOException $e) {
+            if (isset($pdo) && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            error_log("Erreur de mise à jour du profil pour user ID " . $userIdToUpdate . " (Exception attrapée): " . $e->getMessage());
+            header('Location: profil.php?update=error'); 
+            exit;
+    }
+}
+
+
+// Afficher les messages de succès/erreur de la BDD (après redirection)
+if (isset($_GET['update'])) {
+    if ($_GET['update'] === 'success') {
+        $update_message = "<p style='color:green; text-align:center; margin-bottom:15px;'>Vos informations ont été mises à jour avec succès !</p>";
+    } elseif ($_GET['update'] === 'error') {
+        $update_message = "<p style='color:red; text-align:center; margin-bottom:15px;'>Une erreur technique est survenue lors de la mise à jour. Veuillez réessayer.</p>";
+    } elseif ($_GET['update'] === 'error_no_address_id') {
+        $update_message = "<p style='color:red; text-align:center; margin-bottom:15px;'>Erreur : Identifiant d'adresse manquant pour la mise à jour.</p>";
+    }
+}
+
+
 // 1. Vérifier si l'utilisateur est connecté
 if (!isset($_SESSION['user_id'])) {
-    // Si l'utilisateur n'est pas connecté, le rediriger vers la page de connexion
-    header('Location: connexion-compte.php'); // Assurez-vous que le nom du fichier est correct
-    exit; // Important pour arrêter l'exécution du script ici
+    header('Location: connexion-compte.php'); 
+    exit; 
 }
 
 // 2. Récupérer l'identifiant de l'utilisateur connecté
-
 $userId = $_SESSION['user_id'];
-
-$userLoggedIn = true; // Variable pour gérer l'affichage des liens dans le header
+$userLoggedIn = true; 
 
 // 3. Interroger la base de données
-// REMPLACEZ AVEC VOS INFORMATIONS DE CONNEXION À LA BASE DE DONNÉES
-$dsn = 'mysql:host=localhost;dbname=sae;charset=utf8'; // Ex: dbname=pact_project
-$username_db = 'root'; // Ex: root
-$password_db = ''; // Ex: "" ou votre mot de passe
-
-$membre = null; // Initialiser $membre à null
+$membre = null; 
 
 try {
-    $pdo = new PDO($dsn, $username_db, $password_db);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // Pour afficher les erreurs SQL
 
-    // Préparez la requête SQL pour éviter les injections SQL
-    // Adaptez le nom de la table 'utilisateurs' et les noms des colonnes si besoin
     $sql = "SELECT cm.alias AS pseudonyme,
                    cm.firstname AS prenom, 
                    cm.lastname AS nom, 
@@ -36,43 +161,24 @@ try {
                     a.city AS ville, 
                     a.postal_code AS code_postal, 
                     cm.email,
-                    cm.phone AS telephone
+                    cm.phone AS telephone,
+                    cm.adresse_id AS actual_adresse_id 
             FROM comptes_membre cm
             JOIN adresses a ON cm.adresse_id = a.id
-            WHERE cm.id = :userId"; // Supposons que la clé primaire est 'id'
+            WHERE cm.id = :userId";
     $stmt = $pdo->prepare($sql);
-
-    // Liez la valeur de l'ID de l'utilisateur au paramètre de la requête
     $stmt->bindParam(':userId', $userId, PDO::PARAM_STR);
-
-    // Exécutez la requête
     $stmt->execute();
-
-    // Récupérez les informations de l'utilisateur
     $membre = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$membre) {
-        // Aucun utilisateur trouvé avec cet ID, cela peut indiquer un problème.
-        // Vous pourriez déconnecter l'utilisateur ici ou afficher un message d'erreur plus spécifique.
-        // Pour l'instant, on laisse $membre à null, les champs resteront vides ou avec les placeholders.
         error_log("Erreur : Utilisateur non trouvé dans la base de données pour l'ID de session : " . $userId);
-        // Optionnel: Déconnexion et redirection
-        // unset($_SESSION['user_id']);
-        // session_destroy();
-        // header('Location: connexion-compte.php?erreur=profil_introuvable');
-        // exit;
+        $membre = []; 
     }
 
 } catch (PDOException $e) {
-    // En cas d'erreur de connexion ou d'exécution de la requête
-    // Il est préférable de logguer cette erreur plutôt que de l'afficher directement à l'utilisateur en production
-    error_log("Erreur de base de données sur profil.php : " . $e->getMessage());
-    // Afficher un message générique à l'utilisateur
-    // die("Une erreur est survenue lors de la récupération de vos informations. Veuillez réessayer plus tard.");
-    // Pour le développement, vous pouvez laisser die() pour voir l'erreur :
-    // die("Erreur de base de données : " . $e->getMessage());
-    // Pour cet exemple, on va juste s'assurer que $membre reste null ou vide
-    $membre = []; // ou $membre = null; pour que les champs soient vides
+    error_log("Erreur de base de données sur profil.php (SELECT) : " . $e->getMessage());
+    $membre = []; 
 }
 ?>
 <!DOCTYPE html>
@@ -88,10 +194,9 @@ try {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <style>
-        /* Votre CSS existant ici - aucune modification nécessaire dans la section style pour cette demande */
         .container.content-area {
             padding: 32px 0px;
-            text-align: center; /* centre le texte à l’intérieur */
+            text-align: center; 
             display: flex;
             flex-direction: column;
         }
@@ -116,203 +221,109 @@ try {
             display: flex;
             gap : 24px;
             width: 700px;
-            /* height: 286px; */ /* Hauteur auto pour s'adapter au contenu */
             flex-wrap: wrap;
             font-family: 'Inter', sans-serif;
             font-size: 16px;
         }
-        .input_pseudo {
-            display: flex;
-            flex-wrap: wrap;
-            width: 270px;
-            height: 86px;
-            gap: 8px;
-            margin: 10px;
-        }
-        .img_profil { /* Style non utilisé dans le HTML fourni, mais conservé */
-            width: 110px;
-            height: 110px;
-        }
-        #pseudo {
-            box-sizing: border-box;
-            width: 270px;
-            height: 40px;
-            border-radius: 8px;
-            border: 1px solid #D9D9D9;
-            padding: 12px 16px;
-        }
-        .input_prenom {
-            display: flex;
-            flex-wrap: wrap;
-            width: 270px;
-            height: 70px;
-            gap: 8px;
-            margin: 10px;
-        }
-        #prenom {
-            box-sizing: border-box;
-            width: 270px;
-            height: 40px;
-            border-radius: 8px;
-            border: 1px solid #D9D9D9;
-            padding: 12px 16px;
-        }
-        .input_nom {
-            display: flex;
-            flex-wrap: wrap;
-            width: 270px;
-            height: 70px;
-            gap: 8px;
-            margin: 10px;
-        }
-        #nom {
-            box-sizing: border-box;
-            width: 270px;
-            height: 40px;
-            border-radius: 8px;
-            border: 1px solid #D9D9D9;
-            padding: 12px 16px;
-        }
-        .nom_prenom {
-            display: flex;
-            gap: 40px;
-        }
-        .adresse_postal {
-            display: flex;
-            flex-wrap: wrap;
-            width: 580px;
-            height: 86px;
-            gap: 8px;
-            margin-left: 20px;
-        }
-        #adresse {
-            box-sizing: border-box;
-            width: 580px;
-            height: 40px;
-            border-radius: 8px;
-            border: 1px solid #D9D9D9;
-            padding: 12px 16px;
-        }        
-        .ville {
-            display: flex;
-            flex-wrap: wrap;
-            width: 270px;
-            height: 70px;
-            gap: 8px;
-            margin-left: 20px;
-        }
-        #ville {
-            box-sizing: border-box;
-            width: 270px;
-            height: 40px;
-            border-radius: 8px;
-            border: 1px solid #D9D9D9;
-            padding: 12px 16px;
-        } 
-        .code_postal {
-            display: flex;
-            flex-wrap: wrap;
-            width: 270px;
-            height: 70px;
-            gap: 8px;
-            margin-left: 20px;
-        }
-        #code_postal {
-            box-sizing: border-box;
-            width: 270px;
-            height: 40px;
-            border-radius: 8px;
-            border: 1px solid #D9D9D9;
-            padding: 12px 16px;
-        }  
-        .mail {
-            display: flex;
-            flex-wrap: wrap;
-            width: 580px;
-            height: 70px;
-            gap: 8px;
-            margin-left: 20px;
-        }
-        #email {
-            box-sizing: border-box;
-            width: 580px;
-            height: 40px;
-            border-radius: 8px;
-            border: 1px solid #D9D9D9;
-            padding: 12px 16px;
-        } 
+        .input_pseudo,
+        .input_prenom,
+        .input_nom,
+        .adresse_postal,
+        .ville,
+        .code_postal,
+        .mail,
         .telephone {
             display: flex;
             flex-wrap: wrap;
-            width: 270px;
-            height: 70px;
+            height: auto; 
             gap: 8px;
-            margin-left: 20px;
+            margin: 10px; 
         }
-        #telephone {
+
+        .input_pseudo { width: 270px; }
+        .input_prenom { width: 270px; }
+        .input_nom { width: 270px; }
+        .adresse_postal { width: 580px; margin-left: 20px;}
+        .ville { width: 270px; margin-left: 20px;}
+        .code_postal { width: 270px; margin-left: 20px;}
+        .mail { width: 580px; margin-left: 20px;}
+        .telephone { width: 270px; margin-left: 20px;}
+
+        #pseudo, #prenom, #nom, #adresse, #ville, #code_postal, #email, #telephone {
             box-sizing: border-box;
-            width: 270px;
             height: 40px;
             border-radius: 8px;
             border: 1px solid #D9D9D9;
             padding: 12px 16px;
-        }  
+        }
+        #pseudo, #prenom, #nom, #ville, #code_postal, #telephone { width: 270px; }
+        #adresse, #email { width: 580px; }
         
+        .nom_prenom { display: flex; gap: 40px; }
+        
+        input[readonly] {
+            background-color: #e9ecef; 
+            color: #6c757d; 
+            cursor: not-allowed; 
+            border: 1px solid #ced4da;
+        }
+        input:not([readonly]) {
+            background-color: #fff; 
+            color: #495057; 
+        }
+        .buttons-form-profil {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 24px; 
+            padding-bottom: 20px; 
+        }
+        .buttons-form-profil button {
+            padding: 10px 20px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        #btnModifierProfil { background-color: #008C8C; color: white; }
+        #btnConfirmerProfil { background-color:rgb(0, 140, 98); color: white; }
+        #btnAnnulerProfil { background-color:rgb(255, 72, 90); color: white; }
+
+        .error-message-server, .error-message-js {
+            color: red;
+            display: block; /* Assure que le message d'erreur serveur s'affiche sur sa propre ligne */
+            font-size: 0.9em;
+            text-align: left;
+            width: 100%;
+            margin-top: 4px;
+        }
+        .error-message-js { /* S'assurer que le JS error span est caché par défaut */
+             display: none;
+        }
+
+
         @media (max-width: 768px) {
-            .container.content-area {
-                padding: 16px 0px;
-            }
+            .container.content-area { padding: 16px 0px; }
             .card_section {
-                width: 90%; /* Ajusté pour un meilleur affichage sur mobile */
-                height: auto;
+                width: 90%; 
                 padding: 16px;
-                flex-direction: column; /* Empiler les éléments verticalement */
-                align-items: center; /* Centrer les éléments enfants */
+                flex-direction: column; 
+                align-items: center; 
             }
-            .input_pseudo,
-            .input_prenom,
-            .input_nom,
-            .adresse_postal,
-            .ville,
-            .code_postal,
-            .mail,
-            .telephone {
+            .input_pseudo, .input_prenom, .input_nom, .adresse_postal, .ville, .code_postal, .mail, .telephone {
                 width: 100%;
-                margin-left: 0;
+                margin-left: 0; 
             }
-            #pseudo,
-            #prenom,
-            #nom,
-            #adresse,
-            #ville,
-            #code_postal,
-            #email,
-            #telephone {
-                width: 100%;
-            }
-            h1 {
-                font-size: 24px;
-            }
-            .grid-card {
-                gap: 16px;
-            }
-            .nom_prenom {
-                flex-direction: column; /* Empiler prénom et nom verticalement */
-                width: 100%;
-                gap: 16px; /* Espace entre prénom et nom */
-            }
-             .header-right .desktop-only {
-                display: none; /* Cacher les liens desktop sur mobile */
-            }
-            .mobile-nav-links ul { /* Assurer que les liens mobiles s'affichent correctement */
-                list-style: none;
-                padding: 0;
-                margin: 0;
-            }
-            .mobile-nav-links ul li {
-                padding: 10px 0;
-                text-align: center;
-            }
+            #pseudo, #prenom, #nom, #adresse, #ville, #code_postal, #email, #telephone { width: 100%; }
+            h1 { font-size: 24px; }
+            .grid-card { gap: 16px; }
+            .nom_prenom { flex-direction: column; width: 100%; gap: 16px; }
+            .header-right .desktop-only { display: none; }
+            .mobile-nav-links ul { list-style: none; padding: 0; margin: 0; }
+            .mobile-nav-links ul li { padding: 10px 0; text-align: center; }
+            .buttons-form-profil { flex-direction: column; align-items: center; }
+            .buttons-form-profil button { width: 80%; max-width: 300px; }
         }
     </style>
     
@@ -326,8 +337,6 @@ try {
                     <ul>
                         <li><a href="../index.html">Accueil</a></li>
                         <li><a href="recherche.php">Recherche</a></li>
-                        <?php if ($userLoggedIn && $membre && isset($membre['prenom'])): ?>
-                            <?php endif; ?>
                     </ul>
                 </nav>
             </div>
@@ -368,62 +377,109 @@ try {
     <main>
         <div class="container content-area">
             <h1>Mes Informations</h1>
-            <?php if ($membre): // S'assurer que les informations du membre ont été chargées ?>
-            <div class="grid-card">
+            <?php if (!empty($update_message)) echo $update_message; ?>
 
-                <div class="card_section Pseudonyme">
-                    <div class="input_pseudo">
-                        <label for="pseudo">Pseudonyme</label>
-                        <input type="text" id="pseudo" placeholder="Non défini" readonly="readonly" 
-                               value="<?php echo isset($membre['pseudonyme']) ? htmlspecialchars($membre['pseudonyme']) : ''; ?>">
-                    </div>
-                    <div class="nom_prenom">
-                        <div class="input_prenom">
-                            <label for="prenom">Prénom</label>
-                            <input type="text" id="prenom" placeholder="Non défini" readonly="readonly"
-                                   value="<?php echo isset($membre['prenom']) ? htmlspecialchars($membre['prenom']) : ''; ?>">   
+            <?php if ($membre && !empty($membre)): ?>
+            <form id="profilForm" method="POST" action="profil.php">
+                <?php if (isset($membre['actual_adresse_id'])): ?>
+                    <input type="hidden" name="actual_adresse_id" value="<?php echo htmlspecialchars($membre['actual_adresse_id']); ?>">
+                <?php endif; ?>
+
+                <div class="grid-card">
+                    <div class="card_section Pseudonyme">
+                        <div class="input_pseudo">
+                            <label for="pseudo">Pseudonyme</label>
+                            <input type="text" id="pseudo" name="pseudonyme" placeholder="Non défini" readonly="readonly" 
+                                   value="<?php echo htmlspecialchars($submitted_data_from_session['pseudonyme'] ?? $membre['pseudonyme'] ?? ''); ?>">
+                            <?php if (isset($validation_errors_from_session['pseudonyme'])): ?>
+                                <span class="error-message-server"><?php echo htmlspecialchars($validation_errors_from_session['pseudonyme']); ?></span>
+                            <?php endif; ?>
+                            <span id="pseudoError" class="error-message-js"></span>
                         </div>
-                        <div class="input_nom">   
-                            <label for="nom">Nom</label>
-                            <input type="text" id="nom" placeholder="Non défini" readonly="readonly"
-                                   value="<?php echo isset($membre['nom']) ? htmlspecialchars($membre['nom']) : ''; ?>">
+                        <div class="nom_prenom">
+                            <div class="input_prenom">
+                                <label for="prenom">Prénom</label>
+                                <input type="text" id="prenom" name="prenom" placeholder="Non défini" readonly="readonly"
+                                       value="<?php echo htmlspecialchars($submitted_data_from_session['prenom'] ?? $membre['prenom'] ?? ''); ?>">   
+                                <?php if (isset($validation_errors_from_session['prenom'])): ?>
+                                    <span class="error-message-server"><?php echo htmlspecialchars($validation_errors_from_session['prenom']); ?></span>
+                                <?php endif; ?>
+                                <span id="prenomError" class="error-message-js"></span>  
+                            </div>
+                            <div class="input_nom">   
+                                <label for="nom">Nom</label>
+                                <input type="text" id="nom" name="nom" placeholder="Non défini" readonly="readonly"
+                                       value="<?php echo htmlspecialchars($submitted_data_from_session['nom'] ?? $membre['nom'] ?? ''); ?>">
+                                <?php if (isset($validation_errors_from_session['nom'])): ?>
+                                    <span class="error-message-server"><?php echo htmlspecialchars($validation_errors_from_session['nom']); ?></span>
+                                <?php endif; ?>
+                                <span id="nomError" class="error-message-js"></span>
+                            </div>
+                        </div>    
+                    </div>
+
+                    <div class="card_section Adresse">
+                        <div class="adresse_postal">
+                            <label for="adresse">Adresse postale</label>
+                            <input type="text" id="adresse" name="adresse_postale" placeholder="Non définie" readonly="readonly"
+                                   value="<?php echo htmlspecialchars($submitted_data_from_session['adresse_postale'] ?? $membre['adresse_postale'] ?? ''); ?>">
+                            <?php if (isset($validation_errors_from_session['adresse_postale'])): ?>
+                                <span class="error-message-server"><?php echo htmlspecialchars($validation_errors_from_session['adresse_postale']); ?></span>
+                            <?php endif; ?>
+                            <span id="adresseError" class="error-message-js"></span>
                         </div>
-                    </div>    
+                        <div class="ville">
+                            <label for="ville">Ville</label>
+                            <input type="text" id="ville" name="ville" placeholder="Non définie" readonly="readonly"
+                                   value="<?php echo htmlspecialchars($submitted_data_from_session['ville'] ?? $membre['ville'] ?? ''); ?>">   
+                            <?php if (isset($validation_errors_from_session['ville'])): ?>
+                                <span class="error-message-server"><?php echo htmlspecialchars($validation_errors_from_session['ville']); ?></span>
+                            <?php endif; ?>
+                            <span id="villeError" class="error-message-js"></span>
+                        </div> 
+                        <div class="code_postal">
+                            <label for="code_postal">Code postal</label>
+                            <input type="text" id="code_postal" name="code_postal" placeholder="Non défini" readonly="readonly"
+                                   value="<?php echo htmlspecialchars($submitted_data_from_session['code_postal'] ?? $membre['code_postal'] ?? ''); ?>"> 
+                            <?php if (isset($validation_errors_from_session['code_postal'])): ?>
+                                <span class="error-message-server"><?php echo htmlspecialchars($validation_errors_from_session['code_postal']); ?></span>
+                            <?php endif; ?>
+                            <span id="codePostalError" class="error-message-js"></span>
+                        </div>
+                    </div>
+
+                    <div class="card_section Contact">
+                        <div class="mail">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" placeholder="Non défini" readonly="readonly" 
+                                   value="<?php echo htmlspecialchars($submitted_data_from_session['email'] ?? $membre['email'] ?? ''); ?>">
+                            <?php if (isset($validation_errors_from_session['email'])): ?>
+                                <span class="error-message-server"><?php echo htmlspecialchars($validation_errors_from_session['email']); ?></span>
+                            <?php endif; ?>
+                            <span id="emailError" class="error-message-js"></span>
+                        </div>
+                        <div class="telephone">
+                            <label for="telephone">Téléphone</label>
+                            <input type="tel" id="telephone" name="telephone" placeholder="Non défini" readonly="readonly" 
+                                   value="<?php echo htmlspecialchars($submitted_data_from_session['telephone'] ?? $membre['telephone'] ?? ''); ?>">   
+                            <?php if (isset($validation_errors_from_session['telephone'])): ?>
+                                <span class="error-message-server"><?php echo htmlspecialchars($validation_errors_from_session['telephone']); ?></span>
+                            <?php endif; ?>
+                            <span id="telephoneError" class="error-message-js"></span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="card_section Adresse">
-                    <div class="adresse_postal">
-                        <label for="adresse">Adresse postale</label>
-                        <input type="text" id="adresse" placeholder="Non définie" readonly="readonly"
-                               value="<?php echo isset($membre['adresse_postale']) ? htmlspecialchars($membre['adresse_postale']) : ''; ?>">
-                    </div>
-                    <div class="ville">
-                        <label for="ville">Ville</label>
-                        <input type="text" id="ville" placeholder="Non définie" readonly="readonly"
-                               value="<?php echo isset($membre['ville']) ? htmlspecialchars($membre['ville']) : ''; ?>">   
-                    </div> 
-                    <div class="code_postal">
-                        <label for="code_postal">Code postal</label>
-                        <input type="text" id="code_postal" placeholder="Non défini" readonly="readonly"
-                               value="<?php echo isset($membre['code_postal']) ? htmlspecialchars($membre['code_postal']) : ''; ?>"> 
-                    </div>
+                <div class="buttons-form-profil">
+                    <button type="button" id="btnModifierProfil">Modifier les informations</button>
+                    <button type="submit" id="btnConfirmerProfil" style="display:none;">Confirmer les modifications</button>
+                    <button type="button" id="btnAnnulerProfil" style="display:none;">Annuler</button>
                 </div>
-
-                <div class="card_section Contact">
-                    <div class="mail">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" placeholder="Non défini" readonly="readonly" value="<?php echo isset($membre['email']) ? htmlspecialchars($membre['email']) : ''; ?>">
-                    </div>
-                    <div class="telephone">
-                        <label for="telephone">Téléphone</label>
-                        <input type="tel" id="telephone" placeholder="Non défini" readonly="readonly" value="<?php echo isset($membre['telephone']) ? htmlspecialchars($membre['telephone']) : ''; ?>">   
-                    </div>
-                </div>
-                </div>
+            </form>
             <?php else: ?>
-                <p>Vos informations de profil n'ont pas pu être chargées. Veuillez contacter le support si le problème persiste.</p>
-                <?php if (isset($e)) : // Si une exception PDO a été attrapée et que vous êtes en développement ?>
-                    <p style="color:red; font-family:monospace;">Erreur DÉVELOPPEMENT: <?php echo htmlspecialchars($e->getMessage()); ?></p>
+                <p>Vos informations de profil n'ont pas pu être chargées ou ne sont pas disponibles. Veuillez contacter le support si le problème persiste.</p>
+                <?php if (isset($e) && $e instanceof PDOException) : ?>
+                    <p style="color:red; font-family:monospace;">Erreur DÉVELOPPEMENT (SELECT): <?php echo htmlspecialchars($e->getMessage()); ?></p>
                 <?php endif; ?>
             <?php endif; ?>
             
@@ -468,6 +524,206 @@ try {
             <p>&copy; 2025 PACT. Tous droits réservés.</p>
         </div>
     </footer>
-    <script src="script.js" defer></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const profilForm = document.getElementById('profilForm');
+        if (!profilForm) return;
+
+        const btnModifier = document.getElementById('btnModifierProfil');
+        const btnConfirmer = document.getElementById('btnConfirmerProfil');
+        const btnAnnuler = document.getElementById('btnAnnulerProfil');
+        const allInputs = profilForm.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"]');
+
+        const fieldValidators = [
+            { input: document.getElementById('pseudo'), errorSpan: document.getElementById('pseudoError'), validations: [
+                { type: 'required', message: 'Le pseudonyme est requis.'}
+            ]},
+            { input: document.getElementById('prenom'), errorSpan: document.getElementById('prenomError'), validations: [
+                { type: 'required', message: 'Le prénom est requis.'},
+                { type: 'format', regex: /^[a-zA-ZÀ-ÿ\s'-]+$/u, message: 'Le prénom contient des caractères non autorisés.'}
+            ]},
+            { input: document.getElementById('nom'), errorSpan: document.getElementById('nomError'), validations: [
+                { type: 'required', message: 'Le nom est requis.'},
+                { type: 'format', regex: /^[a-zA-ZÀ-ÿ\s'-]+$/u, message: 'Le nom contient des caractères non autorisés.'}
+            ]},
+            { input: document.getElementById('adresse'), errorSpan: document.getElementById('adresseError'), validations: [
+                { type: 'required', message: 'L\'adresse postale est requise.'}
+            ]},
+            { input: document.getElementById('ville'), errorSpan: document.getElementById('villeError'), validations: [
+                { type: 'required', message: 'La ville est requise.'},
+                { type: 'format', regex: /^[a-zA-ZÀ-ÿ\s'-]+$/u, message: 'Le nom de la ville contient des caractères non autorisés.'}
+            ]},
+            { input: document.getElementById('code_postal'), errorSpan: document.getElementById('codePostalError'), validations: [
+                { type: 'required', message: 'Le code postal est requis.'},
+                { type: 'format', regex: /^\d{5}$/, message: 'Le code postal doit être composé de 5 chiffres.'}
+            ]},
+            { input: document.getElementById('email'), errorSpan: document.getElementById('emailError'), validations: [
+                { type: 'required', message: 'L\'email est requis.'},
+                { type: 'format', regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Le format de l\'email est invalide.'} // Regex simple
+            ]},
+            { input: document.getElementById('telephone'), errorSpan: document.getElementById('telephoneError'), validations: [
+                { type: 'format', regex: /^[^a-zA-ZÀ-ÿ]*$/u, message: 'Le numéro de téléphone ne doit pas contenir de lettres.', checkNonEmpty: true }
+            ]}
+        ];
+        
+        let initialValues = {};
+
+        function storeInitialValues() {
+            allInputs.forEach(input => {
+                initialValues[input.id] = input.value;
+            });
+        }
+        storeInitialValues();
+
+        function clearAllJsErrors() {
+            fieldValidators.forEach(field => {
+                if (field.errorSpan) {
+                    field.errorSpan.textContent = '';
+                    field.errorSpan.style.display = 'none';
+                }
+            });
+        }
+
+        function enterEditMode() {
+            storeInitialValues(); 
+            allInputs.forEach(input => {
+                input.removeAttribute('readonly');
+            });
+            btnModifier.style.display = 'none';
+            btnConfirmer.style.display = 'inline-block';
+            btnAnnuler.style.display = 'inline-block';
+        }
+
+        function exitEditModeAndRevert() {
+            allInputs.forEach(input => {
+                input.setAttribute('readonly', 'readonly');
+                // Les valeurs sont rechargées par PHP si validation serveur échoue,
+                // ou depuis $membre si pas de soumission.
+                // Pour annuler des modifs en cours non soumises, on remet les valeurs initiales chargées.
+                input.value = initialValues[input.id] || ''; 
+            });
+            btnModifier.style.display = 'inline-block';
+            btnConfirmer.style.display = 'none';
+            btnAnnuler.style.display = 'none';
+            clearAllJsErrors(); 
+            // Effacer aussi les messages d'erreur serveur affichés (si besoin, mais ils sont via PHP)
+            document.querySelectorAll('.error-message-server').forEach(span => span.style.display = 'none');
+        }
+
+        if (btnModifier) {
+            btnModifier.addEventListener('click', enterEditMode);
+        }
+        if (btnAnnuler) {
+            btnAnnuler.addEventListener('click', exitEditModeAndRevert);
+        }
+
+        if (profilForm) {
+            profilForm.addEventListener('submit', function(event) {
+                let overallIsValid = true;
+                clearAllJsErrors(); 
+
+                fieldValidators.forEach(field => {
+                    if (!field.input || !field.errorSpan) return;
+                    
+                    // On ne valide que si le champ n'est pas readonly (c-a-d en mode édition)
+                    if (field.input.hasAttribute('readonly')) return;
+
+                    const value = field.input.value.trim();
+                    const originalValue = field.input.value; // Pour les regex qui ne doivent pas ignorer les espaces internes
+
+                    for (const validation of field.validations) {
+                        let fieldIsValid = true;
+                        let testValue = value; // Valeur trimmée pour 'required'
+                        if (validation.type === 'format' && validation.regex.source.includes('[a-zA-ZÀ-ÿ]') === false && validation.regex.source.includes('\\d{5}') === false && validation.regex.source.includes('@')) {
+                             // Pour les regex qui ne sont pas des vérifications de lettres, code postal ou email, utiliser la valeur originale pour préserver les espaces etc.
+                            testValue = originalValue; 
+                        }
+                         if (validation.type === 'format' && validation.regex.source.includes('^[^a-zA-ZÀ-ÿ]*$')) { // Spécifique pour téléphone (pas de lettres)
+                            testValue = originalValue;
+                        }
+
+
+                        if (validation.type === 'required') {
+                            if (testValue === '') fieldIsValid = false;
+                        } else if (validation.type === 'format') {
+                            if (validation.checkNonEmpty && testValue === '') {
+                                 fieldIsValid = true; // Valide si vide et que la validation de format ne s'applique qu'aux non-vides
+                            } else if (testValue !== '' && !validation.regex.test(testValue)) { // Appliquer la regex si non vide ou si checkNonEmpty n'est pas là
+                               fieldIsValid = false;
+                            } else if (!validation.checkNonEmpty && !validation.regex.test(testValue) && testValue !== '') { 
+                                // Si ce n'est pas checkNonEmpty, on valide même si vide, sauf si la regex elle-même est pour un format qui implique non-vide (ex: email)
+                                // Cette logique devient complexe, simplifions : la regex s'applique. Si elle doit passer sur vide, la regex doit le permettre.
+                                // La plupart des regex de format n'accepteront pas une chaîne vide.
+                                if (!validation.regex.test(testValue)) fieldIsValid = false;
+                            }
+                             // Cas spécifique du téléphone: autoriser vide, mais si non vide, pas de lettres
+                            if (field.input.id === 'telephone' && testValue !== '' && !validation.regex.test(testValue)){
+                                fieldIsValid = false;
+                            } else if (field.input.id === 'telephone' && testValue === '' && validation.type === 'format') {
+                                fieldIsValid = true; // Le téléphone vide est OK pour le format "pas de lettres"
+                            }
+
+                        }
+
+                        if (!fieldIsValid) {
+                            field.errorSpan.textContent = validation.message;
+                            field.errorSpan.style.display = 'block';
+                            overallIsValid = false;
+                            break; 
+                        }
+                    }
+                });
+
+                if (!overallIsValid) {
+                    event.preventDefault(); 
+                }
+            });
+        }
+        
+        fieldValidators.forEach(field => {
+            if (field.input && field.errorSpan) {
+                field.input.addEventListener('input', function() {
+                    if (field.errorSpan.style.display === 'block') { // Seulement si une erreur JS est affichée
+                        let value = field.input.value.trim();
+                        let originalValue = field.input.value;
+                        let stillError = false;
+                        
+                        for (const validation of field.validations) {
+                             let testValue = value;
+                             if (validation.type === 'format' && validation.regex.source.includes('[a-zA-ZÀ-ÿ]') === false && validation.regex.source.includes('\\d{5}') === false && validation.regex.source.includes('@')) {
+                                testValue = originalValue;
+                             }
+                             if (validation.type === 'format' && validation.regex.source.includes('^[^a-zA-ZÀ-ÿ]*$')) {
+                                testValue = originalValue;
+                             }
+
+                            if (validation.type === 'required' && testValue === '') { stillError = true; break; }
+                            if (validation.type === 'format') {
+                                if (validation.checkNonEmpty && testValue === '') {
+                                    // OK
+                                } else if (testValue !== '' && !validation.regex.test(testValue)) {
+                                    stillError = true; break;
+                                } else if (!validation.checkNonEmpty && !validation.regex.test(testValue) && testValue !== '') {
+                                     stillError = true; break;
+                                }
+                                // Cas spécifique du téléphone
+                                if (field.input.id === 'telephone' && testValue !== '' && !validation.regex.test(testValue)){
+                                   stillError = true; break;
+                                } else if (field.input.id === 'telephone' && testValue === '' && validation.type === 'format') {
+                                   // vide est ok
+                                }
+                            }
+                        }
+                        if (!stillError) {
+                            field.errorSpan.textContent = '';
+                            field.errorSpan.style.display = 'none';
+                        }
+                    }
+                });
+            }
+        });
+    });
+    </script>
+    <script src="script.js" defer></script> 
 </body>
 </html>
