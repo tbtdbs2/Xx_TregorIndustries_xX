@@ -453,7 +453,7 @@
                 <h3>Modifier mon Profil</h3>
                 <p>Mettez à jour les informations de votre établissement ou de contact.</p>
             </a>
-            <a href="#stats-detail" class="action-card">
+            <a href="../index.html" class="action-card">
                 <i class="fas fa-chart-line"></i>
                 <h3>Accéder au site pour les visiteurs</h3>
                 <p>Regardez les offres proposer par les autres professionel.</p>
