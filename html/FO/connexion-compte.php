@@ -5,7 +5,11 @@ session_start(); // Démarre la session PHP (doit être la première chose)
 require_once __DIR__ . '/../../includes/db.php';
 
 $login_error = ''; // Variable pour stocker les messages d'erreur de connexion
-
+define('DB_HOST', '127.0.0.1');
+define('DB_PORT', '3306');
+define('DB_NAME', 'sae');
+define('DB_USER', 'root');
+define('DB_PASSWORD', '');
 // --- Redirection si déjà connecté ---
 // Si l'utilisateur est déjà connecté via la session, on le redirige directement vers le profil.
 if (isset($_SESSION['user_id'])) {
@@ -31,9 +35,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt = $pdo->prepare("SELECT id, email, password FROM comptes_membre WHERE email = :email");
                 $stmt->execute(['email' => $email]);
                 $user = $stmt->fetch(); // Récupère la première ligne de résultat
+                
 
                 // Vérifie si un utilisateur a été trouvé et si le mot de passe correspond
-                if ($user && password_verify($password, $user['password'])) {
+                //if ($user && password_verify($password, $user['password'])) {
+                if ($user && $password === $user['password']) {
                     // --- AUTHENTIFICATION RÉUSSIE ---
 
                     session_regenerate_id(true); // Régénère l'ID de session pour prévenir la fixation de session

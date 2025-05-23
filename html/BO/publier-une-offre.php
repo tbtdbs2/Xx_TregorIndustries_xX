@@ -1057,7 +1057,7 @@ if (session_status() == PHP_SESSION_NONE) {
 
         <div class="header-right">
             <a href="profil.php" class="btn btn-secondary">Mon profil</a>
-            <a href="" class="btn btn-primary">Se déconnecter</a>
+            <a href="connexion-compte.php" class="btn btn-primary">Se déconnecter</a>
         </div>
     </div>
     </header>
@@ -1200,7 +1200,7 @@ if (session_status() == PHP_SESSION_NONE) {
         <div class="container footer-content">
             <div class="footer-section social-media">
                 <div class="social-icons">
-                    <a href="#" aria-label="X"><i class="fab fa-x"></i></a>
+                    <a href="#" aria-label="X"><i class="fab fa-x-twitter"></i></a>
                     <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                     <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
                     <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
@@ -1209,17 +1209,17 @@ if (session_status() == PHP_SESSION_NONE) {
             <div class="footer-section links">
                 <h3>Visiteur</h3>
                 <ul>
-                    <li><a href="../BO/index.php">Accueil</a></li>
-                    <li><a href="../BO/recherche.php">Recherche d'offres</a></li>
-                    <li><a href="../BO/connexion-compte.php">Je me connecte en tant que membre</a></li>
+                    <li><a href="../index.html">Accueil</a></li>
+                    <li><a href="../FO/recherche.php">Recherche d'offres</a></li>
+                    <li><a href="../FO/connexion-compte.php">Je me connecte en tant que membre</a></li>
                 </ul>
             </div>
             <div class="footer-section links">
                 <h3>Découvrir</h3>
                 <ul>
-                    <li><a href="../BO/index.php">Accueil</a></li>
-                    <li><a href="../BO/publier-une-offre.php">Publier une offre</a></li>
-                    <li><a href="../BO/profil.php">Profil</a></li>
+                    <li><a href="index.php">Accueil</a></li>
+                    <li><a href="publier-une-offre.php">Publier une offre</a></li>
+                    <li><a href="profil.php">Profil</a></li>
                 </ul>
             </div>
             <div class="footer-section links">
