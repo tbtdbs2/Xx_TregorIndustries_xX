@@ -491,7 +491,7 @@
                 </div>
                  <div class="card card-bo">
                     <div class="card-image-wrapper">
-                        <img src="images/cuisine.jpg alt="Cours de Cuisine Locale"> </div>
+                        <img src="images/cuisine.jpg" alt="Cours de Cuisine Locale"> </div>
                     <div class="card-content">
                         <h3 class="card-title">Cours de Cuisine Locale</h3>
                         <p class="card-status-bo">Statut : <span class="status-active">Actif</span></p>
