@@ -9,7 +9,7 @@ $password = $env['MARIADB_PASSWORD'];
 $port =     $env['MARIADB_PORT'] ?? 3306;
 $database = $env['DB_NAME'];
 
-echo "Données du .env chargées !\n";
+// echo "Données du .env chargées !\n";
 
 try {
     // Connexion à MariaDB avec PDO
@@ -18,7 +18,7 @@ try {
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
     ]);
 
-    echo "Connexion à l'hôte $host réussie !\n";
+    // echo "Connexion à l'hôte $host réussie !\n";
 } catch (PDOException $e) {
     die("Erreur de connexion à la base de données : " . $e->getMessage());
 }

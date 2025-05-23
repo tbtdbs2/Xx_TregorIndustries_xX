@@ -1,28 +1,6 @@
 <?php
 require_once '../composants/generate_uuid.php';
-
-define('DB_HOST', '127.0.0.1'); // 'mariadb' pour le serveur
-define('DB_PORT', '3306');
-define('DB_NAME', 'sae');
-define('DB_USER', 'root'); 
-define('DB_PASSWORD', ''); 
-
-$dsn = "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=utf8mb4";
-
-// PDO
-$options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES   => false,
-];
-
-$pdo = null;
-try {
-    $pdo = new PDO($dsn, DB_USER, DB_PASSWORD, $options);
-} catch (PDOException $e) {
-    error_log("Database Connection Error: " . $e->getMessage());
-}
-
+require_once '../../includes/db.php';
 
 $current_pro_id = '7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c20'; // id de l'user (à changer lorsque tous le systeme de connexion sera finit)
 
@@ -722,7 +700,6 @@ if (session_status() == PHP_SESSION_NONE) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
     <link rel="stylesheet" href="style.css">
     <style>
         
@@ -804,11 +781,17 @@ if (session_status() == PHP_SESSION_NONE) {
         }
 
         /* Conteneur du formulaire principal */
-        form#offer-form { 
-            border: 1px solid #ddd;
-            border-radius: var(--border-radius-standard); 
-            padding: var(--espacement-double);
-            margin-bottom: var(--espacement-double);
+        form#offer-form {
+            max-width: 660px; /* Consistent with profil.php's form container */
+            margin-left: auto; /* Center the form */
+            margin-right: auto; /* Center the form */
+            margin-top: var(--espacement-double); /* Add top margin for spacing */
+            margin-bottom: var(--espacement-double); /* Existing bottom margin */
+            background-color: #fff; /* Card-like background */
+            padding: var(--espacement-double); /* Existing padding */
+            border: 1px solid #ddd; /* Existing border */
+            border-radius: var(--border-radius-standard); /* Existing radius */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Card-like shadow, similar to creation-compte.php */
         }
 
         /* Style pour les champs invalides */
