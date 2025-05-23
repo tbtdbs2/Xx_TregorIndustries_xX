@@ -1041,24 +1041,25 @@ if (session_status() == PHP_SESSION_NONE) {
 
 <body>
     <header>
-        <div class="container header-container">
-            <div class="header-left">
-                <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
-                <span class="pro-text">Professionnel</span>
-            </div>
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="../BO/index.php">Accueil</a></li>
-                    <li><a href="../BO/recherche.php">Offres</a></li>
-                    <li><a href="../BO/publier-une-offre.php" class="active">Publier une offre</a></li>
-                    <li><a href="../BO/profil.php">Profil</a></li>
-                </ul>
-            </nav>
-            <div class="header-right">
-                <a href="../BO/creation-compte.php" class="btn btn-secondary">S'enregistrer</a>
-                <a href="../BO/connexion-compte.php" class="btn btn-primary">Se connecter</a>
-            </div>
+    <div class="container header-container">
+        <div class="header-left">
+            <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
+            <span class="pro-text">Professionnel</span>
         </div>
+
+        <nav class="main-nav">
+            <ul>
+                <li><a href="index.php">Accueil</a></li>
+                <li><a href="recherche.php">Mes Offres</a></li>
+                <li><a href="publier-une-offre.php" class="active">Publier une offre</a></li>
+            </ul>
+        </nav>
+
+        <div class="header-right">
+            <a href="profil.php" class="btn btn-secondary">Mon profil</a>
+            <a href="" class="btn btn-primary">Se déconnecter</a>
+        </div>
+    </div>
     </header>
 
     <main>
