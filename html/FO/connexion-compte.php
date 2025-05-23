@@ -1,107 +1,84 @@
 <?php
-// Active l'affichage des erreurs PHP pour le débogage (à désactiver en production)
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 
-session_start(); // Démarre la session PHP
+session_start(); // Démarre la session PHP (doit être la première chose)
 
-$login_error = '';
+require_once __DIR__ . '/../../includes/db.php';
 
-// --- Chargement du fichier .env ---
-$env_path = __DIR__ . '/../../.env'; // Chemin vers le fichier .env (ajuste si nécessaire)
+$login_error = ''; // Variable pour stocker les messages d'erreur de connexion
 
-if (!file_exists($env_path) || !is_readable($env_path)) {
-    $login_error = "Erreur de configuration : Le fichier .env est introuvable ou inaccessible.";
-} else {
-    $env_parsed = parse_ini_file($env_path);
-    if ($env_parsed === false) {
-        $login_error = "Erreur de configuration : Problème de format dans le fichier .env.";
-    } else {
-        $host = $env_parsed['HOST'] ?? null;
-        $db_user = $env_parsed['DB_USER'] ?? null;
-        $mariadb_password = $env_parsed['MARIADB_PASSWORD'] ?? null;
-        $mariadb_port = $env_parsed['MARIADB_PORT'] ?? '3306';
-        $db_name = $env_parsed['DB_NAME'] ?? null;
-
-        if (!$host || !$db_user || !$mariadb_password || !$db_name) {
-            $login_error = "Erreur de configuration : Informations de base de données manquantes dans le .env.";
-        }
-    }
+// --- Redirection si déjà connecté ---
+// Si l'utilisateur est déjà connecté via la session, on le redirige directement vers le profil.
+if (isset($_SESSION['user_id'])) {
+    header("Location: profil.php");
+    exit();
 }
 
-
 // --- Traitement du formulaire de connexion ---
-if ($_SERVER["REQUEST_METHOD"] == "POST" && empty($login_error)) {
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Vérifie si l'email et le mot de passe ont été soumis
     if (isset($_POST['email']) && isset($_POST['password'])) {
         $email = trim($_POST['email']);
         $password = $_POST['password'];
 
+        // Validation du format de l'email côté serveur
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $login_error = "Le format de l'adresse email est invalide.";
         } else {
             try {
-                $pdo = new PDO(
-                    "mysql:host=$host;port=$mariadb_port;dbname=$db_name;charset=utf8mb4",
-                    $db_user,
-                    $mariadb_password,
-                    [
-                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-                    ]
-                );
+                
 
-                // 1. Récupérer l'utilisateur
-                $stmt = $pdo->prepare("SELECT id, email, password FROM utilisateurs WHERE email = :email");
+                // Prépare et exécute la requête pour récupérer l'utilisateur par son email
+                $stmt = $pdo->prepare("SELECT id, email, password FROM comptes_membre WHERE email = :email");
                 $stmt->execute(['email' => $email]);
-                $user = $stmt->fetch();
+                $user = $stmt->fetch(); // Récupère la première ligne de résultat
 
+                // Vérifie si un utilisateur a été trouvé et si le mot de passe correspond
                 if ($user && password_verify($password, $user['password'])) {
                     // --- AUTHENTIFICATION RÉUSSIE ---
 
-                    session_regenerate_id(true); // Prévention de la fixation de session
+                    session_regenerate_id(true); // Régénère l'ID de session pour prévenir la fixation de session
 
                     // Stockage des informations utilisateur en session
-                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['user_id'] = $user['id']; // ID du membre
                     $_SESSION['user_email'] = $user['email'];
 
                     // ====================================================================
-                    // GESTION DU TOKEN DANS LA TABLE auth_tokens (version simplifiée)
+                    // GESTION DU TOKEN DE PERSISTENCE (TABLE auth_tokens)
                     // ====================================================================
 
-                    // Générer un token unique pour cette session (plus sécurisé s'il est long)
-                    $session_token = bin2hex(random_bytes(64)); // 128 caractères hexadécimaux
+                    $raw_persistence_token = bin2hex(random_bytes(64));
+                    $hashed_token_to_store = hash('sha256', $raw_persistence_token);
 
-                    // Hacher le token avant de le stocker (même si ton champ est "token", stocke le hachage)
-                    // Si tu ne PEUX VRAIMENT PAS ajouter de champ `token_hash`, alors renomme le champ
-                    // `token` en `token_hash` et utilise le hachage. Ne jamais stocker en clair.
-                    $token_to_store = hash('sha256', $session_token); // Hachage du token brut
+                    $stmt_check_token = $pdo->prepare("SELECT COUNT(*) FROM auth_tokens WHERE email = :email");
+                    $stmt_check_token->execute(['email' => $user['email']]);
+                    $token_exists = $stmt_check_token->fetchColumn();
 
-                    // Supprimer les anciens tokens de l'utilisateur (si tu en gères plusieurs)
-                    // OU mettre à jour l'unique token pour cet email
-                    $stmt_delete_old_token = $pdo->prepare("DELETE FROM auth_tokens WHERE email = :email");
-                    $stmt_delete_old_token->execute(['email' => $user['email']]);
+                    if ($token_exists) {
+                        $stmt_update_token = $pdo->prepare(
+                            "UPDATE auth_tokens SET token = :new_token_hash WHERE email = :email"
+                        );
+                        $stmt_update_token->execute([
+                            'new_token_hash' => $hashed_token_to_store,
+                            'email' => $user['email']
+                        ]);
+                    } else {
+                        $stmt_insert_token = $pdo->prepare(
+                            "INSERT INTO auth_tokens (email, token) VALUES (:email, :token_hash)"
+                        );
+                        $stmt_insert_token->execute([
+                            'email' => $user['email'],
+                            'token_hash' => $hashed_token_to_store
+                        ]);
+                    }
 
-                    // Insérer le nouveau token haché lié à l'email
-                    $stmt_insert_token = $pdo->prepare(
-                        "INSERT INTO auth_tokens (email, token) VALUES (:email, :token_hash)"
-                    );
-                    $stmt_insert_token->execute([
-                        'email' => $user['email'],
-                        'token_hash' => $token_to_store // Stocke le HASH du token ici
-                    ]);
+                    $_SESSION['session_token'] = $raw_persistence_token;
 
-                    // Stocker le token BRUT (non haché) dans la session pour l'utilisation et la comparaison futures
-                    $_SESSION['session_token'] = $session_token;
-
-                    // Si l'option "Rester connecté" est cochée, définir un cookie HTTP-only avec le token brut
-                    // Ce cookie sera utilisé si la session PHP expire et que l'utilisateur revient
                     if (isset($_POST['remember']) && $_POST['remember'] == 'on') {
                         setcookie(
                             'remember_me',
-                            $session_token, // Le token brut est envoyé au client
+                            $raw_persistence_token,
                             [
-                                'expires' => time() + (86400 * 30), // Expire dans 30 jours
+                                'expires' => time() + (86400 * 30),
                                 'path' => '/',
                                 'httponly' => true,
                                 'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
@@ -110,25 +87,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && empty($login_error)) {
                         );
                     }
 
-                    // Redirection après connexion réussie
+                    // Redirection vers la page de profil après connexion réussie
                     header("Location: profil.php");
                     exit();
 
                 } else {
+                    // Email ou mot de passe incorrect
                     $login_error = "Email ou mot de passe incorrect.";
                 }
 
             } catch (PDOException $e) {
-                $login_error = "Une erreur est survenuwe lors de la connexion. Veuillez réessayer plus tard.";
-                // En développement, tu peux afficher le message complet pour le débogage :
-                // $login_error .= " Détails: " . $e->getMessage();
+                $login_error = "Erreur de connexion. Veuillez réessayer plus tard.";
+                error_log("Erreur PDO dans connexion-compte.php: " . $e->getMessage());
             }
         }
     } else {
         $login_error = "Veuillez saisir votre email et votre mot de passe.";
     }
 }
-// ... (reste du code HTML) ...
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -340,7 +316,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && empty($login_error)) {
             <?php
             // Affichage du message d'erreur pour l'utilisateur
             if (!empty($login_error)) {
-                echo '<p style="color: red; text-align: center; margin-bottom: 15px;">' . $login_error . '</p>';
+                echo '<p style="color: red; text-align: center; margin-bottom: 15px;">' . htmlspecialchars($login_error) . '</p>';
             }
             ?>
 
