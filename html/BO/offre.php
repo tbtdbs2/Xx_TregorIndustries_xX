@@ -928,7 +928,6 @@
                         </div>
                     </div>
                     <div class="avis-footer">
-                        <a href="#" class="btn-laisser-avis">Laisser un avis</a>
                         <div class="avis-navigation">
                             <button class="prev-avis" aria-label="Avis précédents"><i class="fas fa-chevron-left"></i></button>
                             <button class="next-avis" aria-label="Avis suivants"><i class="fas fa-chevron-right"></i></button>
