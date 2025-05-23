@@ -667,7 +667,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             } else {
                 $pdo->commit();
                 $notification_message = "L'offre \"" . htmlspecialchars($titre) . "\" a été publiée avec succès !";
-                header("Location: index.html?publish_status=success&notification_message=" . urlencode($notification_message));
+                header("Location: index.php?publish_status=success&notification_message=" . urlencode($notification_message));
                 exit();
             }
 
@@ -1209,17 +1209,17 @@ if (session_status() == PHP_SESSION_NONE) {
             <div class="footer-section links">
                 <h3>Visiteur</h3>
                 <ul>
-                    <li><a href="../index.html">Accueil</a></li>
-                    <li><a href="../FO/recherche.php">Recherche d'offres</a></li>
-                    <li><a href="../FO/connexion-compte.php">Je me connecte en tant que membre</a></li>
+                    <li><a href="../BO/index.php">Accueil</a></li>
+                    <li><a href="../BO/recherche.php">Recherche d'offres</a></li>
+                    <li><a href="../BO/connexion-compte.php">Je me connecte en tant que membre</a></li>
                 </ul>
             </div>
             <div class="footer-section links">
                 <h3>Découvrir</h3>
                 <ul>
-                    <li><a href="index.php">Accueil</a></li>
-                    <li><a href="publier-une-offre.php">Publier une offre</a></li>
-                    <li><a href="profil.php">Profil</a></li>
+                    <li><a href="../BO/index.php">Accueil</a></li>
+                    <li><a href="../BO/publier-une-offre.php">Publier une offre</a></li>
+                    <li><a href="../BO/profil.php">Profil</a></li>
                 </ul>
             </div>
             <div class="footer-section links">

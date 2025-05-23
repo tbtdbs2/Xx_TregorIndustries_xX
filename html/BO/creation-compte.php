@@ -203,7 +203,7 @@
                         <input type="text" id="bic" name="bic" placeholder="CEPAFRPP751">
                     </div>
                     <div class="register-button-container">
-                        <a href="#" class="already-registered">J'ai déjà un compte professionnel</a>
+                        <a href="../BO/connexion-compte.php" class="already-registered">J'ai déjà un compte professionnel</a>
                         <button type="submit" class="register-button">S'inscrire</button>
                     </div>
                 </form>

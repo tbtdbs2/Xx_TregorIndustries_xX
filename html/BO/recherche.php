@@ -353,7 +353,6 @@
                 <li><a href="publier-une-offre.php">Publier une offre</a></li>
             </ul>
         </nav>
-
         <div class="header-right">
             <a href="profil.php" class="btn btn-secondary">Mon profil</a>
             <a href="" class="btn btn-primary">Se déconnecter</a>
@@ -575,23 +574,23 @@
             <div class="footer-section links">
                 <h3>Professionnel</h3>
                 <ul>
-                    <li><a href="../index.html">Accueil</a></li>
-                    <li><a href="../FO/recherche.php">Recherche d'offres</a></li>
-                    <li><a href="../FO/connexion-compte.php">Je me connecte en tant que membre</a></li>
+                    <li><a href="../BO/index.php">Accueil</a></li>
+                    <li><a href="../BO/recherche.php">Recherche d'offres</a></li>
+                    <li><a href="../BO/connexion-compte.php">Je me connecte en tant que membre</a></li>
                 </ul>
             </div>
             <div class="footer-section links">
                 <h3>Découvrir</h3>
                 <ul>
-                    <li><a href="../index.html">Accueil</a></li>
-                    <li><a href="recherche.php">Recherche</a></li>
+                    <li><a href="../BO/index.php">Accueil</a></li>
+                    <li><a href="../BO/recherche.php">Recherche</a></li>
                 </ul>
             </div>
             <div class="footer-section links">
                 <h3>Ressources</h3>
                 <ul>
-                    <li><a href="conditions-generales-d-utilisation.php">Conditions générales d'utilisation</a></li>
-                    <li><a href="contact-du-responsable-du-site.php">Contact du responsable du site</a></li>
+                    <li><a href="../BO/conditions-generales-d-utilisation.php">Conditions générales d'utilisation</a></li>
+                    <li><a href="../BO/contact-du-responsable-du-site.php">Contact du responsable du site</a></li>
                 </ul>
             </div>
         </div>
