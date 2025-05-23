@@ -313,12 +313,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <h1>Connexion</h1>
             <p>Bon retour parmi nous !</p>
 
-            <?php
-            // Affichage du message d'erreur pour l'utilisateur
-            if (!empty($login_error)) {
-                echo '<p style="color: red; text-align: center; margin-bottom: 15px;">' . htmlspecialchars($login_error) . '</p>';
-            }
-            ?>
+            
 
             <div class="login-container">
                 <form class="login-form" action="connexion-compte.php" method="POST">
@@ -330,6 +325,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <label for="password">Mot de passe</label>
                         <input type="password" id="password" name="password" required>
                     </div>
+                    <?php
+                        // Affichage du message d'erreur pour l'utilisateur
+                        if (!empty($login_error)) {
+                            echo '<p style="color: red; text-align: center; margin-bottom: 15px;">' . htmlspecialchars($login_error) . '</p>';
+                        }
+                    ?>
                     <button type="submit" class="login-button">Connexion</button>
                     <div class="options">
                         <div>
