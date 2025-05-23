@@ -687,6 +687,9 @@
                             <i class="fas fa-pen-to-square"></i>
                         </button>
                         <h1 class="title">Archipel de Bréhat en kayak</h1>
+                        <div class="avis-rating">
+                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                    </div>
                         <p class="provider">Planète Kayak</p>
                         <div class="tags">
                             <span>Ouvert</span>
