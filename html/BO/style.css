@@ -1,7 +1,7 @@
 /* Variables de la charte graphique */
 :root {
     --couleur-principale: #F39E6D;
-    --couleur-secondaire: #F2D8C9;
+    --couleur-secondaire: #fde5da;
     --couleur-texte: #333333;
     --couleur-texte-lien-nav: #333333;
     --couleur-texte-lien-nav-actif: var(--couleur-principale);
@@ -13,7 +13,7 @@
     --couleur-icones-sociales: var(--couleur-principale);
     --couleur-blanche: #FFFFFF;
     --couleur-principale-hover: #eb9461;
-    --couleur-secondaire-hover-bg: #f1ccb7;
+    --couleur-secondaire-hover-bg: #ffe1cf;
     --couleur-secondaire-hover-text: var(--couleur-principale-hover);
     --couleur-secondaire-hover-border: #f1c4aa;
 

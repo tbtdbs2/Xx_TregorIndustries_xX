@@ -78,7 +78,7 @@
         }
 
         .offre-purchase-details .tags span {
-            background-color: #eef8f8;
+            background-color: var(--couleur-secondaire);
             color: var(--couleur-principale);
             padding: 6px 14px;
             border-radius: 16px;
@@ -212,7 +212,7 @@
         }
 
         .offre-purchase-details .tags span { /* Répétition, déjà définie plus haut */
-            background-color: #eef8f8;
+            background-color: var(--couleur-secondaire);
             color: var(--couleur-principale);
             padding: 6px 14px;
             border-radius: 16px;
@@ -637,39 +637,26 @@
     </style>
 </head>
 <body>
-    <header>
-        <div class="container header-container">
-            <div class="header-left">
-                <a href="../index.html"><img src="images/Logowithoutbgorange.png" alt="Logo PACT" class="logo"></a>
-                <nav class="main-nav">
-                    <ul>
-                        <li><a href="../BO/index.php">Accueil</a></li>
-                        <li><a href="../BO/recherche.php" class="active">Recherche</a></li>
-                    </ul>
-                </nav>
-            </div>
-            <div class="header-right">
-                <a href="../BO/index.php" class="pro-link desktop-only">Je suis professionnel</a>
-                <a href="../BO/creation-compte.php" class="btn btn-secondary desktop-only">S'enregistrer</a>
-                <a href="../BO/connexion-compte.php" class="btn btn-primary desktop-only">Se connecter</a>
-                <div class="mobile-icons">
-                    <a href="index.php" class="mobile-icon" aria-label="Accueil"><i class="fas fa-home"></i></a>
-                    <a href="profil.php" class="mobile-icon" aria-label="Profil"><i class="fas fa-user"></i></a>
-                    <button class="mobile-icon hamburger-menu" aria-label="Menu" aria-expanded="false">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                </div>
-            </div>
+<header>
+    <div class="container header-container">
+        <div class="header-left">
+            <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
+            <span class="pro-text">Professionnel</span>
         </div>
-        <nav class="mobile-nav-links">
+
+        <nav class="main-nav">
             <ul>
-                <li><a href="../BO/index.php.php">Accueil</a></li>
-                <li><a href="../BO/recherche.php" class="active">Recherche</a></li>
-                <li><a href="../BO/index.php">Je suis professionnel</a></li>
-                <li><a href="../BO/creation-compte.php">S'enregistrer</a></li>
-                <li><a href="../BO/connexion-compte.php">Se connecter</a></li>
+                <li><a href="index.php">Accueil</a></li>
+                <li><a href="recherche.php">Mes Offres</a></li>
+                <li><a href="publier-une-offre.php">Publier une offre</a></li>
             </ul>
         </nav>
+
+        <div class="header-right">
+            <a href="profil.php" class="btn btn-secondary">Mon profil</a>
+            <a href="" class="btn btn-primary">Se déconnecter</a>
+        </div>
+    </div>
     </header>
 
     <main class="main-content-offre">
