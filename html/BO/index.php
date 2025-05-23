@@ -333,9 +333,62 @@
             .action-card h3 { font-size: 1.1em; }
             .card-bo .card-title { font-size: 1.1em; }
         }
+      
+    .success-notification-modal-style {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background-color: #d4edda; 
+        color: #155724;
+        border: 1px solid #c3e6cb;
+        padding: 20px 30px;
+        border-radius: var(--border-radius-standard, 8px);
+        z-index: 1050; 
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        font-family: var(--police-principale, 'Poppins', sans-serif); 
+        font-size: 1em;
+        display: none; 
+        max-width: 90%; 
+        width: auto; 
+        min-width: 300px; 
+    }
+
+    .success-notification-modal-style .close-modal-btn {
+        position: absolute;
+        top: 8px;
+        right: 12px;
+        font-size: 1.5em; /* Taille de la croix */
+        font-weight: bold;
+        color: #155724;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+        line-height: 1;
+    }
+
+    .success-notification-modal-style p {
+        margin: 0;
+        padding-right: 20px; 
+    }
+
+   
+    @keyframes fadeInModal {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .success-notification-modal-style.show {
+        display: block;
+        animation: fadeInModal 0.3s ease-out;
+    }
     </style>
 </head>
 <body>
+    <div id="success-notification-modal" class="success-notification-modal-style">
+        <button class="close-modal-btn" aria-label="Fermer">&times;</button>
+        <p id="success-modal-message"></p>
+    </div>
     <header>
     <div class="container header-container">
         <div class="header-left">
@@ -474,7 +527,7 @@
             <div class="footer-section links">
                 <h3>Visiteur</h3>
                 <ul>
-                    <li><a href="../FO/index.php">Accueil</a></li>
+                    <li><a href="../index.html">Accueil</a></li>
                     <li><a href="../FO/recherche.php">Recherche d'offres</a></li>
                     <li><a href="../FO/connexion-compte.php">Je me connecte en tant que membre</a></li>
                 </ul>
@@ -603,5 +656,57 @@
         });
     });
     </script>
+    <script>document.addEventListener('DOMContentLoaded', function() {
+        const params = new URLSearchParams(window.location.search);
+        const publishStatus = params.get('publish_status');
+        const notificationMessage = params.get('notification_message');
+
+        const modal = document.getElementById('success-notification-modal');
+        const messageElement = document.getElementById('success-modal-message');
+        const closeModalBtn = modal ? modal.querySelector('.close-modal-btn') : null;
+
+        function showModal(message) {
+            if (modal && messageElement) {
+                messageElement.textContent = decodeURIComponent(message);
+                modal.classList.add('show');
+
+                setTimeout(() => {
+                    hideModal();
+                }, 7000); 
+            }
+        }
+
+        function hideModal() {
+            if (modal && modal.classList.contains('show')) {
+                modal.classList.remove('show');
+                
+                if (window.history.replaceState) {
+                    const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                    window.history.replaceState({path: cleanUrl}, '', cleanUrl);
+                }
+            }
+        }
+
+        if (publishStatus === 'success' && notificationMessage) {
+            showModal(notificationMessage);
+        }
+
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', hideModal);
+        }
+
+        window.addEventListener('click', function(event) {
+            if (event.target === modal && modal.classList.contains('show')) {
+                hideModal();
+            }
+        });
+
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && modal.classList.contains('show')) {
+                hideModal();
+            }
+        });
+    });
+</script>
 </body>
 </html>
