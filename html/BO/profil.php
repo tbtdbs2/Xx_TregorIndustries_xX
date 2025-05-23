@@ -231,7 +231,7 @@
         <div class="container footer-content">
             <div class="footer-section social-media">
                 <div class="social-icons">
-                    <a href="#" aria-label="X"><i class="fab fa-x"></i></a>
+                    <a href="#" aria-label="X"><i class="fab fa-x-twitter"></i></a>
                     <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                     <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
                     <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
@@ -240,9 +240,9 @@
             <div class="footer-section links">
                 <h3>Visiteur</h3>
                 <ul>
-                    <li><a href="../BO/index.php">Accueil</a></li>
-                    <li><a href="../BO/recherche.php">Recherche d'offres</a></li>
-                    <li><a href="../BO/connexion-compte.php">Je me connecte en tant que membre</a></li>
+                    <li><a href="../index.html">Accueil</a></li>
+                    <li><a href="../FO/recherche.php">Recherche d'offres</a></li>
+                    <li><a href="../FO/connexion-compte.php">Je me connecte en tant que membre</a></li>
                 </ul>
             </div>
             <div class="footer-section links">

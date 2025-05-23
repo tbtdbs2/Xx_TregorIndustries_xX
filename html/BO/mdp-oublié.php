@@ -127,11 +127,11 @@
     </div>
 </main>
 
-    <footer>
+<footer>
         <div class="container footer-content">
             <div class="footer-section social-media">
                 <div class="social-icons">
-                    <a href="#" aria-label="X"><i class="fab fa-x"></i></a>
+                    <a href="#" aria-label="X"><i class="fab fa-x-twitter"></i></a>
                     <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                     <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
                     <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
