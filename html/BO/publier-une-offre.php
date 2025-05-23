@@ -1048,15 +1048,15 @@ if (session_status() == PHP_SESSION_NONE) {
             </div>
             <nav class="main-nav">
                 <ul>
-                    <li><a href="index.php">Accueil</a></li>
-                    <li><a href="recherche.php">Offres</a></li>
-                    <li><a href="publier-une-offre.php" class="active">Publier une offre</a></li>
-                    <li><a href="profil.php">Profil</a></li>
+                    <li><a href="../BO/index.php">Accueil</a></li>
+                    <li><a href="../BO/recherche.php">Offres</a></li>
+                    <li><a href="../BO/publier-une-offre.php" class="active">Publier une offre</a></li>
+                    <li><a href="../BO/profil.php">Profil</a></li>
                 </ul>
             </nav>
             <div class="header-right">
-                <a href="creation-compte.php" class="btn btn-secondary">S'enregistrer</a>
-                <a href="connexion-compte.php" class="btn btn-primary">Se connecter</a>
+                <a href="../BO/creation-compte.php" class="btn btn-secondary">S'enregistrer</a>
+                <a href="../BO/connexion-compte.php" class="btn btn-primary">Se connecter</a>
             </div>
         </div>
     </header>
@@ -1208,7 +1208,7 @@ if (session_status() == PHP_SESSION_NONE) {
             <div class="footer-section links">
                 <h3>Visiteur</h3>
                 <ul>
-                    <li><a href="../index.php">Accueil</a></li>
+                    <li><a href="../BO/index.php">Accueil</a></li>
                     <li><a href="../BO/recherche.php">Recherche d'offres</a></li>
                     <li><a href="../BO/connexion-compte.php">Je me connecte en tant que membre</a></li>
                 </ul>
@@ -1216,9 +1216,9 @@ if (session_status() == PHP_SESSION_NONE) {
             <div class="footer-section links">
                 <h3>Découvrir</h3>
                 <ul>
-                    <li><a href="index.php">Accueil</a></li>
-                    <li><a href="publier-une-offre.php">Publier une offre</a></li>
-                    <li><a href="profil.php">Profil</a></li>
+                    <li><a href="../BO/index.php">Accueil</a></li>
+                    <li><a href="../BO/publier-une-offre.php">Publier une offre</a></li>
+                    <li><a href="../BO/profil.php">Profil</a></li>
                 </ul>
             </div>
             <div class="footer-section links">
