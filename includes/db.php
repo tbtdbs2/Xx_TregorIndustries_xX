@@ -2,7 +2,7 @@
 // Charger les variables d'environnement
 $env = parse_ini_file(__DIR__ . '/../.env');
 
-// Extraire les infos de connexion
+//Extraire les infos de connexion
 $host =     $env['HOST'];
 $user =     $env['DB_USER'];
 $password = $env['MARIADB_PASSWORD'];
@@ -10,10 +10,12 @@ $port =     $env['MARIADB_PORT'] ?? 3306;
 $database = $env['DB_NAME'];
 
 // echo "Données du .env chargées !\n";
-
+//print_r($GLOBALS);
 try {
     // Connexion à MariaDB avec PDO
+    // $dsn = "mysql:host=127.0.0.1;dbname=$database;port=$port;charset=utf8mb4";
     $dsn = "mysql:host=$host;dbname=$database;port=$port;charset=utf8mb4";
+    // var_dump($dsn, true);
     $pdo = new PDO($dsn, $user, $password, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
     ]);
@@ -27,7 +29,7 @@ try {
     Exemple de requête
 
     <?php
-    require_once 'db.php'; // Connexion à la BDD
+    require_once 'db.php'; / Connexion à la BDD
 
     $stmt = $pdo->query("SELECT * FROM utilisateurs");
 

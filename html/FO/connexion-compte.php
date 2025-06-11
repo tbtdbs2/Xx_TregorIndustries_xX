@@ -1,114 +1,56 @@
 <?php
+$error_message = '';
 
-session_start(); // Démarre la session PHP (doit être la première chose)
-
-require_once __DIR__ . '/../../includes/db.php';
-
-$login_error = ''; // Variable pour stocker les messages d'erreur de connexion
-define('DB_HOST', '127.0.0.1');
-define('DB_PORT', '3306');
-define('DB_NAME', 'sae');
-define('DB_USER', 'root');
-define('DB_PASSWORD', '');
-// --- Redirection si déjà connecté ---
-// Si l'utilisateur est déjà connecté via la session, on le redirige directement vers le profil.
-if (isset($_SESSION['user_id'])) {
-    header("Location: profil.php");
-    exit();
-}
-
-// --- Traitement du formulaire de connexion ---
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Vérifie si l'email et le mot de passe ont été soumis
-    if (isset($_POST['email']) && isset($_POST['password'])) {
-        $email = trim($_POST['email']);
-        $password = $_POST['password'];
+    
+    require_once '../../includes/db.php';
+    require_once '../composants/generate_uuid.php';
 
-        // Validation du format de l'email côté serveur
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $login_error = "Le format de l'adresse email est invalide.";
+    if (!isset($pdo)) {
+        $error_message = "Erreur de connexion à la base de données.";
+    } else {
+        $email = trim($_POST['email'] ?? '');
+        $password = $_POST['password'] ?? '';
+
+        if (empty($email) || empty($password)) {
+            $error_message = "Veuillez saisir votre email et votre mot de passe.";
         } else {
-            try {
+            // On cherche dans la table `comptes_membre`
+            $stmt = $pdo->prepare("SELECT id, password FROM comptes_membre WHERE email = :email");
+            $stmt->execute([':email' => $email]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($user && $password === $user['password']) {
+                $token = bin2hex(random_bytes(32));
                 
-
-                // Prépare et exécute la requête pour récupérer l'utilisateur par son email
-                $stmt = $pdo->prepare("SELECT id, email, password FROM comptes_membre WHERE email = :email");
-                $stmt->execute(['email' => $email]);
-                $user = $stmt->fetch(); // Récupère la première ligne de résultat
+                // Supprimer les anciens tokens pour cet email
+                $stmtDelete = $pdo->prepare("DELETE FROM auth_tokens WHERE email = :email");
+                $stmtDelete->execute([':email' => $email]);
                 
+                // Insérer le nouveau token
+                $stmtInsert = $pdo->prepare("INSERT INTO auth_tokens (id, email, token) VALUES (:id, :email, :token)");
+                $stmtInsert->execute([
+                    ':id'      => generate_uuid(),
+                    ':email'   => $email,
+                    ':token'   => $token
+                ]);
+                
+                $cookie_options = [
+                    'expires' => time() + 86400,
+                    'path' => '/',
+                    'httponly' => true,
+                    'samesite' => 'Lax'
+                ];
+                setcookie('auth_token', $token, $cookie_options);
+                setcookie('user_type', 'membre', $cookie_options); // On définit le type 'membre'
 
-                // Vérifie si un utilisateur a été trouvé et si le mot de passe correspond
-                //if ($user && password_verify($password, $user['password'])) {
-                if ($user && $password === $user['password']) {
-                    // --- AUTHENTIFICATION RÉUSSIE ---
-
-                    session_regenerate_id(true); // Régénère l'ID de session pour prévenir la fixation de session
-
-                    // Stockage des informations utilisateur en session
-                    $_SESSION['user_id'] = $user['id']; // ID du membre
-                    $_SESSION['user_email'] = $user['email'];
-
-                    // ====================================================================
-                    // GESTION DU TOKEN DE PERSISTENCE (TABLE auth_tokens)
-                    // ====================================================================
-
-                    $raw_persistence_token = bin2hex(random_bytes(64));
-                    $hashed_token_to_store = hash('sha256', $raw_persistence_token);
-
-                    $stmt_check_token = $pdo->prepare("SELECT COUNT(*) FROM auth_tokens WHERE email = :email");
-                    $stmt_check_token->execute(['email' => $user['email']]);
-                    $token_exists = $stmt_check_token->fetchColumn();
-
-                    if ($token_exists) {
-                        $stmt_update_token = $pdo->prepare(
-                            "UPDATE auth_tokens SET token = :new_token_hash WHERE email = :email"
-                        );
-                        $stmt_update_token->execute([
-                            'new_token_hash' => $hashed_token_to_store,
-                            'email' => $user['email']
-                        ]);
-                    } else {
-                        $stmt_insert_token = $pdo->prepare(
-                            "INSERT INTO auth_tokens (email, token) VALUES (:email, :token_hash)"
-                        );
-                        $stmt_insert_token->execute([
-                            'email' => $user['email'],
-                            'token_hash' => $hashed_token_to_store
-                        ]);
-                    }
-
-                    $_SESSION['session_token'] = $raw_persistence_token;
-
-                    if (isset($_POST['remember']) && $_POST['remember'] == 'on') {
-                        setcookie(
-                            'remember_me',
-                            $raw_persistence_token,
-                            [
-                                'expires' => time() + (86400 * 30),
-                                'path' => '/',
-                                'httponly' => true,
-                                'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
-                                'samesite' => 'Lax'
-                            ]
-                        );
-                    }
-
-                    // Redirection vers la page de profil après connexion réussie
-                    header("Location: profil.php");
-                    exit();
-
-                } else {
-                    // Email ou mot de passe incorrect
-                    $login_error = "Email ou mot de passe incorrect.";
-                }
-
-            } catch (PDOException $e) {
-                $login_error = "Erreur de connexion. Veuillez réessayer plus tard.";
-                error_log("Erreur PDO dans connexion-compte.php: " . $e->getMessage());
+                // Rediriger vers l'accueil du front-office
+                header("Location: recherche.php"); // Ou profil.php si vous préférez
+                exit();
+            } else {
+                $error_message = "Email ou mot de passe incorrect.";
             }
         }
-    } else {
-        $login_error = "Veuillez saisir votre email et votre mot de passe.";
     }
 }
 ?>
@@ -119,11 +61,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PACT - Connexion</title>
     <link rel="icon" href="images/Logo2withoutbg.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https:/fonts.googleapis.com">
+    <link rel="preconnect" href="https:/fonts.gstatic.com" crossorigin>
+    <link href="https:/fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https:/cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const emailInput = document.getElementById('email');
@@ -283,10 +225,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <header>
         <div class="container header-container">
             <div class="header-left">
-                <a href="index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
+                <a href="../index.html"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
                 <nav class="main-nav">
                     <ul>
-                        <li><a href="index.php">Accueil</a></li>
+                        <li><a href="../index.html">Accueil</a></li>
                         <li><a href="recherche.php">Recherche</a></li>
                     </ul>
                 </nav>
@@ -297,7 +239,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <a href="connexion-compte.php" class="btn btn-primary desktop-only active">Se connecter</a>
                 <div class="mobile-icons">
                     <a href="index.php" class="mobile-icon" aria-label="Accueil"><i class="fas fa-home"></i></a>
-                    <a href="profil.php" class="mobile-icon" aria-label="Profil"><i class="fas fa-user"></i></a> <button class="mobile-icon hamburger-menu" aria-label="Menu" aria-expanded="false">
+                    <a href="profil.php" class="mobile-icon" aria-label="Profil"><i class="fas fa-user"></i></a>
+                    <button class="mobile-icon hamburger-menu" aria-label="Menu" aria-expanded="false">
                         <i class="fas fa-bars"></i>
                     </button>
                 </div>
@@ -319,14 +262,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <h1>Connexion</h1>
             <p>Bon retour parmi nous !</p>
 
-            <?php
-            // Affichage du message d'erreur pour l'utilisateur
-            if (!empty($login_error)) {
-                echo '<p style="color: red; text-align: center; margin-bottom: 15px;">' . htmlspecialchars($login_error) . '</p>';
-            }
-            ?>
-
             <div class="login-container">
+                 <?php if (!empty($error_message)) { echo '<p style="color: red; text-align: center; margin-bottom: 15px;">' . htmlspecialchars($error_message) . '</p>'; } ?>
+                
                 <form class="login-form" action="connexion-compte.php" method="POST">
                     <div class="form-group">
                         <label for="email">Email</label>

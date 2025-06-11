@@ -1,14 +1,17 @@
+<?php
+$current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PACT - Détail de l'offre</title><link rel="icon" href="images/Logo2withoutbg.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https:/fonts.googleapis.com">
+    <link rel="preconnect" href="https:/fonts.gstatic.com" crossorigin>
+    <link href="https:/fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https:/cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* Styles spécifiques à la page offre */
         body {
@@ -655,7 +658,7 @@
 
         <div class="header-right">
             <a href="profil.php" class="btn btn-secondary">Mon profil</a>
-            <a href="connexion-compte.php" class="btn btn-primary">Se déconnecter</a>
+            <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
         </div>
     </div>
     </header>
@@ -979,7 +982,7 @@
     <script src="script.js" defer></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Favorite button toggle
+            / Favorite button toggle
             const favoriteButton = document.querySelector('.offre-modify-btn');
             if (favoriteButton) {
                 favoriteButton.addEventListener('click', function() {
@@ -991,7 +994,7 @@
                  favoriteButton.setAttribute('aria-pressed', isInitiallyPressed);
             }
 
-            // Avis tabs
+            / Avis tabs
             const avisTabsContainer = document.querySelector('.avis-tabs');
             if (avisTabsContainer) {
                 const tabs = avisTabsContainer.querySelectorAll('button');
@@ -999,19 +1002,19 @@
                     tab.addEventListener('click', function() {
                         tabs.forEach(t => t.classList.remove('active'));
                         this.classList.add('active');
-                        // console.log(`Onglet sélectionné: ${this.dataset.tab}`);
+                        / console.log(`Onglet sélectionné: ${this.dataset.tab}`);
                     });
                 });
             }
 
-            // Avis pagination
+            / Avis pagination
             const avisListContainer = document.querySelector('.avis-list');
             const allAvisCards = avisListContainer ? Array.from(avisListContainer.querySelectorAll('.avis-card')) : [];
             const prevAvisBtn = document.querySelector('.prev-avis');
             const nextAvisBtn = document.querySelector('.next-avis');
             
             let currentAvisPage = 1;
-            const avisPerPage = 3; // Nombre d'avis à afficher par page
+            const avisPerPage = 3; / Nombre d'avis à afficher par page
             let totalAvisPages = 0;
 
             function displayCurrentAvisPage() {
@@ -1022,7 +1025,7 @@
 
                 allAvisCards.forEach((card, index) => {
                     if (index >= startIndex && index < endIndex) {
-                        card.style.display = 'flex'; // Ou 'block' selon le style initial des cartes
+                        card.style.display = 'flex'; / Ou 'block' selon le style initial des cartes
                     } else {
                         card.style.display = 'none';
                     }
@@ -1039,13 +1042,13 @@
                 
                 if (allAvisCards.length > 0) {
                     displayCurrentAvisPage();
-                } else { // S'il n'y a aucun avis
+                } else { / S'il n'y a aucun avis
                     if(avisListContainer) avisListContainer.innerHTML = "<p>Aucun avis pour le moment.</p>";
                 }
-                // console.log(`Page d'avis actuelle: ${currentAvisPage}, Total pages: ${totalAvisPages}`);
+                / console.log(`Page d'avis actuelle: ${currentAvisPage}, Total pages: ${totalAvisPages}`);
             }
             
-            if (allAvisCards.length > 0) { // S'il y a des avis, initialiser la pagination
+            if (allAvisCards.length > 0) { / S'il y a des avis, initialiser la pagination
                 if (prevAvisBtn) {
                     prevAvisBtn.addEventListener('click', () => {
                         if (currentAvisPage > 1) {
@@ -1063,14 +1066,14 @@
                         }
                     });
                 }
-                updateAvisNavigation(); // Appel initial pour afficher la première page et définir l'état des boutons
-            } else if (prevAvisBtn && nextAvisBtn) { // S'il n'y a pas d'avis, désactiver les boutons
-                 updateAvisNavigation(); // Appel pour gérer le cas où il n'y a pas d'avis
+                updateAvisNavigation(); / Appel initial pour afficher la première page et définir l'état des boutons
+            } else if (prevAvisBtn && nextAvisBtn) { / S'il n'y a pas d'avis, désactiver les boutons
+                 updateAvisNavigation(); / Appel pour gérer le cas où il n'y a pas d'avis
             }
-            // Fin Avis pagination
+            / Fin Avis pagination
 
 
-            // Initialisation des flèches pour le carrousel d'images de l'offre
+            / Initialisation des flèches pour le carrousel d'images de l'offre
             const offreCarouselWrapper = document.getElementById('offreImageCarouselWrapper');
             if (offreCarouselWrapper) {
                 const imageContainer = offreCarouselWrapper.querySelector('.gallery-image-container.cards-container');
@@ -1092,12 +1095,12 @@
         function scrollOffreCarousel(carouselWrapperId, direction) {
             const wrapper = document.getElementById(carouselWrapperId);
             if (!wrapper) {
-                // console.error('Carousel wrapper not found:', carouselWrapperId);
+                / console.error('Carousel wrapper not found:', carouselWrapperId);
                 return;
             }
             const container = wrapper.querySelector('.gallery-image-container.cards-container');
             if (!container) {
-                // console.error('Image container not found in wrapper:', carouselWrapperId);
+                / console.error('Image container not found in wrapper:', carouselWrapperId);
                 return;
             }
 

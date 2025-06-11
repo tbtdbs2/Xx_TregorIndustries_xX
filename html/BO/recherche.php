@@ -1,14 +1,17 @@
+<?php
+$current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PACT - Recherche</title><link rel="icon" href="images/Logo2withoutbg.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https:/fonts.googleapis.com">
+    <link rel="preconnect" href="https:/fonts.gstatic.com" crossorigin>
+    <link href="https:/fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https:/cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -355,7 +358,7 @@
         </nav>
         <div class="header-right">
             <a href="profil.php" class="btn btn-secondary">Mon profil</a>
-            <a href="connexion-compte.php" class="btn btn-primary">Se déconnecter</a>
+            <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
         </div>
     </div>
     </header>
@@ -621,7 +624,7 @@
             const couleurPrincipale = getComputedStyle(document.documentElement).getPropertyValue('--couleur-principale').trim();
 
             const setupStarRatingFilter = (filterId, valueInputId, isMaxRating = false) => {
-                const ratingValueInput = document.getElementById(valueInputId); // Renommé pour clarté
+                const ratingValueInput = document.getElementById(valueInputId); / Renommé pour clarté
                 const starRatingFilter = document.getElementById(filterId);
                 
                 if (starRatingFilter && ratingValueInput) {
@@ -632,8 +635,8 @@
                             const starValue = parseInt(s.dataset.value, 10);
                             let isSelected = false;
                             
-                            // La logique de sélection visuelle est la même : on colore jusqu'à l'étoile cliquée.
-                            // L'interprétation (min/max) se fait au moment du filtrage des données.
+                            / La logique de sélection visuelle est la même : on colore jusqu'à l'étoile cliquée.
+                            / L'interprétation (min/max) se fait au moment du filtrage des données.
                             if (currentRating > 0) {
                                 isSelected = starValue <= currentRating;
                             }
@@ -661,7 +664,7 @@
                             const ratingHover = parseInt(e.target.dataset.value, 10);
                             stars.forEach(s => {
                                 const starValue = parseInt(s.dataset.value, 10);
-                                // La logique de survol colore aussi jusqu'à l'étoile survolée.
+                                / La logique de survol colore aussi jusqu'à l'étoile survolée.
                                 if (starValue <= ratingHover) {
                                     s.style.color = couleurPrincipale;
                                 } else {
@@ -678,8 +681,8 @@
                 }
             };
 
-            setupStarRatingFilter('min-rating', 'min-rating-value', false); // false pour Note Minimale
-            setupStarRatingFilter('max-rating', 'max-rating-value', true);  // true pour Note Maximale (même si la logique visuelle JS est la même ici)
+            setupStarRatingFilter('min-rating', 'min-rating-value', false); / false pour Note Minimale
+            setupStarRatingFilter('max-rating', 'max-rating-value', true);  / true pour Note Maximale (même si la logique visuelle JS est la même ici)
 
 
             const sortButtons = document.querySelectorAll('.sort-options button');

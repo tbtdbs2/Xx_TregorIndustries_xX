@@ -95,7 +95,7 @@ INSERT INTO `activites` (`categorie_id`, `duration`, `minimum_price`, `required_
 
 SET @offre_kayak_id = UUID();
 INSERT INTO `offres` (`id`, `categorie_id`, `adresse_id`, `pro_id`, `title`, `summary`, `description`, `main_photo`, `rating`, `reviews_nb`, `accessibility`, `website`, `phone`, `price`, `created_at`, `updated_at`) VALUES
-(@offre_kayak_id, @categorie_activite_kayak_id, @adresse_id_2, @compte_pro_id_1, 'Kayak Granit Rose', 'Explorez la Côte de Granit Rose en kayak de mer.', 'Une balade de 3h accompagnée par un moniteur diplômé. Découvrez des paysages à couper le souffle accessibles uniquement par la mer. Matériel fourni.', 'uploads/offres/kayak_granit_rose.jpg', 4.7, 75, 'Savoir nager est requis. Enfants à partir de 8 ans accompagnés.', 'http://aventurebretonne.bzh/kayak', '0296112233', 40.00, NOW(), NOW());
+(@offre_kayak_id, @categorie_activite_kayak_id, @adresse_id_2, @compte_pro_id_1, 'Kayak Granit Rose', 'Explorez la Côte de Granit Rose en kayak de mer.', 'Une balade de 3h accompagnée par un moniteur diplômé. Découvrez des paysages à couper le souffle accessibles uniquement par la mer. Matériel fourni.', 'uploads/offres/kayak_granit_rose.jpg', 4.7, 75, 'Savoir nager est requis. Enfants à partir de 8 ans accompagnés.', 'http:/aventurebretonne.bzh/kayak', '0296112233', 40.00, NOW(), NOW());
 
 INSERT INTO `photos_offres` (`id`, `offre_id`, `url`) VALUES
 (UUID(), @offre_kayak_id, 'uploads/offres/kayak_granit_rose_detail1.jpg'),
@@ -117,7 +117,7 @@ INSERT INTO `visites` (`categorie_id`, `duration`, `minimum_price`, `date`, `sta
 
 SET @offre_chateau_id = UUID();
 INSERT INTO `offres` (`id`, `categorie_id`, `adresse_id`, `pro_id`, `title`, `summary`, `description`, `main_photo`, `rating`, `reviews_nb`, `accessibility`, `website`, `phone`, `price`, `created_at`, `updated_at`) VALUES
-(@offre_chateau_id, @categorie_visite_chateau_id, @adresse_id_1, @compte_pro_id_1, 'Visite Château Roche Jagu', 'Découvrez le château médiéval et ses jardins remarquables.', 'Visite guidée du château et promenade libre dans les jardins contemporains d''inspiration médiévale surplombant le Trieux.', 'uploads/offres/roche_jagu.jpg', 4.5, 120, 'Partiellement accessible PMR (jardins). Château avec escaliers.', 'http://www.larochejagu.fr', '0296112233', 10.00, NOW(), NOW());
+(@offre_chateau_id, @categorie_visite_chateau_id, @adresse_id_1, @compte_pro_id_1, 'Visite Château Roche Jagu', 'Découvrez le château médiéval et ses jardins remarquables.', 'Visite guidée du château et promenade libre dans les jardins contemporains d''inspiration médiévale surplombant le Trieux.', 'uploads/offres/roche_jagu.jpg', 4.5, 120, 'Partiellement accessible PMR (jardins). Château avec escaliers.', 'http:/www.larochejagu.fr', '0296112233', 10.00, NOW(), NOW());
 
 INSERT INTO `statuts` (`id`, `offre_id`, `status`, `changed_at`) VALUES (UUID(), @offre_chateau_id, 1, NOW());
 INSERT INTO `offres_tags` (`offre_id`, `tag_id`) VALUES
@@ -130,11 +130,11 @@ INSERT INTO `offres_tags` (`offre_id`, `tag_id`) VALUES
 SET @categorie_creperie_id = UUID();
 INSERT INTO `categories` (`id`, `type`) VALUES (@categorie_creperie_id, 'restauration');
 INSERT INTO `restaurations` (`categorie_id`, `menu_url`, `price_range`) VALUES
-(@categorie_creperie_id, 'http://aventurebretonne.bzh/creperie/menu', '€');
+(@categorie_creperie_id, 'http:/aventurebretonne.bzh/creperie/menu', '€');
 
 SET @offre_creperie_id = UUID();
 INSERT INTO `offres` (`id`, `categorie_id`, `adresse_id`, `pro_id`, `title`, `summary`, `description`, `main_photo`, `rating`, `reviews_nb`, `accessibility`, `website`, `phone`, `price`, `created_at`, `updated_at`) VALUES
-(@offre_creperie_id, @categorie_creperie_id, @adresse_id_3, @compte_pro_id_1, 'Crêperie du Port', 'Crêpes et galettes traditionnelles face à la mer.', 'Dégustez nos spécialités bretonnes, galettes de sarrasin et crêpes de froment, élaborées avec des produits locaux. Terrasse ensoleillée.', 'uploads/offres/creperie_port.jpg', 4.6, 95, 'Accessible PMR.', 'http://aventurebretonne.bzh/creperie', '0296112233', 15.00, NOW(), NOW());
+(@offre_creperie_id, @categorie_creperie_id, @adresse_id_3, @compte_pro_id_1, 'Crêperie du Port', 'Crêpes et galettes traditionnelles face à la mer.', 'Dégustez nos spécialités bretonnes, galettes de sarrasin et crêpes de froment, élaborées avec des produits locaux. Terrasse ensoleillée.', 'uploads/offres/creperie_port.jpg', 4.6, 95, 'Accessible PMR.', 'http:/aventurebretonne.bzh/creperie', '0296112233', 15.00, NOW(), NOW());
 
 INSERT INTO `statuts` (`id`, `offre_id`, `status`, `changed_at`) VALUES (UUID(), @offre_creperie_id, 1, NOW());
 INSERT INTO `offres_tags` (`offre_id`, `tag_id`) VALUES
