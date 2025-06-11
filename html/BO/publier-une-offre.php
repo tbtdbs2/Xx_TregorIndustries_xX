@@ -1,10 +1,28 @@
 <?php
+// 1. Cette ligne sécurise la page et récupère l'ID du pro.
+$current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
+
+// 2. Inclusions des dépendances nécessaires pour la page
 require_once '../composants/generate_uuid.php';
 require_once '../../includes/db.php';
 
-$current_pro_id = '7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c20'; // id de l'user (à changer lorsque tous le systeme de connexion sera finit)
-
+// 3. Logique de traitement du formulaire
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
+
+    // Vérification pour les offres payantes (sans utiliser les sessions)
+    if (isset($_POST['mettre_a_la_une']) || isset($_POST['offre_speciale'])) {
+        $stmtPro = $pdo->prepare("SELECT iban, bic FROM comptes_pro WHERE id = :pro_id");
+        $stmtPro->execute([':pro_id' => $current_pro_id]);
+        $pro_details = $stmtPro->fetch(PDO::FETCH_ASSOC);
+
+        if (!$pro_details || empty($pro_details['iban']) || empty($pro_details['bic'])) {
+            $notification = urlencode('Pour les options payantes, vos informations bancaires (IBAN et BIC) doivent être renseignées dans votre profil.');
+            header('Location: profil.php?notification_error=' . $notification);
+            exit();
+        }
+    }
+
+
     // fonction qui nettoie les input (Suppression d'espace, supprime les antislash, convertit les caractères spéciaux en entités HTML)
     function validate_input($data) {
         $data = trim($data);
@@ -684,10 +702,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
         }
     }
 }
-
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -696,10 +710,10 @@ if (session_status() == PHP_SESSION_NONE) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Publier votre offre</title>
     <link rel="icon" href="images/Logo2withoutbgorange.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https:/fonts.googleapis.com">
+    <link rel="preconnect" href="https:/fonts.gstatic.com" crossorigin>
+    <link href="https:/fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https:/cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
         
@@ -1057,7 +1071,7 @@ if (session_status() == PHP_SESSION_NONE) {
 
         <div class="header-right">
             <a href="profil.php" class="btn btn-secondary">Mon profil</a>
-            <a href="connexion-compte.php" class="btn btn-primary">Se déconnecter</a>
+            <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
         </div>
     </div>
     </header>
@@ -1157,7 +1171,7 @@ if (session_status() == PHP_SESSION_NONE) {
                     </div>
 
                     <label for="site">Site Web</label>
-                    <input type="url" id="site" name="site" placeholder="https://www.example.com" value="<?php echo isset($_POST['site']) ? htmlspecialchars($_POST['site']) : ''; ?>">
+                    <input type="url" id="site" name="site" placeholder="https:/www.example.com" value="<?php echo isset($_POST['site']) ? htmlspecialchars($_POST['site']) : ''; ?>">
                     <div class="error-message">Veuillez entrer une URL valide.</div>
 
                     <label for="ligne_adresse">Ligne d'adresse *</label>
@@ -1270,7 +1284,7 @@ if (session_status() == PHP_SESSION_NONE) {
                  mainDateInput.required = !isDateHandledByCategoryOrNotApplicable;
                  if (categorieId === '2') mainDateInput.required = true;
                  else if (categorieId === '5') mainDateInput.required = false;
-                 setMinDateForInput(mainDateInput); // Set min date for main date input
+                 setMinDateForInput(mainDateInput); / Set min date for main date input
             }
 
 
@@ -1360,7 +1374,7 @@ if (session_status() == PHP_SESSION_NONE) {
                     <div class="error-message">Veuillez entrer un nombre valide.</div>
 
                     <label for="maps_url_parc">Lien vers le plan du parc (URL) *</label>
-                    <input type="url" id="maps_url_parc" name="maps_url_parc" required placeholder="https://example.com/plan-du-parc" value="${mapsUrlVal}">
+                    <input type="url" id="maps_url_parc" name="maps_url_parc" required placeholder="https:/example.com/plan-du-parc" value="${mapsUrlVal}">
                     <div class="error-message">Veuillez entrer une URL valide.</div>
 
                     <div id="attractions-container"> <h4 class="dynamic-section-subtitle" style="margin-top:var(--espacement-double);">Attractions spécifiques (au moins une requise) :</h4>
@@ -1372,7 +1386,7 @@ if (session_status() == PHP_SESSION_NONE) {
                 const prixMoyenVal = postData['prix_moyen_restaurant'] || '';
                 htmlContent = `
                     <label for="lien_menu_restaurant">Lien vers le menu (URL) *</label>
-                    <input type="url" id="lien_menu_restaurant" name="lien_menu_restaurant" required placeholder="https://example.com/menu" value="${menuUrlVal}">
+                    <input type="url" id="lien_menu_restaurant" name="lien_menu_restaurant" required placeholder="https:/example.com/menu" value="${menuUrlVal}">
                     <div class="error-message">Veuillez entrer une URL valide pour le menu.</div>
 
                     <label for="prix_moyen_restaurant">Prix moyen par personne (€) *</label>
@@ -1528,7 +1542,7 @@ if (session_status() == PHP_SESSION_NONE) {
                 </div>
             `;
             container.appendChild(newGroup);
-            setMinDateForInput(newGroup.querySelector('input[type="date"]')); // Set min date for new input
+            setMinDateForInput(newGroup.querySelector('input[type="date"]')); / Set min date for new input
             addRemoveCrossIfNeeded(newGroup);
             if (offerForm.dataset.submitted === 'true') validateAllFields(newGroup);
         }
@@ -1612,7 +1626,7 @@ if (session_status() == PHP_SESSION_NONE) {
                 </div>
             `;
             horairesContainer.appendChild(newGroup);
-            setMinDateForInput(newGroup.querySelector('input[type="date"]')); // Set min date for new input
+            setMinDateForInput(newGroup.querySelector('input[type="date"]')); / Set min date for new input
             addRemoveCrossIfNeeded(newGroup);
             if (offerForm.dataset.submitted === 'true') validateAllFields(newGroup);
         }
@@ -1712,7 +1726,7 @@ if (session_status() == PHP_SESSION_NONE) {
                 if (field.id === 'photos' && currentSelectedFiles.length > 6) isValidField = false;
                 if (field.multiple && field.required && field.selectedOptions.length === 0) isValidField = false;
                 
-                // Check date field min attribute
+                / Check date field min attribute
                 if (field.type === 'date' && field.min && field.value && field.value < field.min) {
                     isValidField = false;
                     if(errorMessageElement) errorMessageElement.textContent = "La date ne peut pas être antérieure à aujourd'hui.";
@@ -1732,7 +1746,7 @@ if (session_status() == PHP_SESSION_NONE) {
                         } else if (field.id === 'photos' && currentSelectedFiles.length > 6) {
                             errorMessageElement.textContent = "Vous ne pouvez sélectionner que 6 photos maximum.";
                         } else if (field.type === 'date' && field.min && field.value && field.value < field.min) {
-                            // message already set above
+                            / message already set above
                         }
                         errorMessageElement.style.display = 'block';
                     }

@@ -1,14 +1,24 @@
+<?php
+$current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
+?>
+<?php
+// --- AJOUT POUR AFFICHER LA NOTIFICATION ---
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+// --- FIN DE L'AJOUT ---
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PACT Pro - Profil</title><link rel="icon" href="images/Logo2withoutbgorange.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https:/fonts.googleapis.com">
+    <link rel="preconnect" href="https:/fonts.gstatic.com" crossorigin>
+    <link href="https:/fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https:/cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <style>
         /* Add your custom styles here */
@@ -97,7 +107,20 @@
 
 
         }
-
+        
+        /* --- STYLE POUR LE MESSAGE D'ERREUR --- */
+        .message.error {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            max-width: 660px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        /* --- FIN STYLE POUR LE MESSAGE D'ERREUR --- */
                 
         @media (max-width: 768px) {
     .container.content-area {
@@ -163,13 +186,24 @@
 
         <div class="header-right">
             <a href="profil.php" class="btn btn-secondary">Mon profil</a>
-            <a href="connexion-compte.php" class="btn btn-primary">Se déconnecter</a>
+            <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
         </div>
     </div>
     </header>
 
     <main>
         <div class="container content-area">
+
+            <?php
+            // --- AJOUT POUR AFFICHER LA NOTIFICATION ---
+            if (isset($_SESSION['notification_error'])) {
+                echo "<div class='message error'>" . htmlspecialchars($_SESSION['notification_error']) . "</div>";
+                // On supprime la notification pour qu'elle ne s'affiche pas à nouveau
+                unset($_SESSION['notification_error']);
+            }
+            // --- FIN DE L'AJOUT ---
+            ?>
+            
             <h1>Mes Informations</h1>
             <div class="profil">
                 <div class="email">

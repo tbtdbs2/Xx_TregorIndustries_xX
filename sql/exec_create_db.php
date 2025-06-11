@@ -1,8 +1,8 @@
 <?php
-// Charger les variables d'environnement
+/ Charger les variables d'environnement
 $env = parse_ini_file(__DIR__ . '/../.env');
 
-// Extraire les infos de connexion
+/ Extraire les infos de connexion
 $host =     $env['HOST'];
 $user =     $env['DB_USER'];
 $password = $env['MARIADB_PASSWORD'];
@@ -11,7 +11,7 @@ $database = $env['DB_NAME'];
 
 echo "Données du .env chargées !\n";
 
-// Lire le contenu du script SQL
+/ Lire le contenu du script SQL
 $sqlFileName = 'create_db.sql';
 $sqlFilePath = __DIR__ . '/' . $sqlFileName;
 $sql = file_get_contents($sqlFilePath);
@@ -22,7 +22,7 @@ if ($sql === false) {
     echo "$sqlFileName chargé avec succès !\n";
 }
 
-// Connexion a MariaDB
+/ Connexion a MariaDB
 $conn = new mysqli($host, $user, $password, '', $port);
 if ($conn->connect_error) {
     die("❌ Échec de la connexion : " . $conn->connect_error);
@@ -30,14 +30,14 @@ if ($conn->connect_error) {
     echo "Connexion à l'hôte $host réussie !\n";
 }
 
-// Creer la base de donnees si elle n'existe pas
+/ Creer la base de donnees si elle n'existe pas
 $conn->query("CREATE DATABASE IF NOT EXISTS `$database`");
 $conn->select_db($database);
 
-// Executer les requetes multiples du fichier SQL
+/ Executer les requetes multiples du fichier SQL
 if ($conn->multi_query($sql)) {
     do {
-        // Stocker les resultats et les ignorer
+        / Stocker les resultats et les ignorer
         if ($result = $conn->store_result()) {
             $result->free();
         }
