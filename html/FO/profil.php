@@ -2,7 +2,9 @@
 // Démarrer la session (doit être au TOUT DÉBUT du fichier)
 session_start();
 
-require_once __DIR__ . '/../../includes/db.php';
+$dsn = 'mysql:host=localhost;dbname=sae;charset=utf8'; 
+$username_db = 'root'; 
+$password_db = ''; 
 
 $update_message = '';
 $validation_errors_from_session = []; // Pour les erreurs de validation serveur
@@ -91,11 +93,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
     }
 
     try {
-
-            $pdo->beginTransaction();
+            $pdo_update = new PDO($dsn, $username_db, $password_db);
+            $pdo_update->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $pdo_update->beginTransaction();
 
             $sqlAdresse = "UPDATE adresses SET street = :street, city = :city, postal_code = :postal_code WHERE id = :adresse_id_val";
-            $stmtAdresse = $pdo->prepare($sqlAdresse);
+            $stmtAdresse = $pdo_update->prepare($sqlAdresse);
             $stmtAdresse->bindParam(':street', $submitted_data['adresse_postale']);
             $stmtAdresse->bindParam(':city', $submitted_data['ville']);
             $stmtAdresse->bindParam(':postal_code', $submitted_data['code_postal']);
@@ -103,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
             $stmtAdresse->execute();
 
             $sqlMembre = "UPDATE comptes_membre SET alias = :pseudonyme, firstname = :prenom, lastname = :nom, email = :email, phone = :telephone WHERE id = :userId";
-            $stmtMembre = $pdo->prepare($sqlMembre);
+            $stmtMembre = $pdo_update->prepare($sqlMembre);
             $stmtMembre->bindParam(':pseudonyme', $submitted_data['pseudonyme']);
             $stmtMembre->bindParam(':prenom', $submitted_data['prenom']);
             $stmtMembre->bindParam(':nom', $submitted_data['nom']);
@@ -112,13 +115,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
             $stmtMembre->bindParam(':userId', $userIdToUpdate);
             $stmtMembre->execute();
 
-            $pdo->commit();
+            $pdo_update->commit();
             header('Location: profil.php?update=success');
             exit;
 
     } catch (PDOException $e) {
-            if (isset($pdo) && $pdo->inTransaction()) {
-                $pdo->rollBack();
+            if (isset($pdo_update) && $pdo_update->inTransaction()) {
+                $pdo_update->rollBack();
             }
             error_log("Erreur de mise à jour du profil pour user ID " . $userIdToUpdate . " (Exception attrapée): " . $e->getMessage());
             header('Location: profil.php?update=error'); 
@@ -141,18 +144,22 @@ if (isset($_GET['update'])) {
 
 // 1. Vérifier si l'utilisateur est connecté
 if (!isset($_SESSION['user_id'])) {
-    header('Location: connexion-compte.php'); 
-    exit; 
+    // header('Location: connexion-compte.php'); 
+    // exit; 
 }
 
 // 2. Récupérer l'identifiant de l'utilisateur connecté
+$_SESSION['user_id'] = 'test-user-id-001'; 
 $userId = $_SESSION['user_id'];
 $userLoggedIn = true; 
 
 // 3. Interroger la base de données
 $membre = null; 
+$pdo_select = null; 
 
 try {
+    $pdo_select = new PDO($dsn, $username_db, $password_db);
+    $pdo_select->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     $sql = "SELECT cm.alias AS pseudonyme,
                    cm.firstname AS prenom, 
@@ -166,7 +173,7 @@ try {
             FROM comptes_membre cm
             JOIN adresses a ON cm.adresse_id = a.id
             WHERE cm.id = :userId";
-    $stmt = $pdo->prepare($sql);
+    $stmt = $pdo_select->prepare($sql);
     $stmt->bindParam(':userId', $userId, PDO::PARAM_STR);
     $stmt->execute();
     $membre = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -562,7 +569,8 @@ try {
                 { type: 'format', regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Le format de l\'email est invalide.'} // Regex simple
             ]},
             { input: document.getElementById('telephone'), errorSpan: document.getElementById('telephoneError'), validations: [
-                { type: 'format', regex: /^[^a-zA-ZÀ-ÿ]*$/u, message: 'Le numéro de téléphone ne doit pas contenir de lettres.', checkNonEmpty: true }
+                { type: 'format', regex: /^[^a-zA-ZÀ-ÿ]*$/u, message: 'Le numéro de téléphone ne doit pas contenir de lettres.', checkNonEmpty: true },
+                { type: 'format', regex: /^\d{10}$/, message: 'Le numéro doit être composé de 10 chiffres minimum.'}
             ]}
         ];
         
