@@ -1,6 +1,6 @@
 -- phpMyAdmin SQL Dump
 -- version 5.2.2
--- https:/www.phpmyadmin.net/
+-- https://www.phpmyadmin.net/
 --
 -- Hôte : mariadb:3306
 -- Généré le : mer. 21 mai 2025 à 15:00
