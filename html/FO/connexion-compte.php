@@ -283,7 +283,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <header>
         <div class="container header-container">
             <div class="header-left">
-                <a href="index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
+                <a href="../index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
                 <nav class="main-nav">
                     <ul>
                         <li><a href="index.php">Accueil</a></li>
