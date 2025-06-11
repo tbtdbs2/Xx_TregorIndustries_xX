@@ -2,11 +2,17 @@
 // Démarrer la session (doit être au TOUT DÉBUT du fichier)
 session_start();
 
+
 require_once __DIR__ . '/../../includes/db.php';
 
 $update_message = '';
 $validation_errors_from_session = []; // Pour les erreurs de validation serveur
 $submitted_data_from_session = []; // Pour repeupler le formulaire après erreur serveur
+
+// Variables pour les messages de pop-up
+$show_popup = false;
+$popup_message = '';
+$popup_type = ''; // 'success' ou 'error'
 
 // Récupérer les erreurs de validation et les données soumises de la session, si elles existent
 if (isset($_GET['validation_error']) && $_GET['validation_error'] === 'true') {
@@ -127,14 +133,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
 }
 
 
-// Afficher les messages de succès/erreur de la BDD (après redirection)
+// Définir les messages de la pop-up basés sur les paramètres GET
 if (isset($_GET['update'])) {
     if ($_GET['update'] === 'success') {
-        $update_message = "<p style='color:green; text-align:center; margin-bottom:15px;'>Vos informations ont été mises à jour avec succès !</p>";
+        $show_popup = true;
+        $popup_message = "Vos informations ont été mises à jour avec succès !";
+        $popup_type = 'success';
     } elseif ($_GET['update'] === 'error') {
-        $update_message = "<p style='color:red; text-align:center; margin-bottom:15px;'>Une erreur technique est survenue lors de la mise à jour. Veuillez réessayer.</p>";
+        $show_popup = true;
+        $popup_message = "Une erreur technique est survenue lors de la mise à jour. Veuillez réessayer.";
+        $popup_type = 'error';
     } elseif ($_GET['update'] === 'error_no_address_id') {
-        $update_message = "<p style='color:red; text-align:center; margin-bottom:15px;'>Erreur : Identifiant d'adresse manquant pour la mise à jour.</p>";
+        $show_popup = true;
+        $popup_message = "Erreur : Identifiant d'adresse manquant pour la mise à jour.";
+        $popup_type = 'error';
     }
 }
 
@@ -302,7 +314,82 @@ try {
              display: none;
         }
 
+        /* Styles pour la pop-up */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
 
+        .popup-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .popup-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 90%;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .popup-overlay.show .popup-content {
+            transform: scale(1);
+        }
+
+        .popup-content h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+            color: #333;
+        }
+
+        .popup-content p {
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            line-height: 1.5;
+            color: #555;
+        }
+
+        .popup-content button {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.2s ease;
+        }
+
+        .popup-content button.success {
+            background-color: #008C8C; /* Vert PACT */
+            color: white;
+        }
+
+        .popup-content button.error {
+            background-color: rgb(255, 72, 90); /* Rouge */
+            color: white;
+        }
+
+        .popup-content button:hover {
+            opacity: 0.9;
+        }
+        
         @media (max-width: 768px) {
             .container.content-area { padding: 16px 0px; }
             .card_section {
@@ -377,7 +464,7 @@ try {
     <main>
         <div class="container content-area">
             <h1>Mes Informations</h1>
-            <?php if (!empty($update_message)) echo $update_message; ?>
+            <?php // if (!empty($update_message)) echo $update_message; // Ce bloc est remplacé par la pop-up ?>
 
             <?php if ($membre && !empty($membre)): ?>
             <form id="profilForm" method="POST" action="profil.php">
@@ -486,6 +573,14 @@ try {
         </div>
     </main>
 
+    <div id="popupOverlay" class="popup-overlay">
+        <div class="popup-content">
+            <h2 id="popupTitle"></h2>
+            <p id="popupMessage"></p>
+            <button id="popupCloseButton"></button>
+        </div>
+    </div>
+
     <footer>
         <div class="container footer-content">
             <div class="footer-section social-media">
@@ -534,6 +629,12 @@ try {
         const btnAnnuler = document.getElementById('btnAnnulerProfil');
         const allInputs = profilForm.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"]');
 
+        // Éléments de la pop-up
+        const popupOverlay = document.getElementById('popupOverlay');
+        const popupTitle = document.getElementById('popupTitle');
+        const popupMessage = document.getElementById('popupMessage');
+        const popupCloseButton = document.getElementById('popupCloseButton');
+
         const fieldValidators = [
             { input: document.getElementById('pseudo'), errorSpan: document.getElementById('pseudoError'), validations: [
                 { type: 'required', message: 'Le pseudonyme est requis.'}
@@ -562,7 +663,8 @@ try {
                 { type: 'format', regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Le format de l\'email est invalide.'} // Regex simple
             ]},
             { input: document.getElementById('telephone'), errorSpan: document.getElementById('telephoneError'), validations: [
-                { type: 'format', regex: /^[^a-zA-ZÀ-ÿ]*$/u, message: 'Le numéro de téléphone ne doit pas contenir de lettres.', checkNonEmpty: true }
+                { type: 'format', regex: /^[^a-zA-ZÀ-ÿ]*$/u, message: 'Le numéro de téléphone ne doit pas contenir de lettres.', checkNonEmpty: true },
+                { type: 'format', regex: /\d{10,}/, message: 'Le numéro de téléphone doit être composé de 10 chiffres minimum.'}
             ]}
         ];
         
@@ -722,6 +824,45 @@ try {
                 });
             }
         });
+
+        // Fonction pour afficher la pop-up
+        function showPopup(title, message, type) {
+            popupTitle.textContent = title;
+            popupMessage.textContent = message;
+            popupCloseButton.textContent = 'Fermer';
+            // Supprimer toutes les classes de type précédentes
+            popupCloseButton.classList.remove('success', 'error');
+            // Ajouter la classe de type actuelle
+            popupCloseButton.classList.add(type);
+            popupOverlay.classList.add('show');
+        }
+
+        // Fonction pour cacher la pop-up
+        function hidePopup() {
+            popupOverlay.classList.remove('show');
+            // Optionnel: Réinitialiser l'URL si nécessaire pour retirer les paramètres GET
+            const url = new URL(window.location.href);
+            url.searchParams.delete('update');
+            history.replaceState(null, '', url.toString());
+        }
+
+        // Gérer le clic sur le bouton de fermeture de la pop-up
+        popupCloseButton.addEventListener('click', hidePopup);
+        // Gérer le clic en dehors de la pop-up pour la fermer
+        popupOverlay.addEventListener('click', function(event) {
+            if (event.target === popupOverlay) {
+                hidePopup();
+            }
+        });
+
+        // Afficher la pop-up au chargement si les paramètres GET sont présents
+        <?php if ($show_popup): ?>
+            showPopup(
+                '<?php echo ($popup_type === "success") ? "Succès !" : "Erreur !"; ?>',
+                '<?php echo htmlspecialchars($popup_message); ?>',
+                '<?php echo $popup_type; ?>'
+            );
+        <?php endif; ?>
     });
     </script>
     <script src="script.js" defer></script> 
