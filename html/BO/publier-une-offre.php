@@ -710,10 +710,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Publier votre offre</title>
     <link rel="icon" href="images/Logo2withoutbgorange.png">
-    <link rel="preconnect" href="https:/fonts.googleapis.com">
-    <link rel="preconnect" href="https:/fonts.gstatic.com" crossorigin>
-    <link href="https:/fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https:/cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
         
@@ -1171,7 +1171,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     </div>
 
                     <label for="site">Site Web</label>
-                    <input type="url" id="site" name="site" placeholder="https:/www.example.com" value="<?php echo isset($_POST['site']) ? htmlspecialchars($_POST['site']) : ''; ?>">
+                    <input type="url" id="site" name="site" placeholder="https://www.example.com" value="<?php echo isset($_POST['site']) ? htmlspecialchars($_POST['site']) : ''; ?>">
                     <div class="error-message">Veuillez entrer une URL valide.</div>
 
                     <label for="ligne_adresse">Ligne d'adresse *</label>
@@ -1374,7 +1374,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     <div class="error-message">Veuillez entrer un nombre valide.</div>
 
                     <label for="maps_url_parc">Lien vers le plan du parc (URL) *</label>
-                    <input type="url" id="maps_url_parc" name="maps_url_parc" required placeholder="https:/example.com/plan-du-parc" value="${mapsUrlVal}">
+                    <input type="url" id="maps_url_parc" name="maps_url_parc" required placeholder="https://example.com/plan-du-parc" value="${mapsUrlVal}">
                     <div class="error-message">Veuillez entrer une URL valide.</div>
 
                     <div id="attractions-container"> <h4 class="dynamic-section-subtitle" style="margin-top:var(--espacement-double);">Attractions spécifiques (au moins une requise) :</h4>
@@ -1386,7 +1386,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 const prixMoyenVal = postData['prix_moyen_restaurant'] || '';
                 htmlContent = `
                     <label for="lien_menu_restaurant">Lien vers le menu (URL) *</label>
-                    <input type="url" id="lien_menu_restaurant" name="lien_menu_restaurant" required placeholder="https:/example.com/menu" value="${menuUrlVal}">
+                    <input type="url" id="lien_menu_restaurant" name="lien_menu_restaurant" required placeholder="https://example.com/menu" value="${menuUrlVal}">
                     <div class="error-message">Veuillez entrer une URL valide pour le menu.</div>
 
                     <label for="prix_moyen_restaurant">Prix moyen par personne (€) *</label>

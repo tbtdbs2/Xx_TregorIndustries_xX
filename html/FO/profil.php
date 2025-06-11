@@ -188,11 +188,11 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PACT - Mon Profil</title><link rel="icon" href="images/Logo2withoutbg.png">
-    <link rel="preconnect" href="https:/fonts.googleapis.com">
-    <link rel="preconnect" href="https:/fonts.gstatic.com" crossorigin>
-    <link href="https:/fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https:/cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <style>
         .container.content-area {
@@ -516,7 +516,7 @@ try {
             ]},
             { input: document.getElementById('email'), errorSpan: document.getElementById('emailError'), validations: [
                 { type: 'required', message: 'L\'email est requis.'},
-                { type: 'format', regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Le format de l\'email est invalide.'} / Regex simple
+                { type: 'format', regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Le format de l\'email est invalide.'} // Regex simple
             ]},
             { input: document.getElementById('telephone'), errorSpan: document.getElementById('telephoneError'), validations: [
                 { type: 'format', regex: /^[^a-zA-ZÀ-ÿ]*$/u, message: 'Le numéro de téléphone ne doit pas contenir de lettres.', checkNonEmpty: true }
@@ -554,16 +554,16 @@ try {
         function exitEditModeAndRevert() {
             allInputs.forEach(input => {
                 input.setAttribute('readonly', 'readonly');
-                / Les valeurs sont rechargées par PHP si validation serveur échoue,
-                / ou depuis $membre si pas de soumission.
-                / Pour annuler des modifs en cours non soumises, on remet les valeurs initiales chargées.
+                // Les valeurs sont rechargées par PHP si validation serveur échoue,
+                // ou depuis $membre si pas de soumission.
+                // Pour annuler des modifs en cours non soumises, on remet les valeurs initiales chargées.
                 input.value = initialValues[input.id] || ''; 
             });
             btnModifier.style.display = 'inline-block';
             btnConfirmer.style.display = 'none';
             btnAnnuler.style.display = 'none';
             clearAllJsErrors(); 
-            / Effacer aussi les messages d'erreur serveur affichés (si besoin, mais ils sont via PHP)
+            // Effacer aussi les messages d'erreur serveur affichés (si besoin, mais ils sont via PHP)
             document.querySelectorAll('.error-message-server').forEach(span => span.style.display = 'none');
         }
 
@@ -586,7 +586,7 @@ try {
                     if (field.input.hasAttribute('readonly')) return;
 
                     const value = field.input.value.trim();
-                    const originalValue = field.input.value; / Pour les regex qui ne doivent pas ignorer les espaces internes
+                    const originalValue = field.input.value; // Pour les regex qui ne doivent pas ignorer les espaces internes
 
                     for (const validation of field.validations) {
                         let fieldIsValid = true;
@@ -595,7 +595,7 @@ try {
                              // Pour les regex qui ne sont pas des vérifications de lettres, code postal ou email, utiliser la valeur originale pour préserver les espaces etc.
                             testValue = originalValue; 
                         }
-                         if (validation.type === 'format' && validation.regex.source.includes('^[^a-zA-ZÀ-ÿ]*$')) { / Spécifique pour téléphone (pas de lettres)
+                         if (validation.type === 'format' && validation.regex.source.includes('^[^a-zA-ZÀ-ÿ]*$')) { // Spécifique pour téléphone (pas de lettres)
                             testValue = originalValue;
                         }
 
