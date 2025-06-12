@@ -339,6 +339,34 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
             .card .card-description { -webkit-line-clamp: 3; }
             .sort-options button { font-size: 0.8em; }
         }
+        /* --- STYLES POUR LA NOTIFICATION PROFIL --- */
+    .profile-link-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .notification-bubble {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 24px;
+        height: 24px;
+        background-color: #dc3545;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8em;
+        font-weight: bold;
+        border: 2px solid white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .header-right .profile-link-container + .btn-primary {
+        margin-left: 1rem; 
+    }
     </style>
 </head>
 <body>
@@ -357,7 +385,12 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
             </ul>
         </nav>
         <div class="header-right">
-            <a href="profil.php" class="btn btn-secondary">Mon profil</a>
+            <div class="profile-link-container">
+                <a href="profil.php" class="btn btn-secondary">Mon profil</a>
+                <?php if (isset($unanswered_reviews_count) && $unanswered_reviews_count > 0): ?>
+                    <span class="notification-bubble"><?php echo $unanswered_reviews_count; ?></span>
+                <?php endif; ?>
+            </div>
             <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
         </div>
     </div>
