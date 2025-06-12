@@ -2,17 +2,18 @@
 // On se connecte à la base de données
 require_once(__DIR__ . '/../../includes/db.php');
 
-// --- RÉCUPÉRATION DES CATÉGORIES POUR LE FILTRE (Requête Corrigée) ---
+// --- RÉCUPÉRATION DES CATÉGORIES POUR LE FILTRE ---
 $category_stmt = $pdo->query('SELECT id, type FROM categories ORDER BY type');
 $all_categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // --- RÉCUPÉRATION DES FILTRES ET DU TRI ---
 $searchTerm = isset($_GET['q']) ? trim($_GET['q']) : '';
-$category_id = isset($_GET['category']) && $_GET['category'] !== '' ? (int)$_GET['category'] : null;
+// CORRECTION : Simplification de la récupération de l'ID de catégorie pour une comparaison fiable
+$category_id = isset($_GET['category']) ? $_GET['category'] : ''; 
 $destination = isset($_GET['destination']) ? trim($_GET['destination']) : '';
 $priceMin = isset($_GET['price_min_input']) && $_GET['price_min_input'] !== '' ? (float)$_GET['price_min_input'] : null;
 $priceMax = isset($_GET['price_max_input']) && $_GET['price_max_input'] !== '' ? (float)$_GET['price_max_input'] : null;
-$sort = isset($_GET['sort']) ? $_GET['sort'] : 'note'; // Tri par défaut
+$sort = isset($_GET['sort']) ? $_GET['sort'] : 'note'; 
 
 // --- CONSTRUCTION DE LA REQUÊTE SQL ---
 $sql = 'SELECT offres.*, categories.type as category_type FROM offres 
@@ -21,7 +22,6 @@ $sql = 'SELECT offres.*, categories.type as category_type FROM offres
 $conditions = [];
 $params = [];
 
-// Filtre par mot-clé
 if (!empty($searchTerm)) {
     $conditions[] = '(offres.title LIKE ? OR offres.summary LIKE ?)';
     $likeTerm = '%' . $searchTerm . '%';
@@ -29,19 +29,17 @@ if (!empty($searchTerm)) {
     $params[] = $likeTerm;
 }
 
-// Filtre par catégorie (maintenant fonctionnel)
-if ($category_id !== null) {
+// Filtre par catégorie (la condition est modifiée pour ne pas filtrer si l'ID est vide)
+if (!empty($category_id)) {
     $conditions[] = 'offres.categorie_id = ?';
     $params[] = $category_id;
 }
 
-// Filtre par destination
 if (!empty($destination)) {
     $conditions[] = 'adresses.city LIKE ?';
     $params[] = '%' . $destination . '%';
 }
 
-// Filtre par prix
 if ($priceMin !== null) {
     $conditions[] = 'offres.price >= ?';
     $params[] = $priceMin;
@@ -51,7 +49,6 @@ if ($priceMax !== null) {
     $params[] = $priceMax;
 }
 
-// Ajout des conditions
 if (!empty($conditions)) {
     $sql .= ' WHERE ' . implode(' AND ', $conditions);
 }
@@ -123,8 +120,8 @@ unset($current_filters['sort']);
         .sort-options .sort-button { text-decoration: none; background-color: var(--couleur-blanche); color: var(--couleur-texte); border: 1px solid var(--couleur-bordure); padding: 8px 18px; border-radius: 20px; cursor: pointer; font-size: 0.9em; font-weight: var(--font-weight-medium); transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
         .sort-options .sort-button:hover { border-color: var(--couleur-principale); color: var(--couleur-principale); }
         .sort-options .sort-button.active { background-color: var(--couleur-principale); color: var(--couleur-blanche); border-color: var(--couleur-principale); }
-        .apply-filters-btn { width:100%; background-color: var(--couleur-principale); color: var(--couleur-blanche); border: 1px solid var(--couleur-principale); padding: 12px 18px; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: var(--font-weight-medium); transition: background-color 0.2s ease; }
-        .apply-filters-btn:hover { background-color: var(--couleur-principale-hover); }
+        .reset-filters-btn { width:100%; background-color: transparent; color: var(--couleur-principale); border: 1px solid var(--couleur-principale); padding: 12px 18px; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: var(--font-weight-medium); transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
+        .reset-filters-btn:hover { background-color: var(--couleur-secondaire-hover-bg); color: var(--couleur-principale-hover); border-color: var(--couleur-secondaire-hover-border); }
         .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; }
         .card { background-color: var(--couleur-blanche); border: 1px solid var(--couleur-bordure); border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; overflow: hidden; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -180,14 +177,14 @@ unset($current_filters['sort']);
 
     <main>
         <div class="container content-area search-page-container">
-            <form method="GET" action="recherche.php" class="filters-sidebar">
+            <form method="GET" action="recherche.php" class="filters-sidebar" id="filters-form">
                 <div class="filter-group">
                     <h3>Catégorie</h3>
                     <select id="category" name="category">
                         <option value="">Toutes</option>
                         <?php foreach ($all_categories as $cat): ?>
-                            <option value="<?php echo $cat['id']; ?>" <?php if ($category_id == $cat['id']) echo 'selected'; ?>>
-                                <?php echo htmlspecialchars(ucfirst($cat['type'])); // On affiche la colonne 'type' ?>
+                            <option value="<?php echo htmlspecialchars($cat['id']); ?>" <?php if ($category_id == $cat['id']) echo 'selected'; ?>>
+                                <?php echo htmlspecialchars(ucfirst($cat['type'])); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -230,14 +227,14 @@ unset($current_filters['sort']);
                        <label><input type="radio" name="status" value="closed" disabled> Fermé</label>
                     </div>
                 </div>
-                <button type="submit" class="apply-filters-btn">Appliquer les filtres</button>
+                <button type="button" id="reset-filters-btn" class="reset-filters-btn">Réinitialiser les filtres</button>
             </form>
 
             <section class="results-area">
                 <div class="search-and-sort-controls">
                      <form method="GET" action="recherche.php" class="search-bar-results">
                         <input type="text" name="q" placeholder="Rechercher une offre..." value="<?php echo htmlspecialchars($searchTerm); ?>">
-                        <input type="hidden" name="category" value="<?php echo htmlspecialchars((string)$category_id); ?>">
+                        <input type="hidden" name="category" value="<?php echo htmlspecialchars($category_id); ?>">
                         <input type="hidden" name="destination" value="<?php echo htmlspecialchars($destination); ?>">
                         <input type="hidden" name="price_min_input" value="<?php echo htmlspecialchars((string)$priceMin); ?>">
                         <input type="hidden" name="price_max_input" value="<?php echo htmlspecialchars((string)$priceMax); ?>">
@@ -327,6 +324,19 @@ unset($current_filters['sort']);
                 mobileNavLinks.classList.toggle('active');
             });
         }
+    });
+
+    const filtersForm = document.getElementById('filters-form');
+    const resetFiltersBtn = document.getElementById('reset-filters-btn');
+
+    filtersForm.addEventListener('change', function() {
+        filtersForm.submit();
+    });
+
+    resetFiltersBtn.addEventListener('click', function() {
+        const url = new URL(window.location);
+        url.search = '';
+        window.location.href = url.href;
     });
     </script>
 </body>
