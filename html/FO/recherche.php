@@ -8,12 +8,26 @@ $all_categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // --- RÉCUPÉRATION DES FILTRES ET DU TRI ---
 $searchTerm = isset($_GET['q']) ? trim($_GET['q']) : '';
-// CORRECTION : Simplification de la récupération de l'ID de catégorie pour une comparaison fiable
 $category_id = isset($_GET['category']) ? $_GET['category'] : ''; 
+$category_type = isset($_GET['category_type']) ? trim($_GET['category_type']) : '';
 $destination = isset($_GET['destination']) ? trim($_GET['destination']) : '';
 $priceMin = isset($_GET['price_min_input']) && $_GET['price_min_input'] !== '' ? (float)$_GET['price_min_input'] : null;
 $priceMax = isset($_GET['price_max_input']) && $_GET['price_max_input'] !== '' ? (float)$_GET['price_max_input'] : null;
-$sort = isset($_GET['sort']) ? $_GET['sort'] : 'note'; 
+$sort = isset($_GET['sort']) ? $_GET['sort'] : 'note';
+
+// --- CORRECTION : LOGIQUE POUR PRÉ-REMPLIR LE FILTRE CATÉGORIE ---
+// Si on reçoit un category_type (depuis la page d'accueil) et que category_id n'est pas déjà défini
+if (!empty($category_type) && empty($category_id)) {
+    // On parcourt toutes les catégories pour trouver l'ID correspondant au type
+    foreach ($all_categories as $cat) {
+        if ($cat['type'] === $category_type) {
+            $category_id = $cat['id']; // On définit le category_id
+            break; // On a trouvé, on arrête la boucle
+        }
+    }
+}
+// --- FIN DE LA CORRECTION ---
+
 
 // --- CONSTRUCTION DE LA REQUÊTE SQL ---
 $sql = 'SELECT offres.*, categories.type as category_type FROM offres 
@@ -29,11 +43,17 @@ if (!empty($searchTerm)) {
     $params[] = $likeTerm;
 }
 
-// Filtre par catégorie (la condition est modifiée pour ne pas filtrer si l'ID est vide)
+// Le filtrage se fait maintenant principalement par ID, ce qui est plus performant
+// et résout le problème de sélection dans le formulaire.
 if (!empty($category_id)) {
     $conditions[] = 'offres.categorie_id = ?';
     $params[] = $category_id;
+} elseif (!empty($category_type)) { 
+    // On garde ce fallback au cas où, mais la logique ci-dessus devrait prévaloir
+    $conditions[] = 'categories.type = ?';
+    $params[] = $category_type;
 }
+
 
 if (!empty($destination)) {
     $conditions[] = 'adresses.city LIKE ?';
@@ -333,12 +353,26 @@ unset($current_filters['sort']);
     const resetFiltersBtn = document.getElementById('reset-filters-btn');
 
     filtersForm.addEventListener('change', function() {
-        filtersForm.submit();
+        // Ne soumet le formulaire que si ce n'est pas un champ de saisie de prix qui change
+        // pour éviter de recharger à chaque chiffre tapé. On pourrait ajouter un bouton "Appliquer".
+        if(document.activeElement.type !== 'number') {
+            filtersForm.submit();
+        }
     });
+    
+    // On pourrait ajouter un listener sur le bouton "Entrée" pour les champs prix
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                filtersForm.submit();
+            }
+        });
+    });
+
 
     resetFiltersBtn.addEventListener('click', function() {
         const url = new URL(window.location);
-        url.search = '';
+        url.search = ''; // Vide tous les paramètres de l'URL
         window.location.href = url.href;
     });
     </script>

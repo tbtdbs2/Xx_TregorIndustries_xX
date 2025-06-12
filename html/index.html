@@ -342,6 +342,9 @@
             justify-content: center; 
         }
 
+        .clickable-card {
+            cursor: pointer;
+        }
 
         /* Media Queries pour la responsivité de la page d'accueil */
         @media (max-width: 768px) {
@@ -676,23 +679,23 @@
         <section class="news-section container"> <h2>Catégories</h2>
             <div class="cards-container-wrapper" id="categoriesCarouselWrapper">
                 <div class="cards-container">
-                    <div class="category-card">
+                    <div class="category-card clickable-card" data-category-type="activite">
                         <img src="FO/images/activite.jpg" alt="Activités">
                         <h3>Activités</h3>
                     </div>
-                    <div class="category-card">
+                    <div class="category-card clickable-card" data-category-type="visite">
                         <img src="FO/images//visite.jpg" alt="Visites">
                         <h3>Visites</h3>
                     </div>
-                    <div class="category-card">
+                    <div class="category-card clickable-card" data-category-type="spectacle">
                         <img src="FO/images/spectacle.jpg" alt="Spectacles">
                         <h3>Spectacles</h3>
                     </div>
-                    <div class="category-card">
+                    <div class="category-card clickable-card" data-category-type="parc_attractions">
                         <img src="FO/images/parcs-d-attraction.jpg" alt="Parcs d'attractions">
                         <h3>Parcs d'attractions</h3>
                     </div>
-                    <div class="category-card">
+                    <div class="category-card clickable-card" data-category-type="restauration">
                         <img src="FO/images/restaurant.jpg" alt="Restauration">
                         <h3>Restauration</h3>
                     </div>
@@ -705,23 +708,23 @@
         <section class="news-section container"> <h2>Destinations</h2>
             <div class="cards-container-wrapper" id="destinationsCarouselWrapper">
                 <div class="cards-container">
-                    <div class="destination-card">
+                    <div class="destination-card clickable-card" data-destination="Avignon">
                         <img src="FO/images/avignon.png" alt="Avignon">
                         <h3>Avignon</h3>
                     </div>
-                    <div class="destination-card">
+                    <div class="destination-card clickable-card" data-destination="Marseille">
                         <img src="FO/images/marseille.jpg" alt="Marseille">
                         <h3>Marseille</h3>
                     </div>
-                    <div class="destination-card">
+                    <div class="destination-card clickable-card" data-destination="Nice">
                         <img src="FO/images/nice.jpg" alt="Nice">
                         <h3>Nice</h3>
                     </div>
-                    <div class="destination-card">
+                    <div class="destination-card clickable-card" data-destination="Cannes">
                         <img src="FO/images/cannes.jpg" alt="Cannes">
                         <h3>Cannes</h3>
                     </div>
-                    <div class="destination-card">
+                    <div class="destination-card clickable-card" data-destination="Toulon">
                         <img src="FO/images/toulon.jpg" alt="Toulon">
                         <h3>Toulon</h3>
                     </div>
@@ -881,6 +884,25 @@
                 button.classList.toggle('active');
                 // Here you would typically also send a request to a server
                 // to save the favorite state for the user.
+            });
+        });
+
+        // NEW SCRIPT FOR REDIRECTION
+        const clickableCards = document.querySelectorAll('.clickable-card');
+        clickableCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const categoryType = this.dataset.categoryType;
+                const destination = this.dataset.destination;
+                
+                let redirectUrl = 'FO/recherche.php';
+                
+                if (categoryType) {
+                    redirectUrl += '?category_type=' + encodeURIComponent(categoryType);
+                } else if (destination) {
+                    redirectUrl += '?destination=' + encodeURIComponent(destination);
+                }
+                
+                window.location.href = redirectUrl;
             });
         });
     });
