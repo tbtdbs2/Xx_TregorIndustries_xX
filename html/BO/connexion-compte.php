@@ -1,113 +1,65 @@
 <?php
+$error_message = '';
 
-session_start(); // Démarre la session PHP (doit être la première chose)
-
-require_once __DIR__ . '/../../includes/db.php';
-
-$login_error = ''; // Variable pour stocker les messages d'erreur de connexion
-define('DB_HOST', '127.0.0.1');
-define('DB_PORT', '3306');
-define('DB_NAME', 'sae');
-define('DB_USER', 'root');
-define('DB_PASSWORD', '');
-// --- Redirection si déjà connecté ---
-// Si l'utilisateur est déjà connecté via la session, on le redirige directement vers le profil.
-if (isset($_SESSION['user_id'])) {
-    header("Location: profil.php");
-    exit();
-}
-
-// --- Traitement du formulaire de connexion ---
+// Le code ne s'exécute que lorsque l'utilisateur soumet le formulaire
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Vérifie si l'email et le mot de passe ont été soumis
-    if (isset($_POST['email']) && isset($_POST['password'])) {
-        $email = trim($_POST['email']);
-        $password = $_POST['password'];
+    
+    // Inclusion des fichiers nécessaires
+    require_once '../../includes/db.php';
+    require_once '../composants/generate_uuid.php';
 
-        // Validation du format de l'email côté serveur
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $login_error = "Le format de l'adresse email est invalide.";
+    // Vérification de la connexion à la base de données
+    if (!isset($pdo)) {
+        $error_message = "Erreur de connexion à la base de données.";
+    } else {
+        $email = trim($_POST['email'] ?? '');
+        $password = $_POST['password'] ?? '';
+
+        if (empty($email) || empty($password)) {
+            $error_message = "Veuillez saisir votre email et votre mot de passe.";
         } else {
-            try {
+            // Recherche de l'utilisateur dans la table `comptes_pro`
+            $stmt = $pdo->prepare("SELECT id, password FROM comptes_pro WHERE email = :email");
+            $stmt->execute(['email' => $email]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            // Vérification si l'utilisateur existe et si le mot de passe correspond (en clair)
+            if ($user && $password === $user['password']) {
+                // Connexion réussie, on gère le token
                 
-
-                // Prépare et exécute la requête pour récupérer l'utilisateur par son email
-                $stmt = $pdo->prepare("SELECT id, email, password FROM comptes_pro WHERE email = :email");
-                $stmt->execute(['email' => $email]);
-                $user = $stmt->fetch(); // Récupère la première ligne de résultat
+                // 1. Générer un token unique et sécurisé
+                $token = bin2hex(random_bytes(32));
                 
-                // Vérifie si un utilisateur a été trouvé et si le mot de passe correspond
-                //if ($user && password_verify($password, $user['password'])) {
-                if ($user && $password === $user['password']) {
-                    // --- AUTHENTIFICATION RÉUSSIE ---
+                // 2. Assurer l'exclusivité : supprimer les anciens tokens pour cet utilisateur
+                $stmtDelete = $pdo->prepare("DELETE FROM auth_tokens WHERE email = :email");
+                $stmtDelete->execute([':email' => $email]);
+                
+                // 3. Insérer le nouveau token dans la BDD
+                $stmtInsert = $pdo->prepare("INSERT INTO auth_tokens (id, email, token) VALUES (:id, :email, :token)");
+                $stmtInsert->execute([
+                    ':id'      => generate_uuid(),
+                    ':email'   => $email,
+                    ':token'   => $token
+                ]);
+                
+                // 4. Définir les cookies d'authentification
+                $cookie_options = [
+                    'expires' => time() + 86400, // Expire dans 1 jour
+                    'path' => '/',
+                    'httponly' => true,
+                    'samesite' => 'Lax'
+                ];
+                setcookie('auth_token', $token, $cookie_options);
+                setcookie('user_type', 'pro', $cookie_options);
 
-                    session_regenerate_id(true); // Régénère l'ID de session pour prévenir la fixation de session
-
-                    // Stockage des informations utilisateur en session
-                    $_SESSION['user_id'] = $user['id']; // ID du membre
-                    $_SESSION['user_email'] = $user['email'];
-
-                    // ====================================================================
-                    // GESTION DU TOKEN DE PERSISTENCE (TABLE auth_tokens)
-                    // ====================================================================
-
-                    $raw_persistence_token = bin2hex(random_bytes(64));
-                    $hashed_token_to_store = hash('sha256', $raw_persistence_token);
-
-                    $stmt_check_token = $pdo->prepare("SELECT COUNT(*) FROM auth_tokens WHERE email = :email");
-                    $stmt_check_token->execute(['email' => $user['email']]);
-                    $token_exists = $stmt_check_token->fetchColumn();
-
-                    if ($token_exists) {
-                        $stmt_update_token = $pdo->prepare(
-                            "UPDATE auth_tokens SET token = :new_token_hash WHERE email = :email"
-                        );
-                        $stmt_update_token->execute([
-                            'new_token_hash' => $hashed_token_to_store,
-                            'email' => $user['email']
-                        ]);
-                    } else {
-                        $stmt_insert_token = $pdo->prepare(
-                            "INSERT INTO auth_tokens (email, token) VALUES (:email, :token_hash)"
-                        );
-                        $stmt_insert_token->execute([
-                            'email' => $user['email'],
-                            'token_hash' => $hashed_token_to_store
-                        ]);
-                    }
-
-                    $_SESSION['session_token'] = $raw_persistence_token;
-
-                    if (isset($_POST['remember']) && $_POST['remember'] == 'on') {
-                        setcookie(
-                            'remember_me',
-                            $raw_persistence_token,
-                            [
-                                'expires' => time() + (86400 * 30),
-                                'path' => '/',
-                                'httponly' => true,
-                                'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
-                                'samesite' => 'Lax'
-                            ]
-                        );
-                    }
-
-                    // Redirection vers la page de profil après connexion réussie
-                    header("Location: profil.php");
-                    exit();
-
-                } else {
-                    // Email ou mot de passe incorrect
-                    $login_error = "Email ou mot de passe incorrect.";
-                }
-
-            } catch (PDOException $e) {
-                $login_error = "Erreur de connexion. Veuillez réessayer plus tard.";
-                error_log("Erreur PDO dans connexion-compte.php: " . $e->getMessage());
+                // 5. Rediriger vers le tableau de bord du back-office
+                header("Location: index.php");
+                exit();
+            } else {
+                // En cas d'échec
+                $error_message = "Email ou mot de passe incorrect.";
             }
         }
-    } else {
-        $login_error = "Veuillez saisir votre email et votre mot de passe.";
     }
 }
 ?>
@@ -265,7 +217,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         <div class="header-right">
             <a href="profil.php" class="btn btn-secondary">Mon profil</a>
-            <a href="connexion-compte.php" class="btn btn-primary">Se déconnecter</a>
+            <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
         </div>
     </div>
     </header>
@@ -275,7 +227,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <h1>Connexion</h1>
         <p>Consultez vos offres !</p>
         <div class="login-container">
-            <form class="login-form">
+            <?php if (!empty($error_message)) { echo '<p style="color: red; background-color: #f8d7da; padding: 10px; border-radius: 5px; border: 1px solid #f5c6cb;">' . htmlspecialchars($error_message) . '</p>'; } ?>
+            
+            <form class="login-form" method="POST" action="connexion-compte.php">
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" placeholder="adressemail@exemple.com">
@@ -291,14 +245,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <label for="remember">Rester connecté</label>
                     </div>
                     <a href="mdp-oublié.php" class="forgot-password">Mot de passe oublié ?</a>
-                    <a href="#" class="inscription-pro-lien">Je m'inscris en tant que professionnel</a>
+                    <a href="creation-compte.php" class="inscription-pro-lien">Je m'inscris en tant que professionnel</a>
                 </div>
             </form>
         </div>
     </div>
 </main>
 
-<footer>
+    <footer>
         <div class="container footer-content">
             <div class="footer-section social-media">
                 <div class="social-icons">

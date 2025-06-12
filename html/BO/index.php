@@ -1,3 +1,6 @@
+<?php
+$current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -405,7 +408,7 @@
 
         <div class="header-right">
             <a href="profil.php" class="btn btn-secondary">Mon profil</a>
-            <a href="connexion-compte.php" class="btn btn-primary">Se déconnecter</a>
+            <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
         </div>
     </div>
     </header>
@@ -549,7 +552,7 @@
     </footer>
     <script src="script.js" defer></script>
     <script>
-    // Script pour le carrousel (similaire à celui du FO)
+    / Script pour le carrousel (similaire à celui du FO)
     function scrollSpecificCarousel(carouselWrapperId, direction) {
         const wrapper = document.getElementById(carouselWrapperId);
         if (!wrapper) {
@@ -562,9 +565,9 @@
             return;
         }
 
-        let card = container.querySelector('.card'); // Adaptez si la classe de carte est différente (ex: .card-bo)
+        let card = container.querySelector('.card'); / Adaptez si la classe de carte est différente (ex: .card-bo)
         if (!card) { 
-            // Fallback si la classe .card n'est pas trouvée directement, essayez .card-bo
+            / Fallback si la classe .card n'est pas trouvée directement, essayez .card-bo
             card = container.querySelector('.card-bo');
         }
         
@@ -575,32 +578,32 @@
 
         const cardWidth = card.offsetWidth;
         const gapStyle = getComputedStyle(container).gap;
-        const gap = (gapStyle && gapStyle !== 'normal' && !isNaN(parseFloat(gapStyle))) ? parseFloat(gapStyle) : 20; // Valeur de gap par défaut si non trouvée
+        const gap = (gapStyle && gapStyle !== 'normal' && !isNaN(parseFloat(gapStyle))) ? parseFloat(gapStyle) : 20; / Valeur de gap par défaut si non trouvée
         const scrollAmount = cardWidth + gap;
 
         container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
 
-        // Mise à jour de la visibilité des flèches (Optionnel, mais recommandé pour une bonne UX)
+        / Mise à jour de la visibilité des flèches (Optionnel, mais recommandé pour une bonne UX)
         const prevArrow = wrapper.querySelector('.prev-arrow');
         const nextArrow = wrapper.querySelector('.next-arrow');
 
-        // Attendre un peu que le scroll se termine pour mettre à jour les flèches
+        / Attendre un peu que le scroll se termine pour mettre à jour les flèches
         setTimeout(() => {
             if (prevArrow) {
                 prevArrow.style.display = container.scrollLeft <= 0 ? 'none' : 'flex';
             }
             if (nextArrow) {
-                // Ajustement pour la condition de fin de scroll
-                const isAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth - (gap / 2) - 2; // Tolérance pour la fin
+                / Ajustement pour la condition de fin de scroll
+                const isAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth - (gap / 2) - 2; / Tolérance pour la fin
                 nextArrow.style.display = isAtEnd ? 'none' : 'flex';
 
-                // Si le contenu est plus petit que le conteneur, masquer les deux flèches
+                / Si le contenu est plus petit que le conteneur, masquer les deux flèches
                 if (container.scrollWidth <= container.clientWidth) {
                     nextArrow.style.display = 'none';
                      if (prevArrow) prevArrow.style.display = 'none';
                 }
             }
-        }, 350); // Délai pour la mise à jour (ajuster si besoin)
+        }, 350); / Délai pour la mise à jour (ajuster si besoin)
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -614,39 +617,39 @@
             const prevArrow = wrapper.querySelector('.prev-arrow');
             const nextArrow = wrapper.querySelector('.next-arrow');
             
-            // Fonction pour mettre à jour la visibilité des flèches
+            / Fonction pour mettre à jour la visibilité des flèches
             const updateArrowVisibility = () => {
-                if (isMobile) { // Si mobile, masquer les flèches (carrousel par swipe)
+                if (isMobile) { / Si mobile, masquer les flèches (carrousel par swipe)
                      if(prevArrow) prevArrow.style.display = 'none';
                      if(nextArrow) nextArrow.style.display = 'none';
-                     return; // Sortir de la fonction si mobile
+                     return; / Sortir de la fonction si mobile
                 }
 
-                // Logique pour desktop
-                if (container.scrollWidth > container.clientWidth) { // Si le contenu dépasse
+                / Logique pour desktop
+                if (container.scrollWidth > container.clientWidth) { / Si le contenu dépasse
                     if (prevArrow) {
                         prevArrow.style.display = container.scrollLeft <= 0 ? 'none' : 'flex';
                     }
                     if (nextArrow) {
-                        // Ajustement pour la condition de fin de scroll
-                        const isAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth - 2; // Petite tolérance
+                        / Ajustement pour la condition de fin de scroll
+                        const isAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth - 2; / Petite tolérance
                         nextArrow.style.display = isAtEnd ? 'none' : 'flex';
                     }
-                } else { // Si le contenu ne dépasse pas, masquer les deux
+                } else { / Si le contenu ne dépasse pas, masquer les deux
                     if (prevArrow) prevArrow.style.display = 'none';
                     if (nextArrow) nextArrow.style.display = 'none';
                 }
             };
             
-            // Appel initial pour définir l'état des flèches
+            / Appel initial pour définir l'état des flèches
             updateArrowVisibility(); 
             
-            // Ajouter un écouteur pour le redimensionnement pour réévaluer la visibilité des flèches
-            // Uniquement si ce n'est PAS mobile, car sur mobile elles sont toujours cachées
+            / Ajouter un écouteur pour le redimensionnement pour réévaluer la visibilité des flèches
+            / Uniquement si ce n'est PAS mobile, car sur mobile elles sont toujours cachées
             if (!isMobile) { 
                 window.addEventListener('resize', updateArrowVisibility);
-                // Optionnel: écouter l'événement de scroll sur le conteneur pour mettre à jour dynamiquement
-                // container.addEventListener('scroll', updateArrowVisibility); 
+                / Optionnel: écouter l'événement de scroll sur le conteneur pour mettre à jour dynamiquement
+                / container.addEventListener('scroll', updateArrowVisibility); 
             }
         });
     });
@@ -676,7 +679,7 @@
                 modal.classList.remove('show');
                 
                 if (window.history.replaceState) {
-                    const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                    const cleanUrl = window.location.protocol + "/" + window.location.host + window.location.pathname;
                     window.history.replaceState({path: cleanUrl}, '', cleanUrl);
                 }
             }

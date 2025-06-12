@@ -1,10 +1,28 @@
 <?php
+// 1. Cette ligne sécurise la page et récupère l'ID du pro.
+$current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
+
+// 2. Inclusions des dépendances nécessaires pour la page
 require_once '../composants/generate_uuid.php';
 require_once '../../includes/db.php';
 
-$current_pro_id = '7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c20'; // id de l'user (à changer lorsque tous le systeme de connexion sera finit)
-
+// 3. Logique de traitement du formulaire
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
+
+    // Vérification pour les offres payantes (sans utiliser les sessions)
+    if (isset($_POST['mettre_a_la_une']) || isset($_POST['offre_speciale'])) {
+        $stmtPro = $pdo->prepare("SELECT iban, bic FROM comptes_pro WHERE id = :pro_id");
+        $stmtPro->execute([':pro_id' => $current_pro_id]);
+        $pro_details = $stmtPro->fetch(PDO::FETCH_ASSOC);
+
+        if (!$pro_details || empty($pro_details['iban']) || empty($pro_details['bic'])) {
+            $notification = urlencode('Pour les options payantes, vos informations bancaires (IBAN et BIC) doivent être renseignées dans votre profil.');
+            header('Location: profil.php?notification_error=' . $notification);
+            exit();
+        }
+    }
+
+
     // fonction qui nettoie les input (Suppression d'espace, supprime les antislash, convertit les caractères spéciaux en entités HTML)
     function validate_input($data) {
         $data = trim($data);
@@ -684,10 +702,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
         }
     }
 }
-
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -1057,7 +1071,7 @@ if (session_status() == PHP_SESSION_NONE) {
 
         <div class="header-right">
             <a href="profil.php" class="btn btn-secondary">Mon profil</a>
-            <a href="connexion-compte.php" class="btn btn-primary">Se déconnecter</a>
+            <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
         </div>
     </div>
     </header>
@@ -1270,7 +1284,7 @@ if (session_status() == PHP_SESSION_NONE) {
                  mainDateInput.required = !isDateHandledByCategoryOrNotApplicable;
                  if (categorieId === '2') mainDateInput.required = true;
                  else if (categorieId === '5') mainDateInput.required = false;
-                 setMinDateForInput(mainDateInput); // Set min date for main date input
+                 setMinDateForInput(mainDateInput); / Set min date for main date input
             }
 
 
@@ -1528,7 +1542,7 @@ if (session_status() == PHP_SESSION_NONE) {
                 </div>
             `;
             container.appendChild(newGroup);
-            setMinDateForInput(newGroup.querySelector('input[type="date"]')); // Set min date for new input
+            setMinDateForInput(newGroup.querySelector('input[type="date"]')); / Set min date for new input
             addRemoveCrossIfNeeded(newGroup);
             if (offerForm.dataset.submitted === 'true') validateAllFields(newGroup);
         }
@@ -1612,7 +1626,7 @@ if (session_status() == PHP_SESSION_NONE) {
                 </div>
             `;
             horairesContainer.appendChild(newGroup);
-            setMinDateForInput(newGroup.querySelector('input[type="date"]')); // Set min date for new input
+            setMinDateForInput(newGroup.querySelector('input[type="date"]')); / Set min date for new input
             addRemoveCrossIfNeeded(newGroup);
             if (offerForm.dataset.submitted === 'true') validateAllFields(newGroup);
         }
@@ -1712,7 +1726,7 @@ if (session_status() == PHP_SESSION_NONE) {
                 if (field.id === 'photos' && currentSelectedFiles.length > 6) isValidField = false;
                 if (field.multiple && field.required && field.selectedOptions.length === 0) isValidField = false;
                 
-                // Check date field min attribute
+                / Check date field min attribute
                 if (field.type === 'date' && field.min && field.value && field.value < field.min) {
                     isValidField = false;
                     if(errorMessageElement) errorMessageElement.textContent = "La date ne peut pas être antérieure à aujourd'hui.";
@@ -1732,7 +1746,7 @@ if (session_status() == PHP_SESSION_NONE) {
                         } else if (field.id === 'photos' && currentSelectedFiles.length > 6) {
                             errorMessageElement.textContent = "Vous ne pouvez sélectionner que 6 photos maximum.";
                         } else if (field.type === 'date' && field.min && field.value && field.value < field.min) {
-                            // message already set above
+                            / message already set above
                         }
                         errorMessageElement.style.display = 'block';
                     }

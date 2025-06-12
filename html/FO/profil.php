@@ -1,7 +1,13 @@
 <?php
-// Démarrer la session (doit être au TOUT DÉBUT du fichier)
+// 1. Inclure le script d'authentification qui vérifie le token.
+// Ce script redirige si l'utilisateur n'est pas connecté et retourne son ID.
+$userId = require_once __DIR__ . '/../../includes/auth_check_membre.php';
+
+// La session reste utilisée pour les messages flash (erreurs de validation, succès de mise à jour).
 session_start();
 
+// La connexion à la BDD ($pdo) est déjà incluse et vérifiée par auth_check_membre.php
+// mais on peut le ré-inclure pour s'assurer que $pdo est disponible dans ce scope.
 require_once __DIR__ . '/../../includes/db.php';
 
 $update_message = '';
@@ -16,8 +22,9 @@ if (isset($_GET['validation_error']) && $_GET['validation_error'] === 'true') {
 }
 
 // --- GESTION DE LA MISE À JOUR DU PROFIL (POST REQUEST) ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
-    $userIdToUpdate = $_SESSION['user_id'];
+// La vérification de l'authentification est déjà faite. $userId contient l'ID du membre.
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $userIdToUpdate = $userId; // Utilisation de l'ID fourni par le script d'authentification
     $adresseIdToUpdate = $_POST['actual_adresse_id'] ?? null;
 
     // --- Validation des données ---
@@ -139,17 +146,11 @@ if (isset($_GET['update'])) {
 }
 
 
-// 1. Vérifier si l'utilisateur est connecté
-if (!isset($_SESSION['user_id'])) {
-    header('Location: connexion-compte.php'); 
-    exit; 
-}
-
-// 2. Récupérer l'identifiant de l'utilisateur connecté
-$userId = $_SESSION['user_id'];
+// 2. L'ID de l'utilisateur est déjà dans $userId.
+// La vérification de connexion et la redirection sont gérées par auth_check_membre.php.
 $userLoggedIn = true; 
 
-// 3. Interroger la base de données
+// 3. Interroger la base de données pour récupérer les informations de l'utilisateur
 $membre = null; 
 
 try {
@@ -329,51 +330,7 @@ try {
     
 </head>
 <body>
-    <header>
-        <div class="container header-container">
-            <div class="header-left">
-                <a href="../index.html"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
-                <nav class="main-nav">
-                    <ul>
-                        <li><a href="../index.html">Accueil</a></li>
-                        <li><a href="recherche.php">Recherche</a></li>
-                    </ul>
-                </nav>
-            </div>
-            <div class="header-right">
-                <a href="../BO/index.php" class="pro-link desktop-only">Je suis professionnel</a>
-                <?php if ($userLoggedIn): ?>
-                    <a href="profil.php" class="btn btn-secondary desktop-only">Mon Profil</a>
-                    <a href="logout.php" class="btn btn-primary desktop-only">Se déconnecter</a> <?php else: ?>
-                    <a href="creation-compte.php" class="btn btn-secondary desktop-only">S'enregistrer</a>
-                    <a href="connexion-compte.php" class="btn btn-primary desktop-only">Se connecter</a>
-                <?php endif; ?>
-                
-                <div class="mobile-icons">
-                    <a href="index.php" class="mobile-icon" aria-label="Accueil"><i class="fas fa-home"></i></a>
-                    <a href="profil.php" class="mobile-icon active" aria-label="Profil"><i class="fas fa-user"></i></a>
-                    <button class="mobile-icon hamburger-menu" aria-label="Menu" aria-expanded="false">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-        <nav class="mobile-nav-links">
-            <ul>
-                <li><a href="index.php">Accueil</a></li>
-                <li><a href="recherche.php">Recherche</a></li>
-                <li><a href="../BO/index.php">Je suis professionnel</a></li>
-                <?php if ($userLoggedIn): ?>
-                    <li><a href="profil.php">Mon Profil</a></li>
-                    <li><a href="logout.php">Se déconnecter</a></li>
-                <?php else: ?>
-                    <li><a href="creation-compte.php">S'enregistrer</a></li>
-                    <li><a href="connexion-compte.php">Se connecter</a></li>
-                <?php endif; ?>
-            </ul>
-        </nav>
-    </header>
-
+    <?php require_once 'header.php'; ?>
     <main>
         <div class="container content-area">
             <h1>Mes Informations</h1>
