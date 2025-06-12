@@ -134,6 +134,7 @@ unset($current_filters['sort']);
         .card .card-description { font-size: 0.85em; color: #555; line-height: 1.5; margin-bottom: 12px; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; min-height: calc(0.85em * 1.5 * 3); }
         .card .card-more { font-size: 0.9em; color: var(--couleur-principale); text-decoration: none; font-weight: var(--font-weight-medium); align-self: flex-start; }
         .card .card-more:hover { text-decoration: underline; color: var(--couleur-principale-hover); }
+        .card-link {text-decoration: none; color: inherit; display: block;}
         @media (max-width: 992px) { .search-page-container { flex-direction: column; } .filters-sidebar { width: 100%; margin-bottom: 20px; } .results-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } }
         @media (max-width: 768px) { .search-and-sort-controls { flex-direction: column; align-items: stretch; } .search-bar-results { width: 100%; } .sort-options { display: flex; justify-content: space-between; width: 100%; gap: 5px; } .sort-options .sort-button { margin-left: 0; flex-grow: 1; padding: 8px 10px; } .results-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } .filters-sidebar { padding: 15px;} .price-input-container { flex-direction: column; align-items: stretch; gap: 10px; } .price-input-separator { display: none; } }
         @media (max-width: 520px) { .results-grid { grid-template-columns: 1fr; } .card .card-image-wrapper { height: 180px; } }
@@ -254,19 +255,21 @@ unset($current_filters['sort']);
                         <p>Aucune offre ne correspond à vos critères de recherche.</p>
                     <?php else: ?>
                         <?php foreach ($offers as $offer): ?>
-                            <div class="card">
-                                <div class="card-image-wrapper">
-                                    <img src="../../<?php echo htmlspecialchars($offer['main_photo']); ?>" alt="<?php echo htmlspecialchars($offer['title']); ?>">
-                                </div>
-                                <div class="card-content">
-                                    <h3 class="card-title"><?php echo htmlspecialchars($offer['title']); ?></h3>
-                                    <div class="star-rating">
-                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
+                            <a href="offre.php?id=<?php echo htmlspecialchars($offer['id']); ?>" class="card-link">
+                                <div class="card">
+                                    <div class="card-image-wrapper">
+                                        <img src="../../<?php echo htmlspecialchars($offer['main_photo']); ?>" alt="<?php echo htmlspecialchars($offer['title']); ?>">
                                     </div>
-                                    <p class="card-description"><?php echo htmlspecialchars($offer['summary']); ?></p>
-                                    <a href="offre.php?id=<?php echo htmlspecialchars($offer['id']); ?>" class="card-more">Voir plus</a>
+                                    <div class="card-content">
+                                        <h3 class="card-title"><?php echo htmlspecialchars($offer['title']); ?></h3>
+                                        <div class="star-rating">
+                                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
+                                        </div>
+                                        <p class="card-description"><?php echo htmlspecialchars($offer['summary']); ?></p>
+                                        <span class="card-more">Voir plus</span>
+                                    </div>
                                 </div>
-                            </div>
+                            </a>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
