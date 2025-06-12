@@ -166,6 +166,11 @@ if (session_status() == PHP_SESSION_NONE) {
     }
 }
     /* --- STYLES POUR LA NOTIFICATION PROFIL --- */
+
+    .main-nav ul li.nav-item-with-notification {
+        position: relative; /* Contexte pour le positionnement absolu de la bulle */
+    }
+
     .profile-link-container {
         position: relative;
         display: flex;
@@ -174,10 +179,10 @@ if (session_status() == PHP_SESSION_NONE) {
 
     .notification-bubble {
         position: absolute;
-        top: -8px;
-        right: -8px;
-        width: 24px;
-        height: 24px;
+        top: -16px;
+        right: 80px;
+        width: 20px;
+        height: 20px;
         background-color: #dc3545;
         color: white;
         border-radius: 50%;
@@ -193,6 +198,23 @@ if (session_status() == PHP_SESSION_NONE) {
     .header-right .profile-link-container + .btn-primary {
         margin-left: 1rem; 
     }
+
+    .nav-item-with-notification .notification-bubble {
+        position: absolute;
+        top: -15px; /* Ajustez pour la position verticale */
+        right: 80px; /* Ajustez pour la position horizontale */
+        width: 20px;
+        height: 20px;
+        background-color: #dc3545;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75em; /* Police un peu plus petite pour la nav */
+        font-weight: bold;
+        border: 2px solid white;
+    }
     </style>
 </head>
 <body>
@@ -205,8 +227,13 @@ if (session_status() == PHP_SESSION_NONE) {
 
         <nav class="main-nav">
             <ul>
-                <li><a href="index.php">Accueil</a></li>
-                <li><a href="recherche.php">Mes Offres</a></li>
+                <li><a href="index.php" class="active">Accueil</a></li>
+                <li class="nav-item-with-notification">
+                    <a href="recherche.php">Mes Offres</a>
+                    <?php if (isset($unanswered_reviews_count) && $unanswered_reviews_count > 0): ?>
+                        <span class="notification-bubble"><?php echo $unanswered_reviews_count; ?></span>
+                    <?php endif; ?>
+                </li>
                 <li><a href="publier-une-offre.php">Publier une offre</a></li>
             </ul>
         </nav>
@@ -214,15 +241,11 @@ if (session_status() == PHP_SESSION_NONE) {
         <div class="header-right">
             <div class="profile-link-container">
                 <a href="profil.php" class="btn btn-secondary">Mon profil</a>
-                <?php if (isset($unanswered_reviews_count) && $unanswered_reviews_count > 0): ?>
-                    <span class="notification-bubble"><?php echo $unanswered_reviews_count; ?></span>
-                <?php endif; ?>
             </div>
             <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
         </div>
     </div>
     </header>
-
     <main>
         <div class="container content-area">
 
