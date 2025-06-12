@@ -2,29 +2,18 @@
 
 session_start(); // Démarre la session PHP (doit être la première chose)
 
+require_once '../composants/generate_uuid.php';
 require_once __DIR__ . '/../../includes/db.php';
 
 $login_error = ''; // Variable pour stocker les messages d'erreur de connexion
-define('DB_HOST', '127.0.0.1');
-define('DB_PORT', '3306');
-define('DB_NAME', 'sae');
-define('DB_USER', 'root');
-define('DB_PASSWORD', '');
-// Connexion à la base de données
-try {
-    $pdo = new PDO("mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME, DB_USER, DB_PASSWORD);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Erreur de connexion à la base de données : " . $e->getMessage());
-}
 // Vérification si le formulaire a été soumis
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Récupération des données du formulaire
-    $name = $_POST['name'] ?? '';
-    $last_name = $_POST['last-name'] ?? '';
+    $firstname = $_POST['name'] ?? '';
+    $lastname = $_POST['last-name'] ?? '';
     $email = $_POST['email'] ?? '';
-    $pseudo = $_POST['pseudo'] ?? '';
-    $tel = $_POST['tel'] ?? '';
+    $alias = $_POST['pseudo'] ?? '';
+    $phone = $_POST['tel'] ?? '';
     $adresse = $_POST['adresse'] ?? '';
     $ville = $_POST['ville'] ?? '';
     $code_postal = $_POST['code_postal'] ?? '';
@@ -32,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password_confirm = $_POST['password_confirm'] ?? '';
 
     // Validation des données
-    if (empty($name) || empty($last_name) || empty($email) || empty($pseudo) || empty($tel) || empty($adresse) || empty($ville) || empty($code_postal) || empty($password) || empty($password_confirm)) {
+    if (empty($firstname) || empty($lastname) || empty($email) || empty($alias) || empty($phone) || empty($adresse) || empty($ville) || empty($code_postal) || empty($password) || empty($password_confirm)) {
         $login_error = 'Veuillez remplir tous les champs.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $login_error = 'Adresse e-mail invalide.';
@@ -40,15 +29,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $login_error = 'Les mots de passe ne correspondent pas.';
     } else {
         // Vérification si l'utilisateur existe déjà
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = :email OR pseudo = :pseudo");
-        $stmt->execute(['email' => $email, 'pseudo' => $pseudo]);
+        $stmt = $pdo->prepare("SELECT * FROM comptes_membre WHERE email = :email OR alias = :alias");
+        $stmt->execute(['email' => $email, 'alias' => $alias]);
         if ($stmt->rowCount() > 0) {
             $login_error = 'Un compte avec cet e-mail ou ce pseudonyme existe déjà.';
         } else {
             // Insertion de l'utilisateur dans la base de données
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("INSERT INTO users (name, last_name, email, pseudo, tel, adresse, ville, code_postal, password) VALUES (:name, :last_name, :email, :pseudo, :tel, :adresse, :ville, :code_postal, :password)");
-            if ($stmt->execute(['name' => $name, 'last_name' => $last_name, 'email' => $email, 'pseudo' => $pseudo, 'tel' => $tel, 'adresse' => $adresse, 'ville' => $ville, 'code_postal' => $code_postal, 'password' => $hashed_password])) {
+            // 1. Insertion de l'adresse
+            $stmtAdresse = $pdo->prepare("
+                INSERT INTO adresses (id, street, postal_code, city)
+                VALUES (:id_adresse, :adresse, :code_postal, :ville)
+            ");
+            $adresse_id = generate_uuid(); // Génération d'un UUID pour l'adresse
+            $stmtAdresse->execute([
+                'id_adresse' => $adresse_id,
+                'adresse' => $adresse,
+                'code_postal' => $code_postal,
+                'ville' => $ville
+            ]);
+
+            // 3. Insertion du compte membre
+            $stmtMembre = $pdo->prepare("
+                INSERT INTO comptes_membre (id, adresse_id, email, password, phone, lastname, firstname, alias)
+                VALUES (:id_compte_membre, :adresse_id, :email, :password, :phone, :lastname, :firstname, :alias)
+            ");
+            $id_compte_membre = generate_uuid(); // Génération d'un UUID pour le compte membre
+            if ($stmtMembre->execute(['id_compte_membre' => $id_compte_membre, 'adresse_id' => $adresse_id, 'email' => $email, 'password' => $password, 'phone' => $phone, 'lastname' => $lastname, 'firstname' => $firstname, 'alias' => $alias])) {
                 // Redirection vers la page de connexion ou une autre page après l'inscription réussie
                 header('Location: connexion-compte.php');
                 exit();
@@ -59,11 +66,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 } else {
     // Si le formulaire n'a pas été soumis, on initialise les variables
-    $name = '';
-    $last_name = '';
+    $firstname = '';
+    $lastname = '';
     $email = '';
-    $pseudo = '';
-    $tel = '';
+    $alias = '';
+    $phone = '';
     $adresse = '';
     $ville = '';
     $code_postal = '';
@@ -301,6 +308,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="container content-area">
             <h1>Créer un compte</h1>
             <p>Rejoignez nous !</p>
+            <?php
+            // Affichage du message d'erreur pour l'utilisateur
+            if (!empty($login_error)) {
+                echo '<p style="color: red; text-align: center; margin-bottom: 15px;">' . htmlspecialchars($login_error) . '</p>';
+            }
+            ?>
             <div class="register-container">
                 <form class="register-form" action="creation-compte.php" method="POST">
                     <div class="form-group">
