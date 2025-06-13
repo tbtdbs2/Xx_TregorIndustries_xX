@@ -9,7 +9,7 @@ require_once __DIR__ . '/db.php';
 // 1. Vérifier la présence des cookies et le bon type d'utilisateur
 if (!isset($_COOKIE['auth_token']) || !isset($_COOKIE['user_type']) || $_COOKIE['user_type'] !== 'pro') {
     // Rediriger si les cookies sont absents ou si le type n'est pas 'pro'
-    header('Location: /BO/connexion-compte.php?error=acces_interdit');
+    header('Location: ../BO/connexion-compte.php?error=acces_interdit');
     exit();
 }
 
