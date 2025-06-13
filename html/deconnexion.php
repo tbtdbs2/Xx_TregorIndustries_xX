@@ -17,6 +17,6 @@ setcookie('user_type', '', time() - 3600, '/');
 
 // 3. Rediriger vers la page d'accueil avec un chemin absolu correct
 // Ce chemin part de la racine du site et pointe directement vers le bon fichier.
-header("Location: /index.html?status=deconnecte");
+header("Location: ./index.html?status=deconnecte");
 exit();
 ?>

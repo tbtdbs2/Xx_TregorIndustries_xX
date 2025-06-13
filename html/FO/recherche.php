@@ -1,3 +1,108 @@
+<?php
+// On se connecte à la base de données
+require_once(__DIR__ . '/../../includes/db.php');
+
+// --- RÉCUPÉRATION DES CATÉGORIES POUR LE FILTRE ---
+$category_stmt = $pdo->query('SELECT id, type FROM categories ORDER BY type');
+$all_categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// --- RÉCUPÉRATION DES FILTRES ET DU TRI ---
+$searchTerm = isset($_GET['q']) ? trim($_GET['q']) : '';
+$category_id = isset($_GET['category']) ? $_GET['category'] : ''; 
+$category_type = isset($_GET['category_type']) ? trim($_GET['category_type']) : '';
+$destination = isset($_GET['destination']) ? trim($_GET['destination']) : '';
+$priceMin = isset($_GET['price_min_input']) && $_GET['price_min_input'] !== '' ? (float)$_GET['price_min_input'] : null;
+$priceMax = isset($_GET['price_max_input']) && $_GET['price_max_input'] !== '' ? (float)$_GET['price_max_input'] : null;
+$sort = isset($_GET['sort']) ? $_GET['sort'] : 'note';
+
+// --- CORRECTION : LOGIQUE POUR PRÉ-REMPLIR LE FILTRE CATÉGORIE ---
+// Si on reçoit un category_type (depuis la page d'accueil) et que category_id n'est pas déjà défini
+if (!empty($category_type) && empty($category_id)) {
+    // On parcourt toutes les catégories pour trouver l'ID correspondant au type
+    foreach ($all_categories as $cat) {
+        if ($cat['type'] === $category_type) {
+            $category_id = $cat['id']; // On définit le category_id
+            break; // On a trouvé, on arrête la boucle
+        }
+    }
+}
+// --- FIN DE LA CORRECTION ---
+
+
+// --- CONSTRUCTION DE LA REQUÊTE SQL ---
+$sql = 'SELECT offres.*, categories.type as category_type FROM offres 
+        JOIN adresses ON offres.adresse_id = adresses.id
+        JOIN categories ON offres.categorie_id = categories.id';
+$conditions = [];
+$params = [];
+
+if (!empty($searchTerm)) {
+    $conditions[] = '(offres.title LIKE ? OR offres.summary LIKE ?)';
+    $likeTerm = '%' . $searchTerm . '%';
+    $params[] = $likeTerm;
+    $params[] = $likeTerm;
+}
+
+// Le filtrage se fait maintenant principalement par ID, ce qui est plus performant
+// et résout le problème de sélection dans le formulaire.
+if (!empty($category_id)) {
+    $conditions[] = 'offres.categorie_id = ?';
+    $params[] = $category_id;
+} elseif (!empty($category_type)) { 
+    // On garde ce fallback au cas où, mais la logique ci-dessus devrait prévaloir
+    $conditions[] = 'categories.type = ?';
+    $params[] = $category_type;
+}
+
+
+if (!empty($destination)) {
+    $conditions[] = 'adresses.city LIKE ?';
+    $params[] = '%' . $destination . '%';
+}
+
+if ($priceMin !== null) {
+    $conditions[] = 'offres.price >= ?';
+    $params[] = $priceMin;
+}
+if ($priceMax !== null) {
+    $conditions[] = 'offres.price <= ?';
+    $params[] = $priceMax;
+}
+
+if (!empty($conditions)) {
+    $sql .= ' WHERE ' . implode(' AND ', $conditions);
+}
+
+// --- AJOUT DU TRI ---
+switch ($sort) {
+    case 'price_asc':
+        $sql .= ' ORDER BY offres.price ASC';
+        break;
+    case 'price_desc':
+        $sql .= ' ORDER BY offres.price DESC';
+        break;
+    case 'note':
+    default:
+        $sql .= ' ORDER BY offres.id DESC';
+        break;
+}
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$offers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Helper pour les liens de tri
+function getSortLink($sortValue, $currentSort, $filters) {
+    $filters['sort'] = $sortValue;
+    $queryString = http_build_query($filters);
+    $activeClass = ($sortValue == $currentSort) ? 'active' : '';
+    $labels = ['note' => 'Note', 'price_asc' => 'Prix croissant', 'price_desc' => 'Prix décroissant'];
+    return '<a href="?' . $queryString . '" class="sort-button ' . $activeClass . '">' . $labels[$sortValue] . '</a>';
+}
+
+$current_filters = $_GET;
+unset($current_filters['sort']);
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -10,474 +115,149 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        body {
-            background-color: #f8f9fa; 
-        }
-
-        .search-page-container {
-            display: flex;
-            gap: 25px;
-            padding-top: 20px;
-            padding-bottom: 20px;
-        }
-
-        .filters-sidebar {
-            width: 280px; 
-            flex-shrink: 0;
-            background-color: var(--couleur-blanche);
-            padding: 20px;
-            height: fit-content;
-            border-radius: 8px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
-        }
-
-        .filter-group {
-            margin-bottom: 20px;
-        }
-
-        .filter-group h3 {
-            font-size: 1em; 
-            font-weight: var(--font-weight-semibold);
-            color: var(--couleur-texte);
-            margin-bottom: 12px; 
-            padding-bottom: 6px;
-            border-bottom: 1px solid var(--couleur-bordure); 
-        }
-        
-        .filter-group label {
-            display: block;
-            margin-bottom: 6px; 
-            font-size: 0.9em; 
-            color: var(--couleur-texte-footer);
-        }
-
-        .filter-group input[type="text"],
-        .filter-group input[type="date"],
-        .filter-group select {
-            width: 100%;
-            padding: 10px; 
-            border: 1px solid var(--couleur-bordure);
-            border-radius: 6px; 
-            font-size: 0.9em;
-            box-sizing: border-box;
-        }
-        
-        .input-with-icon {
-            position: relative;
-        }
-
-        .input-with-icon input[type="text"] {
-            padding-right: 30px;
-        }
-
-        .input-with-icon .fa-map-marker-alt,
-        .input-with-icon .fa-calendar-alt {
-            position: absolute;
-            top: 50%;
-            right: 10px;
-            transform: translateY(-50%);
-            color: var(--couleur-texte-footer);
-            pointer-events: none;
-        }
-        
-        .price-input-container {
-            display: flex;
-            align-items: flex-end; 
-            gap: 8px; 
-            margin-top: 5px;
-        }
-        .price-input-field {
-            display: flex;
-            flex-direction: column; 
-            flex-grow: 1;
-        }
-        .price-input-field label {
-            font-size: 0.8em; 
-            margin-bottom: 4px;
-            color: var(--couleur-texte-footer);
-        }
-        .price-input-container input[type="number"] {
-            width: 100%; 
-            padding: 10px; 
-            border: 1px solid var(--couleur-bordure);
-            border-radius: 6px;
-            font-size: 0.9em;
-            box-sizing: border-box;
-            -moz-appearance: textfield; 
-        }
-        .price-input-container input[type="number"]::-webkit-outer-spin-button,
-        .price-input-container input[type="number"]::-webkit-inner-spin-button {
-            -webkit-appearance: none; 
-            margin: 0;
-        }
-        .price-input-separator {
-            font-size: 1em;
-            color: var(--couleur-texte-footer);
-            padding-bottom: 10px; 
-        }
-
-        .star-rating-filter { display: flex; justify-content: flex-start; gap: 5px; font-size: 1.3em; cursor: pointer; } 
-        .star-rating-filter .fa-star { color: #e0e0e0; }
-        .star-rating-filter .fa-star.selected,
-        .star-rating-filter .fa-star:hover { color: var(--couleur-principale); } 
-        .star-rating-filter .fa-star:hover ~ .fa-star:not(.selected){ color: #e0e0e0; }
-        .star-rating-filter:hover .fa-star.selected ~ .fa-star:not(.selected){ color: #e0e0e0; }
-
-        .status-filter label { display: inline-flex; align-items: center; margin-right: 15px; font-size: 0.9em; color: var(--couleur-texte); } 
-        .status-filter input[type="radio"] { margin-right: 5px; accent-color: var(--couleur-principale); }
-
+        body { background-color: #f8f9fa; }
+        .search-page-container { display: flex; gap: 25px; padding-top: 20px; padding-bottom: 20px; }
+        .filters-sidebar { width: 280px; flex-shrink: 0; background-color: var(--couleur-blanche); padding: 20px; height: fit-content; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .filter-group { margin-bottom: 20px; }
+        .filter-group h3 { font-size: 1em; font-weight: var(--font-weight-semibold); color: var(--couleur-texte); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--couleur-bordure); }
+        .filter-group label, .filter-group .label { display: block; margin-bottom: 6px; font-size: 0.9em; color: var(--couleur-texte-footer); }
+        .filter-group input[type="text"], .filter-group input[type="date"], .filter-group select, .filter-group input[type="number"] { width: 100%; padding: 10px; border: 1px solid var(--couleur-bordure); border-radius: 6px; font-size: 0.9em; box-sizing: border-box; }
+        .input-with-icon { position: relative; }
+        .input-with-icon input[type="text"] { padding-right: 30px; }
+        .input-with-icon .fa-map-marker-alt, .input-with-icon .fa-calendar-alt { position: absolute; top: 50%; right: 10px; transform: translateY(-50%); color: var(--couleur-texte-footer); pointer-events: none; }
+        .price-input-container { display: flex; align-items: flex-end; gap: 8px; margin-top: 5px; }
+        .price-input-field { display: flex; flex-direction: column; flex-grow: 1; }
+        .price-input-field label { font-size: 0.8em; margin-bottom: 4px; color: var(--couleur-texte-footer); }
+        .price-input-container input[type="number"] { -moz-appearance: textfield; }
+        .price-input-container input[type="number"]::-webkit-outer-spin-button, .price-input-container input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .price-input-separator { font-size: 1em; color: var(--couleur-texte-footer); padding-bottom: 10px; }
         .results-area { flex-grow: 1; }
-
         .search-and-sort-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
-        
-        .search-bar-results {
-            display: flex;
-            align-items: center;
-            background-color: var(--couleur-blanche);
-            border: 1px solid var(--couleur-bordure);
-            border-radius: 25px; 
-            padding: 0 10px 0 15px; 
-            height: 45px; 
-            flex-grow: 1;
-            min-width: 250px; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-        }
-        .search-bar-results input[type="text"] {
-            flex-grow: 1;
-            padding: 10px; 
-            border: none;
-            outline: none;
-            font-size: 0.95em;
-            background-color: transparent;
-        }
-        .search-bar-results button {
-            background-color: transparent;
-            color: var(--couleur-principale);
-            border: none;
-            padding: 10px; 
-            cursor: pointer;
-            font-size: 1.1em;
-        }
-
-        .sort-options button {
-            background-color: var(--couleur-blanche); 
-            color: var(--couleur-texte);
-            border: 1px solid var(--couleur-bordure);
-            padding: 8px 18px; 
-            border-radius: 20px; 
-            cursor: pointer;
-            font-size: 0.9em; 
-            font-weight: var(--font-weight-medium);
-            margin-left: 8px; 
-            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-        }
-        .sort-options button:hover {
-            border-color: var(--couleur-principale);
-            color: var(--couleur-principale);
-        }
-        .sort-options button.active {
-            background-color: var(--couleur-principale);
-            color: var(--couleur-blanche);
-            border-color: var(--couleur-principale);
-        }
-
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
-            gap: 25px; 
-        }
-
-        .card {
-            background-color: var(--couleur-blanche);
-            border: 1px solid var(--couleur-bordure);
-            border-radius: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            overflow: hidden; 
-        }
+        .search-bar-results { display: flex; align-items: center; background-color: var(--couleur-blanche); border: 1px solid var(--couleur-bordure); border-radius: 25px; padding: 0 10px 0 15px; height: 45px; flex-grow: 1; min-width: 200px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+        .search-bar-results input[type="text"] { flex-grow: 1; padding: 10px; border: none; outline: none; font-size: 0.95em; background-color: transparent; }
+        .search-bar-results button { background-color: transparent; color: var(--couleur-principale); border: none; padding: 10px; cursor: pointer; font-size: 1.1em; }
+        .sort-options { display: flex; gap: 8px; }
+        .sort-options .sort-button { text-decoration: none; background-color: var(--couleur-blanche); color: var(--couleur-texte); border: 1px solid var(--couleur-bordure); padding: 8px 18px; border-radius: 20px; cursor: pointer; font-size: 0.9em; font-weight: var(--font-weight-medium); transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
+        .sort-options .sort-button:hover { border-color: var(--couleur-principale); color: var(--couleur-principale); }
+        .sort-options .sort-button.active { background-color: var(--couleur-principale); color: var(--couleur-blanche); border-color: var(--couleur-principale); }
+        .reset-filters-btn { width:100%; background-color: transparent; color: var(--couleur-principale); border: 1px solid var(--couleur-principale); padding: 12px 18px; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: var(--font-weight-medium); transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
+        .reset-filters-btn:hover { background-color: var(--couleur-secondaire-hover-bg); color: var(--couleur-principale-hover); border-color: var(--couleur-secondaire-hover-border); }
+        .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; }
+        .card { background-color: var(--couleur-blanche); border: 1px solid var(--couleur-bordure); border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; overflow: hidden; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        
-        .card .card-image-wrapper {
-            position: relative;
-            width: 100%;
-            height: 160px; 
-        }
-        .card .card-image-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .card .card-content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 15px; 
-        }
-        .card .card-title {
-            font-size: 1.1em; 
-            font-weight: var(--font-weight-semibold);
-            color: var(--couleur-texte);
-            margin-bottom: 8px; 
-        }
-        .card .star-rating {
-            margin-bottom: 10px; 
-            color: var(--couleur-principale); 
-            font-size: 0.9em;
-        }
+        .card .card-image-wrapper { position: relative; width: 100%; height: 160px; }
+        .card .card-image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .card .card-content { flex-grow: 1; display: flex; flex-direction: column; padding: 15px; }
+        .card .card-title { font-size: 1.1em; font-weight: var(--font-weight-semibold); color: var(--couleur-texte); margin-bottom: 8px; }
+        .card .star-rating { margin-bottom: 10px; color: var(--couleur-principale); font-size: 0.9em; }
         .card .star-rating .far.fa-star { color: var(--couleur-bordure); }
-        
-        .card .card-description {
-            font-size: 0.85em; 
-            color: #555; 
-            line-height: 1.5; 
-            margin-bottom: 12px; 
-            flex-grow: 1;
-            display: -webkit-box;
-            -webkit-line-clamp: 3; 
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            min-height: calc(0.85em * 1.5 * 3); 
-        }
-        .card .card-more {
-            font-size: 0.9em; 
-            color: var(--couleur-principale);
-            text-decoration: none;
-            font-weight: var(--font-weight-medium);
-            align-self: flex-start;
-        }
-        .card .card-more:hover {
-            text-decoration: underline;
-            color: var(--couleur-principale-hover);
-        }
-
-        @media (max-width: 992px) { 
-            .search-page-container { flex-direction: column; }
-            .filters-sidebar { width: 100%; margin-bottom: 20px; }
-            .results-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
-        }
-        @media (max-width: 768px) { 
-            .search-and-sort-controls { flex-direction: column; align-items: stretch; }
-            .search-bar-results { width: 100%; margin-bottom: 10px; }
-            .sort-options { display: flex; justify-content: space-between; width: 100%; gap: 5px; }
-            .sort-options button { margin-left: 0; flex-grow: 1; padding: 8px 10px; }
-            .results-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
-            .filters-sidebar { width: 100%; padding: 15px;}
-            .price-input-container { flex-direction: column; align-items: stretch; gap: 10px; }
-            .price-input-separator { display: none; }
-            .price-input-field label { font-size: 0.9em; }
-        }
-         @media (max-width: 520px) { 
-            .results-grid { grid-template-columns: 1fr; }
-            .card .card-image-wrapper { height: 180px; } 
-            .card .card-title { font-size: 1.05em; }
-            .card .card-description { -webkit-line-clamp: 3; }
-            .sort-options button { font-size: 0.8em; }
-         }
+        .card .card-description { font-size: 0.85em; color: #555; line-height: 1.5; margin-bottom: 12px; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; min-height: calc(0.85em * 1.5 * 3); }
+        .card .card-more { font-size: 0.9em; color: var(--couleur-principale); text-decoration: none; font-weight: var(--font-weight-medium); align-self: flex-start; }
+        .card .card-more:hover { text-decoration: underline; color: var(--couleur-principale-hover); }
+        .card-link {text-decoration: none; color: inherit; display: block;}
+        @media (max-width: 992px) { .search-page-container { flex-direction: column; } .filters-sidebar { width: 100%; margin-bottom: 20px; } .results-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } }
+        @media (max-width: 768px) { .search-and-sort-controls { flex-direction: column; align-items: stretch; } .search-bar-results { width: 100%; } .sort-options { display: flex; justify-content: space-between; width: 100%; gap: 5px; } .sort-options .sort-button { margin-left: 0; flex-grow: 1; padding: 8px 10px; } .results-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } .filters-sidebar { padding: 15px;} .price-input-container { flex-direction: column; align-items: stretch; gap: 10px; } .price-input-separator { display: none; } }
+        @media (max-width: 520px) { .results-grid { grid-template-columns: 1fr; } .card .card-image-wrapper { height: 180px; } }
     </style>
 </head>
 <body>
     <?php require_once 'header.php'; ?>
     <main>
         <div class="container content-area search-page-container">
-            <aside class="filters-sidebar">
-
+            <form method="GET" action="recherche.php" class="filters-sidebar" id="filters-form">
                 <div class="filter-group">
                     <h3>Catégorie</h3>
                     <select id="category" name="category">
                         <option value="">Toutes</option>
-                        <option value="activites">Activités</option>
-                        <option value="visites">Visites</option>
-                        <option value="spectacles">Spectacles</option>
-                        <option value="parcs">Parcs d'attractions</option>
-                        <option value="restauration">Restauration</option>
+                        <?php foreach ($all_categories as $cat): ?>
+                            <option value="<?php echo htmlspecialchars($cat['id']); ?>" <?php if ($category_id == $cat['id']) echo 'selected'; ?>>
+                                <?php echo htmlspecialchars(ucfirst($cat['type'])); ?>
+                            </option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
-
                 <div class="filter-group">
                     <h3>Destination</h3>
                     <div class="input-with-icon">
-                        <input type="text" id="destination" name="destination" placeholder="Localisation">
+                        <input type="text" id="destination" name="destination" placeholder="Lannion, Paris..." value="<?php echo htmlspecialchars($destination); ?>">
                         <i class="fas fa-map-marker-alt"></i>
                     </div>
                 </div>
-
                 <div class="filter-group">
                     <h3>Prix</h3>
                     <div class="price-input-container">
                         <div class="price-input-field">
                             <label for="price-min-input">Min €</label>
-                            <input type="number" id="price-min-input" name="price_min_input" min="0" step="1" placeholder="0">
+                            <input type="number" id="price-min-input" name="price_min_input" min="0" step="1" placeholder="0" value="<?php echo htmlspecialchars((string)$priceMin); ?>">
                         </div>
                         <span class="price-input-separator">-</span>
                         <div class="price-input-field">
                             <label for="price-max-input">Max €</label>
-                            <input type="number" id="price-max-input" name="price_max_input" min="0" step="1" placeholder="Max">
+                            <input type="number" id="price-max-input" name="price_max_input" min="0" step="1" placeholder="Max" value="<?php echo htmlspecialchars((string)$priceMax); ?>">
                         </div>
                     </div>
                 </div>
-
-                <div class="filter-group">
-                    <h3>Date</h3>
-                     <div class="input-with-icon">
-                        <input type="date" id="date" name="date" placeholder="jj/mm/aaaa">
-                        </div>
+                <input type="hidden" name="q" value="<?php echo htmlspecialchars($searchTerm); ?>">
+                <div class="filter-group" title="Ce filtre n'est pas encore actif.">
+                    <h3 style="color:#999;">Date (Inactif)</h3>
+                    <div class="input-with-icon"> <input type="date" id="date" name="date" disabled> </div>
                 </div>
-
-                <div class="filter-group">
-                    <h3>Notes Minimale</h3>
-                    <div class="star-rating-filter" id="min-rating">
-                        <i class="fas fa-star" data-value="1" title="1 étoile et plus"></i>
-                        <i class="fas fa-star" data-value="2" title="2 étoiles et plus"></i>
-                        <i class="fas fa-star" data-value="3" title="3 étoiles et plus"></i>
-                        <i class="fas fa-star" data-value="4" title="4 étoiles et plus"></i>
-                        <i class="fas fa-star" data-value="5" title="5 étoiles"></i>
-                    </div>
-                    <input type="hidden" id="min-rating-value" name="min_rating_value">
+                <div class="filter-group" title="Ce filtre n'est pas encore actif.">
+                    <h3 style="color:#999;">Notes (Inactif)</h3>
+                    <div class="label">Minimale</div>
+                    <div class="star-rating-filter"> <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
                 </div>
-
-                <div class="filter-group"> <h3>Notes Maximale</h3>
-                    <div class="star-rating-filter" id="max-rating">
-                        <i class="fas fa-star" data-value="1" title="1 étoile maximum"></i>
-                        <i class="fas fa-star" data-value="2" title="2 étoiles maximum"></i>
-                        <i class="fas fa-star" data-value="3" title="3 étoiles maximum"></i>
-                        <i class="fas fa-star" data-value="4" title="4 étoiles maximum"></i>
-                        <i class="fas fa-star" data-value="5" title="5 étoiles maximum"></i>
-                    </div>
-                    <input type="hidden" id="max-rating-value" name="max_rating_value">
-                </div>
-
-
-                <div class="filter-group">
-                    <h3>Statut de l'offre</h3>
+                <div class="filter-group" title="Ce filtre n'est pas encore actif.">
+                    <h3 style="color:#999;">Statut (Inactif)</h3>
                     <div class="status-filter">
-                        <label for="status-open">
-                            <input type="radio" id="status-open" name="status" value="open" checked> Ouvert
-                        </label>
-                        <label for="status-closed">
-                            <input type="radio" id="status-closed" name="status" value="closed"> Fermé
-                        </label>
+                       <label><input type="radio" name="status" value="open" disabled> Ouvert</label>
+                       <label><input type="radio" name="status" value="closed" disabled> Fermé</label>
                     </div>
                 </div>
-            </aside>
+                <button type="button" id="reset-filters-btn" class="reset-filters-btn">Réinitialiser les filtres</button>
+            </form>
 
             <section class="results-area">
                 <div class="search-and-sort-controls">
-                    <div class="search-bar-results">
-                        <input type="text" placeholder="Rechercher">
+                     <form method="GET" action="recherche.php" class="search-bar-results">
+                        <input type="text" name="q" placeholder="Rechercher une offre..." value="<?php echo htmlspecialchars($searchTerm); ?>">
+                        <input type="hidden" name="category" value="<?php echo htmlspecialchars($category_id); ?>">
+                        <input type="hidden" name="destination" value="<?php echo htmlspecialchars($destination); ?>">
+                        <input type="hidden" name="price_min_input" value="<?php echo htmlspecialchars((string)$priceMin); ?>">
+                        <input type="hidden" name="price_max_input" value="<?php echo htmlspecialchars((string)$priceMax); ?>">
                         <button type="submit" aria-label="Rechercher"><i class="fas fa-search"></i></button>
-                    </div>
+                    </form>
                     <div class="sort-options">
-                        <button type="button" class="active" data-sort="note">Note</button>
-                        <button type="button" data-sort="price_asc">Prix croissant</button>
-                        <button type="button" data-sort="price_desc">Prix décroissant</button>
+                        <?php
+                            echo getSortLink('note', $sort, $current_filters);
+                            echo getSortLink('price_asc', $sort, $current_filters);
+                            echo getSortLink('price_desc', $sort, $current_filters);
+                        ?>
                     </div>
                 </div>
 
                 <div class="results-grid">
-                    <div class="card">
-                        <div class="card-image-wrapper">
-                            <img src="images/kayak.jpg" alt="Archipel de Bréhat en kayak">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Archipel de Bréhat en kayak</h3>
-                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div>
-                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a ...</p>
-                            <a href="offre.php" class="card-more">Voir plus</a>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-image-wrapper">
-                            <img src="images/louer_velo_famille.jpg" alt="Balade familiale à vélo">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Balade familiale à vélo</h3>
-                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i><i class="far fa-star"></i></div>
-                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a very short story.</p>
-                            <a href="offre.php" class="card-more">Voir plus</a>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-image-wrapper">
-                            <img src="images/centre-ville.jpg" alt="Découverte du centre-ville historique de Lannion">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Découverte du centre-ville historique de Lannion</h3>
-                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i></div>
-                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a ...</p>
-                             <a href="offre.php" class="card-more">Voir plus</a>
-                        </div>
-                    </div>
-                     <div class="card">
-                        <div class="card-image-wrapper">
-                            <img src="images/randonnee.jpg" alt="Randonnée en montagne">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Découverte du centre-ville historique de Lannion</h3>
-                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a ...</p>
-                             <a href="offre.php" class="card-more">Voir plus</a>
-                        </div>
-                    </div>
-                     <div class="card">
-                        <div class="card-image-wrapper">
-                            <img src="images/kayak.jpg" alt="Archipel de Bréhat en kayak">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Archipel de Bréhat en kayak</h3>
-                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
-                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a very short story. This text might be longer.</p>
-                             <a href="offre.php" class="card-more">Voir plus</a>
-                        </div>
-                    </div>
-                     <div class="card">
-                        <div class="card-image-wrapper">
-                            <img src="images/louer_velo_famille.jpg" alt="Balade familiale à vélo">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Balade familiale à vélo</h3>
-                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i></div>
-                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a ...</p>
-                             <a href="offre.php" class="card-more">Voir plus</a>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-image-wrapper">
-                            <img src="images/centre-ville.jpg" alt="Découverte du centre-ville historique de Lannion">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Balade familiale à vélo</h3>
-                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div>
-                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a very short story.</p>
-                             <a href="offre.php" class="card-more">Voir plus</a>
-                        </div>
-                    </div>
-                     <div class="card">
-                        <div class="card-image-wrapper">
-                            <img src="images/randonnee.jpg" alt="Randonnée en montagne">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Découverte du centre-ville historique de Lannion</h3>
-                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i><i class="far fa-star"></i></div>
-                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a ...</p>
-                             <a href="offre.php" class="card-more">Voir plus</a>
-                        </div>
-                    </div>
-                     <div class="card">
-                        <div class="card-image-wrapper">
-                            <img src="images/kayak.jpg" alt="Archipel de Bréhat en kayak">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Archipel de Bréhat en kayak</h3>
-                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i></div>
-                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a very short story.</p>
-                             <a href="offre.php" class="card-more">Voir plus</a>
-                        </div>
-                    </div>
+                    <?php if (empty($offers)): ?>
+                        <p>Aucune offre ne correspond à vos critères de recherche.</p>
+                    <?php else: ?>
+                        <?php foreach ($offers as $offer): ?>
+                            <a href="offre.php?id=<?php echo htmlspecialchars($offer['id']); ?>" class="card-link">
+                                <div class="card">
+                                    <div class="card-image-wrapper">
+                                        <img src="../../<?php echo htmlspecialchars($offer['main_photo']); ?>" alt="<?php echo htmlspecialchars($offer['title']); ?>">
+                                    </div>
+                                    <div class="card-content">
+                                        <h3 class="card-title"><?php echo htmlspecialchars($offer['title']); ?></h3>
+                                        <div class="star-rating">
+                                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
+                                        </div>
+                                        <p class="card-description"><?php echo htmlspecialchars($offer['summary']); ?></p>
+                                        <span class="card-more">Voir plus</span>
+                                    </div>
+                                </div>
+                            </a>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </section>
         </div>
@@ -521,98 +301,46 @@
             <p>&copy; 2025 PACT. Tous droits réservés.</p>
         </div>
     </footer>
-    <script src="script.js" defer></script>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const priceMinNumberInput = document.getElementById('price-min-input');
-            const priceMaxNumberInput = document.getElementById('price-max-input');
-
-            if (priceMinNumberInput && priceMaxNumberInput) {
-                const validateAndHandlePriceInputs = () => {
-                    let minVal = parseFloat(priceMinNumberInput.value);
-                    let maxVal = parseFloat(priceMaxNumberInput.value);
-
-                    if (!isNaN(minVal) && !isNaN(maxVal) && minVal > maxVal) {
-                        console.warn("Le prix minimum (" + minVal + ") ne peut pas être supérieur au prix maximum (" + maxVal + ").");
-                    }
-                };
-
-                priceMinNumberInput.addEventListener('input', validateAndHandlePriceInputs);
-                priceMaxNumberInput.addEventListener('input', validateAndHandlePriceInputs);
-            }
-            
-            const couleurPrincipale = getComputedStyle(document.documentElement).getPropertyValue('--couleur-principale').trim();
-
-            const setupStarRatingFilter = (filterId, valueInputId, isMaxRating = false) => {
-                const ratingValueInput = document.getElementById(valueInputId); // Renommé pour clarté
-                const starRatingFilter = document.getElementById(filterId);
-                
-                if (starRatingFilter && ratingValueInput) {
-                    const stars = Array.from(starRatingFilter.querySelectorAll('.fa-star'));
-                    
-                    const setStarsVisual = (currentRating) => {
-                        stars.forEach(s => {
-                            const starValue = parseInt(s.dataset.value, 10);
-                            let isSelected = false;
-                            
-                            // La logique de sélection visuelle est la même : on colore jusqu'à l'étoile cliquée.
-                            // L'interprétation (min/max) se fait au moment du filtrage des données.
-                            if (currentRating > 0) {
-                                isSelected = starValue <= currentRating;
-                            }
-
-                            s.classList.toggle('selected', isSelected);
-                            s.style.color = isSelected ? couleurPrincipale : '#e0e0e0'; 
-                        });
-                    };
-
-                    starRatingFilter.addEventListener('click', function(e) {
-                        if (e.target.classList.contains('fa-star') && e.target.dataset.value) {
-                            const rating = e.target.dataset.value;
-                            if (ratingValueInput.value === rating) { 
-                                ratingValueInput.value = ""; 
-                                setStarsVisual(0);
-                            } else {
-                                ratingValueInput.value = rating;
-                                setStarsVisual(rating);
-                            }
-                        }
-                    });
-
-                    starRatingFilter.addEventListener('mouseover', function(e) {
-                        if (e.target.classList.contains('fa-star') && e.target.dataset.value) {
-                            const ratingHover = parseInt(e.target.dataset.value, 10);
-                            stars.forEach(s => {
-                                const starValue = parseInt(s.dataset.value, 10);
-                                // La logique de survol colore aussi jusqu'à l'étoile survolée.
-                                if (starValue <= ratingHover) {
-                                    s.style.color = couleurPrincipale;
-                                } else {
-                                     s.style.color = '#e0e0e0';
-                                }
-                            });
-                        }
-                    });
-
-                    starRatingFilter.addEventListener('mouseout', function() {
-                        setStarsVisual(ratingValueInput.value || 0); 
-                    });
-                    setStarsVisual(ratingValueInput.value || 0); 
-                }
-            };
-
-            setupStarRatingFilter('min-rating', 'min-rating-value', false); // false pour Note Minimale
-            setupStarRatingFilter('max-rating', 'max-rating-value', true);  // true pour Note Maximale (même si la logique visuelle JS est la même ici)
-
-
-            const sortButtons = document.querySelectorAll('.sort-options button');
-            sortButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    sortButtons.forEach(btn => btn.classList.remove('active'));
-                    this.classList.add('active');
-                });
+    document.addEventListener('DOMContentLoaded', function() {
+        const hamburgerMenu = document.querySelector('.hamburger-menu');
+        const mobileNavLinks = document.querySelector('.mobile-nav-links');
+        if (hamburgerMenu && mobileNavLinks) {
+            hamburgerMenu.addEventListener('click', function() {
+                const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                this.setAttribute('aria-expanded', !isExpanded);
+                mobileNavLinks.classList.toggle('active');
             });
+        }
+    });
+
+    const filtersForm = document.getElementById('filters-form');
+    const resetFiltersBtn = document.getElementById('reset-filters-btn');
+
+    filtersForm.addEventListener('change', function() {
+        // Ne soumet le formulaire que si ce n'est pas un champ de saisie de prix qui change
+        // pour éviter de recharger à chaque chiffre tapé. On pourrait ajouter un bouton "Appliquer".
+        if(document.activeElement.type !== 'number') {
+            filtersForm.submit();
+        }
+    });
+    
+    // On pourrait ajouter un listener sur le bouton "Entrée" pour les champs prix
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                filtersForm.submit();
+            }
         });
+    });
+
+
+    resetFiltersBtn.addEventListener('click', function() {
+        const url = new URL(window.location);
+        url.search = ''; // Vide tous les paramètres de l'URL
+        window.location.href = url.href;
+    });
     </script>
 </body>
 </html>

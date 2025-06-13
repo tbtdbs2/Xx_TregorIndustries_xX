@@ -14,6 +14,7 @@ if (!isset($_COOKIE['auth_token']) || !isset($_COOKIE['user_type']) || $_COOKIE[
 }
 
 $user_id = null;
+$unanswered_reviews_count = 0; // Initialiser le compteur de notifications
 
 if (isset($pdo)) {
     // 2. Vérifier si le token existe dans la base de données
@@ -24,7 +25,6 @@ if (isset($pdo)) {
 
     if (!$auth_user) {
         // Le token est invalide (expiré ou faux)
-        // On nettoie les cookies erronés et on redirige
         setcookie('auth_token', '', time() - 3600, '/');
         setcookie('user_type', '', time() - 3600, '/');
         header('Location: /BO/connexion-compte.php?error=session_expiree');
@@ -42,8 +42,30 @@ if (isset($pdo)) {
         exit();
     }
     
-    // 4. Authentification réussie ! On retourne l'ID de l'utilisateur.
-    return $pro_user['id'];
+    // 4. Authentification réussie !
+    $current_pro_id_for_logic = $pro_user['id'];
+
+    // --- MISE À JOUR : Calcul du nombre d'avis non vus ---
+    try {
+        // Nouvelle requête qui se base sur le champ 'viewed' = false
+        $sql_count_reviews = "
+            SELECT COUNT(a.id)
+            FROM avis a
+            JOIN offres o ON a.offre_id = o.id
+            WHERE o.pro_id = :pro_id AND a.viewed = FALSE
+        ";
+        $stmt_count = $pdo->prepare($sql_count_reviews);
+        $stmt_count->execute([':pro_id' => $current_pro_id_for_logic]);
+        $unanswered_reviews_count = (int) $stmt_count->fetchColumn();
+
+    } catch (PDOException $e) {
+        error_log("Erreur lors du comptage des avis non vus pour le pro ID {$current_pro_id_for_logic}: " . $e->getMessage());
+        $unanswered_reviews_count = 0;
+    }
+    // --- FIN DE LA MISE À JOUR ---
+
+    // 5. On retourne l'ID de l'utilisateur pour le reste de la page.
+    return $current_pro_id_for_logic;
 
 } else {
     die("Erreur critique: Impossible de se connecter à la base de données pour vérifier l'authentification.");
