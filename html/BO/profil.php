@@ -1,12 +1,202 @@
 <?php
-$current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
-?>
-<?php
-// --- AJOUT POUR AFFICHER LA NOTIFICATION ---
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
+// 1. Inclure le script d'authentification qui vérifie le token.
+// Ce script redirige si l'utilisateur n'est pas connecté et retourne son ID.
+$userId = require_once __DIR__ . '/../../includes/auth_check_pro.php';
+
+// La session reste utilisée pour les messages flash (erreurs de validation, succès de mise à jour).
+session_start();
+
+$_SESSION['user_id'] = $userId; 
+
+
+require_once __DIR__ . '/../../includes/db.php';
+
+
+// Variables pour les messages et les données de session
+$validation_errors_from_session = [];
+$submitted_data_from_session = [];
+$show_popup = false;
+$popup_message = '';
+$popup_type = ''; // 'success' ou 'error'
+
+// Récupérer les erreurs de validation et les données soumises de la session
+if (isset($_GET['validation_error']) && $_GET['validation_error'] === 'true') {
+    $validation_errors_from_session = $_SESSION['validation_errors'] ?? [];
+    $submitted_data_from_session = $_SESSION['submitted_post_data'] ?? [];
+    unset($_SESSION['validation_errors'], $_SESSION['submitted_post_data']); // Nettoyer la session
 }
-// --- FIN DE L'AJOUT ---
+
+// --- GESTION DE LA MISE À JOUR DU PROFIL (POST REQUEST) ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
+    $userIdToUpdate = $_SESSION['user_id'];
+    $adresseIdToUpdate = $_POST['actual_adresse_id'] ?? null;
+
+    // --- Validation des données ---
+    $errors = [];
+    $submitted_data = $_POST;
+
+    if (empty(trim($submitted_data['denomination'] ?? ''))) {
+        $errors['denomination'] = 'La dénomination est requise.';
+    }
+    if (empty(trim($submitted_data['adresse'] ?? ''))) {
+        $errors['adresse'] = 'La ligne d\'adresse est requise.';
+    }
+    if (empty(trim($submitted_data['ville'] ?? ''))) {
+        $errors['ville'] = 'La ville est requise.';
+    }
+    if (empty(trim($submitted_data['code_postal'] ?? ''))) {
+        $errors['code_postal'] = 'Le code postal est requis.';
+    } elseif (!preg_match('/^\d{5}$/', $submitted_data['code_postal'])) {
+        $errors['code_postal'] = 'Le code postal doit être composé de 5 chiffres.';
+    }
+    if (empty(trim($submitted_data['siren'] ?? ''))) {
+        $errors['siren'] = 'Le numéro de SIREN est requis.';
+    } elseif (!preg_match('/^\d{9}$/', str_replace(' ', '', $submitted_data['siren']))){
+        $errors['siren'] = 'Le SIREN doit être composé de 9 chiffres.';
+    }
+    if (empty(trim($submitted_data['email'] ?? ''))) {
+        $errors['email'] = 'L\'email est requis.';
+    } elseif (!filter_var($submitted_data['email'], FILTER_VALIDATE_EMAIL)) {
+        $errors['email'] = 'Le format de l\'email est invalide.';
+    }
+    // Ajout de la validation pour le numéro de téléphone
+    if (!empty(trim($submitted_data['telephone'] ?? ''))) {
+        $telephone = $submitted_data['telephone'];
+        // Vérifie si le numéro contient des lettres
+        if (preg_match('/[a-zA-Z]/', $telephone)) {
+            $errors['telephone'] = 'Le numéro de téléphone ne doit pas contenir de lettres.';
+        // Vérifie si le numéro a moins de 10 chiffres (en ignorant les espaces, +, etc.)
+        } elseif (strlen(preg_replace('/[^0-9]/', '', $telephone)) < 10) {
+            $errors['telephone'] = 'Le numéro de téléphone doit contenir au moins 10 chiffres.';
+        }
+    }
+    // Validation pour IBAN et BIC (vérifications simples pour l'exemple)
+    if (empty(trim($submitted_data['iban'] ?? ''))) {
+        $errors['iban'] = 'L\'IBAN est requis.';
+    }
+    if (empty(trim($submitted_data['bic'] ?? ''))) {
+        $errors['bic'] = 'Le BIC est requis.';
+    }
+
+    // S'il y a des erreurs, stocker en session et rediriger
+    if (!empty($errors)) {
+        $_SESSION['validation_errors'] = $errors;
+        $_SESSION['submitted_post_data'] = $submitted_data;
+        header('Location: profil_pro.php?validation_error=true');
+        exit;
+    }
+
+    // Si la validation réussit, procéder à la mise à jour
+    if (!$adresseIdToUpdate) {
+         header('Location: profil_pro.php?update=error_no_address_id');
+         exit;
+    }
+
+    $secteurForDb = ($submitted_data['secteur'] === 'privé') ? 1 : 0;
+
+    try {
+        $pdo->beginTransaction();
+
+        // Mettre à jour la table des adresses
+        $sqlAdresse = "UPDATE adresses SET street = :street, city = :city, postal_code = :postal_code WHERE id = :adresse_id_val";
+        $stmtAdresse = $pdo->prepare($sqlAdresse);
+        $stmtAdresse->execute([
+            ':street' => $submitted_data['adresse'],
+            ':city' => $submitted_data['ville'],
+            ':postal_code' => $submitted_data['code_postal'],
+            ':adresse_id_val' => $adresseIdToUpdate
+        ]);
+
+        // Mettre à jour la table des comptes professionnels
+        // ATTENTION: Remplacez 'comptes_pro' et les noms de colonnes par les vôtres
+        
+        $sqlPro = "UPDATE comptes_pro SET email = :email, phone = :telephone, company_name = :denomination, siren = :siren, is_private = :secteur, iban = :iban, bic = :bic WHERE id = :userId";
+        $stmtPro = $pdo->prepare($sqlPro);
+        $stmtPro->execute([
+            ':email' => $submitted_data['email'],
+            ':telephone' => $submitted_data['telephone'],
+            ':denomination' => $submitted_data['denomination'],
+            ':siren' => str_replace(' ', '', $submitted_data['siren']),
+            ':secteur' => $secteurForDb,
+            ':iban' => $submitted_data['iban'],
+            ':bic' => $submitted_data['bic'],
+            ':userId' => $userIdToUpdate
+        ]);
+
+        $pdo->commit();
+        header('Location: profil.php?update=success');
+        exit;
+
+    } catch (PDOException $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        error_log("Erreur de mise à jour du profil PRO pour user ID " . $userIdToUpdate . ": " . $e->getMessage());
+        header('Location: profil.php?update=error');
+        exit;
+    }
+}
+
+// Définir les messages de la pop-up basés sur les paramètres GET
+if (isset($_GET['update'])) {
+    if ($_GET['update'] === 'success') {
+        $show_popup = true;
+        $popup_message = "Vos informations ont été mises à jour avec succès !";
+        $popup_type = 'success';
+    } elseif ($_GET['update'] === 'error') {
+        $show_popup = true;
+        $popup_message = "Une erreur technique est survenue. Veuillez réessayer.";
+        $popup_type = 'error';
+    } elseif ($_GET['update'] === 'error_no_address_id') {
+        $show_popup = true;
+        $popup_message = "Erreur : Identifiant d'adresse manquant.";
+        $popup_type = 'error';
+    }
+}
+
+
+// --- GESTION DE L'AFFICHAGE DU PROFIL (GET REQUEST) ---
+// 1. Vérifier si l'utilisateur est connecté
+if (!isset($_SESSION['user_id'])) {
+    header('Location: connexion-compte.php');
+    exit;
+}
+
+// 2. Récupérer les informations de l'utilisateur professionnel
+
+$pro_user = null;
+
+try {
+    // ATTENTION: Remplacez 'comptes_pro' et les noms de colonnes par les vôtres
+    $sql = "SELECT cp.email, 
+                   cp.phone AS telephone, 
+                   cp.company_name AS denomination, 
+                   cp.siren, 
+                   cp.is_private AS secteur,
+                   cp.iban,
+                   cp.bic,
+                   a.street AS adresse,
+                   a.city AS ville,
+                   a.postal_code AS code_postal,
+                   cp.adresse_id AS actual_adresse_id
+            FROM comptes_pro cp
+            JOIN adresses a ON cp.adresse_id = a.id
+            WHERE cp.id = :userId";
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
+    $stmt->execute();
+    $pro_user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$pro_user) {
+        $pro_user = []; // Gérer le cas où l'utilisateur n'est pas trouvé
+    }
+
+} catch (PDOException $e) {
+    error_log("Erreur de base de données sur profil_pro.php (SELECT) : " . $e->getMessage());
+    $pro_user = []; // Gérer l'erreur de base de données
+}
+
+$pro_user_json = json_encode($pro_user);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -33,7 +223,7 @@ if (session_status() == PHP_SESSION_NONE) {
         input:read-only, select:disabled{background-color:#e9ecef;color:#6c757d;cursor:not-allowed;border:1px solid #ced4da}
         .buttons-form-profil{display:flex;gap:10px;justify-content:center;margin-top:24px}
         .buttons-form-profil button{padding:10px 20px;font-family:'Poppins',sans-serif;font-size:16px;border-radius:8px;cursor:pointer;border:1px solid transparent}
-        #btnModifierProfil{background-color:#008c8c;color:#fff}
+        #btnModifierProfil{background-color:var(--couleur-principale);color:#fff}
         #btnConfirmerProfil{background-color:rgb(0,140,98);color:#fff}
         #btnAnnulerProfil{background-color:rgb(255,72,90);color:#fff}
         .error-message-server,.error-message-js{color:red;font-size:.9em;text-align:left;width:100%;margin-top:4px}
@@ -45,203 +235,9 @@ if (session_status() == PHP_SESSION_NONE) {
         .popup-content h2{margin-top:0;margin-bottom:15px;color:#333}
         .popup-content p{margin-bottom:20px;line-height:1.5;color:#555}
         .popup-content button{padding:10px 25px;border:none;border-radius:5px;cursor:pointer;font-weight:700}
-        .popup-content button.success{background-color:#008c8c;color:#fff}
+        .popup-content button.success{background-color:var(--couleur-principale);color:#fff}
         .popup-content button.error{background-color:rgb(255,72,90);color:#fff}
         @media (max-width:768px){.profil{width:100%;height:auto;padding:16px}.email,.denomination,.adresse_postal,.siren,.iban,.bic,.telephone,.ville,.secteur,.code_postal{width:100%}#email,#denomination,#adresse,#siren,#iban,#bic,#telephone,#ville,#secteur,#code_postal{width:100%}.ville_code_postal,.siren_secteur{flex-direction:column;gap:24px}h1{font-size:24px}}
-        /* Add your custom styles here */
-        .container.content-area {
-            padding: 32px 0px;
-            text-align: center; /* centre le texte à l’intérieur */
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* centre le contenu horizontalement */
-
-        }
-
-        input {
-            font-family: 'Inter', sans-serif;
-            font-size: 16px;
-        }
-
-        input:focus {
-            outline: none;
-            
-        }
-
-        .profil {
-
-            box-sizing: border-box;
-            border: 1px solid #D9D9D9;
-            border-radius: 16px;
-            padding: 32px;
-            display: flex;
-            gap : 24px;
-            width: 660px;
-            height: 870px;
-            flex-wrap: wrap;
-            font-family: 'Inter', sans-serif;
-            font-size: 16px;
-        }
-
-        .email, .denomination, .adresse_postal, .siren, .iban, .bic {
-
-            display: flex;
-            flex-wrap: wrap;
-            width: 595px;
-            height: 70px;
-            gap: 8px;
-        
-        }
-
-        .telephone, .ville, .secteur, .code_postal {
-
-            display: flex;
-            flex-wrap: wrap;
-            width: 270px;
-            height: 70px;
-            gap: 8px;
-        
-        }
-
-        #email, #denomination, #adresse, #siren, #iban, #bic {
-
-            box-sizing: border-box;
-            width: 595px;
-            height: 40px;
-            border-radius: 8px;
-            border: 1px solid #D9D9D9;
-            padding: 12px 16px;
-
-        }
-
-        #telephone, #ville, #secteur, #code_postal {
-
-            box-sizing: border-box;
-            width: 240px;
-            height: 40px;
-            border-radius: 8px;
-            border: 1px solid #D9D9D9;
-            padding: 12px 16px;
-
-        }
-
-        .ville_code_postal{
-
-            display: flex;
-            gap: 32px;
-            width: 520px;
-            height: 70px;
-
-
-        }
-        
-        /* --- STYLE POUR LE MESSAGE D'ERREUR --- */
-        .message.error {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            max-width: 660px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        /* --- FIN STYLE POUR LE MESSAGE D'ERREUR --- */
-                
-        @media (max-width: 768px) {
-    .container.content-area {
-        padding: 16px 0px; /* Réduire le padding pour les petits écrans */
-    }
-
-    .profil {
-        width: 100%; /* Prendre toute la largeur de l'écran */
-        height: auto; /* Permettre à la hauteur de s'ajuster automatiquement */
-        padding: 16px; /* Réduire le padding */
-    }
-
-    .email,
-    .denomination,
-    .adresse_postal,   
-    .siren,
-    .iban,
-    .bic,
-    .telephone,
-    .ville,
-    .secteur,
-    .code_postal {
-        width: 100%; /* Prendre toute la largeur de l'écran */
-        margin-left: 0; /* Supprimer la marge gauche */
-    }
-
-    #email,
-    #denomination, 
-    #adresse,
-    #siren,
-    #iban,
-    #bic,
-    #telephone,
-    #ville,
-    #secteur,
-    #code_postal {
-    
-        width: 100%; /* Prendre toute la largeur de l'écran */
-    }
-
-    h1 {
-        font-size: 24px; /* Réduire la taille de la police pour le titre */
-    }
-}
-    /* --- STYLES POUR LA NOTIFICATION PROFIL --- */
-
-    .main-nav ul li.nav-item-with-notification {
-        position: relative; /* Contexte pour le positionnement absolu de la bulle */
-    }
-
-    .profile-link-container {
-        position: relative;
-        display: flex;
-        align-items: center;
-    }
-
-    .notification-bubble {
-        position: absolute;
-        top: -16px;
-        right: 80px;
-        width: 20px;
-        height: 20px;
-        background-color: #dc3545;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.8em;
-        font-weight: bold;
-        border: 2px solid white;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    }
-
-    .header-right .profile-link-container + .btn-primary {
-        margin-left: 1rem; 
-    }
-
-    .nav-item-with-notification .notification-bubble {
-        position: absolute;
-        top: -15px; /* Ajustez pour la position verticale */
-        right: 80px; /* Ajustez pour la position horizontale */
-        width: 20px;
-        height: 20px;
-        background-color: #dc3545;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.75em; /* Police un peu plus petite pour la nav */
-        font-weight: bold;
-        border: 2px solid white;
-    }
     </style>
 </head>
 <body>
@@ -254,13 +250,8 @@ if (session_status() == PHP_SESSION_NONE) {
 
         <nav class="main-nav">
             <ul>
-                <li><a href="index.php" class="active">Accueil</a></li>
-                <li class="nav-item-with-notification">
-                    <a href="recherche.php">Mes Offres</a>
-                    <?php if (isset($unanswered_reviews_count) && $unanswered_reviews_count > 0): ?>
-                        <span class="notification-bubble"><?php echo $unanswered_reviews_count; ?></span>
-                    <?php endif; ?>
-                </li>
+                <li><a href="index.php">Accueil</a></li>
+                <li><a href="recherche.php">Mes Offres</a></li>
                 <li><a href="publier-une-offre.php">Publier une offre</a></li>
             </ul>
         </nav>
@@ -268,28 +259,21 @@ if (session_status() == PHP_SESSION_NONE) {
         <div class="header-right">
             <div class="profile-link-container">
                 <a href="profil.php" class="btn btn-secondary">Mon profil</a>
+                <?php if (isset($unanswered_reviews_count) && $unanswered_reviews_count > 0): ?>
+                    <span class="notification-bubble"><?php echo $unanswered_reviews_count; ?></span>
+                <?php endif; ?>
             </div>
             <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
         </div>
     </div>
     </header>
+
     <main>
         <div class="container content-area">
-
-            <?php
-            // --- AJOUT POUR AFFICHER LA NOTIFICATION ---
-            if (isset($_SESSION['notification_error'])) {
-                echo "<div class='message error'>" . htmlspecialchars($_SESSION['notification_error']) . "</div>";
-                // On supprime la notification pour qu'elle ne s'affiche pas à nouveau
-                unset($_SESSION['notification_error']);
-            }
-            // --- FIN DE L'AJOUT ---
-            ?>
-            
             <h1>Mes Informations</h1>
             
             <?php if ($pro_user && !empty($pro_user)): ?>
-            <form id="profilProForm" method="POST" action="profil_pro.php">
+            <form id="profilProForm" method="POST" action="profil.php">
                 <input type="hidden" name="actual_adresse_id" value="<?php echo htmlspecialchars($pro_user['actual_adresse_id'] ?? ''); ?>">
                 
                 <div class="profil">
@@ -307,6 +291,9 @@ if (session_status() == PHP_SESSION_NONE) {
                         <label for="telephone">Téléphone</label>
                         <input type="tel" id="telephone" name="telephone" placeholder="+33701020304" readonly
                                value="<?php echo htmlspecialchars($submitted_data_from_session['telephone'] ?? $pro_user['telephone'] ?? ''); ?>">
+                        <?php if (isset($validation_errors_from_session['telephone'])): ?>
+                            <span class="error-message-server"><?php echo htmlspecialchars($validation_errors_from_session['telephone']); ?></span>
+                        <?php endif; ?>
                         <span id="telephoneError" class="error-message-js"></span>
                     </div>
 
@@ -362,11 +349,11 @@ if (session_status() == PHP_SESSION_NONE) {
                              <span id="sirenError" class="error-message-js"></span>
                         </div>
                         <div class="secteur">
-                             <label for="secteur">Secteur</label>
-                             <select name="secteur" id="secteur" disabled>
-                                 <option value="privé" <?php echo (($submitted_data_from_session['secteur'] ?? $pro_user['secteur'] ?? '') === 'privé') ? 'selected' : ''; ?>>Privé</option>
-                                 <option value="public" <?php echo (($submitted_data_from_session['secteur'] ?? $pro_user['secteur'] ?? '') === 'public') ? 'selected' : ''; ?>>Public</option>
-                             </select>
+                            <label for="secteur">Secteur</label>
+                            <select name="secteur" id="secteur" disabled>
+                                <option value="privé" <?php echo (($submitted_data_from_session['secteur'] ?? ($pro_user['secteur'] == 1 ? 'privé' : 'public')) === 'privé') ? 'selected' : ''; ?>>Privé</option>
+                                <option value="public" <?php echo (($submitted_data_from_session['secteur'] ?? ($pro_user['secteur'] == 1 ? 'privé' : 'public')) === 'public') ? 'selected' : ''; ?>>Public</option>
+                            </select>
                         </div>
                     </div>
 
@@ -410,9 +397,64 @@ if (session_status() == PHP_SESSION_NONE) {
             <button id="popupCloseButton" class="<?php echo $popup_type; ?>">Fermer</button>
         </div>
     </div>
+
+    <div id="emailConfirmationPopup" class="popup-overlay">
+        <div class="popup-content">
+            <h2>Confirmer le changement d'e-mail ?</h2>
+            <p>
+                Modifier votre adresse e-mail vous déconnectera par mesure de sécurité. 
+                Vous devrez vous reconnecter avec votre nouvelle adresse. <br><br>
+                Voulez-vous continuer ?
+            </p>
+            <div class="buttons-form-profil">
+                <button type="button" id="btnConfirmEmailChange" class="success" style="background-color:rgb(0,140,98); color: #fff;">Oui, confirmer</button>
+                <button type="button" id="btnCancelEmailChange" class="error" style="background-color:rgb(255,72,90); color: #fff;">Annuler</button>
+            </div>
+        </div>
+    </div>
     
     <footer>
-       </footer>
+        <div class="container footer-content">
+            <div class="footer-section social-media">
+                <div class="social-icons">
+                    <a href="#" aria-label="X"><i class="fab fa-x-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="footer-section links">
+                <h3>Visiteur</h3>
+                <ul>
+                    <li><a href="../index.html">Accueil</a></li>
+                    <li><a href="../FO/recherche.php">Recherche d'offres</a></li>
+                    <li><a href="../FO/connexion-compte.php">Je me connecte en tant que membre</a></li>
+                </ul>
+            </div>
+            <div class="footer-section links">
+                <h3>Découvrir</h3>
+                <ul>
+                    <li><a href="index.php">Accueil</a></li>
+                    <li><a href="publier-une-offre.php">Publier une offre</a></li>
+                    <li><a href="profil.php">Profil</a></li>
+                </ul>
+            </div>
+            <div class="footer-section links">
+                <h3>Ressources</h3>
+                <ul>
+                    <li><a href="conditions-generales-d-utilisation.php">Conditions générales d'utilisation</a></li>
+                    <li><a href="contact-du-responsable-du-site.php">Contact du responsable du site</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 PACT. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+    <script id="initial-data" type="application/json">
+        <?php echo $pro_user_json; ?>
+    </script>
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -427,13 +469,44 @@ if (session_status() == PHP_SESSION_NONE) {
 
         const popupOverlay = document.getElementById('popupOverlay');
         const popupCloseButton = document.getElementById('popupCloseButton');
+
+            // --- NOUVEAU : Popup de confirmation d'email ---
+        const emailPopup = document.getElementById('emailConfirmationPopup');
+        const btnConfirmEmailChange = document.getElementById('btnConfirmEmailChange');
+        const btnCancelEmailChange = document.getElementById('btnCancelEmailChange');
+
         
         let initialValues = {};
 
-        function storeInitialValues() {
-            allInputs.forEach(input => initialValues[input.id] = input.value);
-            initialValues[selectSecteur.id] = selectSecteur.value;
+        let isEmailChangeConfirmed = false; 
+
+        function loadInitialValuesFromServer() {
+            try {
+                const initialDataScript = document.getElementById('initial-data');
+                if (initialDataScript && initialDataScript.textContent) {
+                    const serverData = JSON.parse(initialDataScript.textContent);
+                    // On peuple initialValues avec les vraies données du serveur
+                    initialValues = {
+                        email: serverData.email || '',
+                        telephone: serverData.telephone || '',
+                        denomination: serverData.denomination || '',
+                        adresse: serverData.adresse || '',
+                        ville: serverData.ville || '',
+                        code_postal: serverData.code_postal || '',
+                        siren: serverData.siren || '',
+                        // On convertit la valeur numérique du secteur en texte
+                        secteur: serverData.secteur == 1 ? 'privé' : 'public',
+                        iban: serverData.iban || '',
+                        bic: serverData.bic || ''
+                    };
+                }
+            } catch (e) {
+                console.error("Impossible de lire ou d'analyser les données initiales du serveur.", e);
+            }
         }
+        
+        // On exécute cette fonction une seule fois au chargement de la page.
+        loadInitialValuesFromServer();
 
         function revertToInitialValues() {
             allInputs.forEach(input => input.value = initialValues[input.id] || '');
@@ -448,7 +521,7 @@ if (session_status() == PHP_SESSION_NONE) {
         }
         
         function enterEditMode() {
-            storeInitialValues();
+            isEmailChangeConfirmed = false;
             allInputs.forEach(input => input.removeAttribute('readonly'));
             selectSecteur.removeAttribute('disabled');
             btnModifier.style.display = 'none';
@@ -472,6 +545,18 @@ if (session_status() == PHP_SESSION_NONE) {
         
         // --- Validation Client ---
         profilForm.addEventListener('submit', function(event) {
+
+                    // --- NOUVEAU : Vérification du changement d'email ---
+            const initialEmail = initialValues['email'];
+            const currentEmail = document.getElementById('email').value;
+
+            // Si l'email a changé ET que l'utilisateur n'a pas encore confirmé via la popup
+            if (currentEmail !== initialEmail && !isEmailChangeConfirmed) {
+                event.preventDefault(); // Arrêter la soumission du formulaire
+                emailPopup.classList.add('show'); // Afficher la popup de confirmation
+                return; // Sortir de la fonction pour attendre l'action de l'utilisateur
+            }
+
             let isValid = true;
             clearAllJsErrors();
 
@@ -499,12 +584,35 @@ if (session_status() == PHP_SESSION_NONE) {
             if (email.trim() === '') showError('emailError', 'L\'email est requis.');
             else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) showError('emailError', 'Format d\'email invalide.');
             
+            // Ajout de la validation pour le numéro de téléphone côté client
+            const telephone = document.getElementById('telephone').value;
+            if (telephone.trim() !== '') {
+                // Vérifie la présence de lettres
+                if (/[a-zA-Z]/.test(telephone)) {
+                    showError('telephoneError', 'Le téléphone ne doit pas contenir de lettres.');
+                // Compte uniquement les chiffres et vérifie la longueur
+                } else if (telephone.replace(/[^0-9]/g, '').length < 10) {
+                    showError('telephoneError', 'Le téléphone doit contenir au moins 10 chiffres.');
+                }
+            }
+
             if (document.getElementById('iban').value.trim() === '') showError('ibanError', 'L\'IBAN est requis.');
             if (document.getElementById('bic').value.trim() === '') showError('bicError', 'Le BIC est requis.');
 
             if (!isValid) {
                 event.preventDefault();
             }
+        });
+
+        // --- NOUVEAU : GESTION DES BOUTONS DE LA POPUP D'EMAIL ---
+        btnConfirmEmailChange.addEventListener('click', function() {
+            isEmailChangeConfirmed = true; // Mettre le drapeau à vrai
+            emailPopup.classList.remove('show'); // Cacher la popup
+            profilForm.submit(); // Soumettre le formulaire pour de bon
+        });
+
+        btnCancelEmailChange.addEventListener('click', function() {
+            emailPopup.classList.remove('show'); // Cacher la popup, ne rien faire d'autre
         });
 
         // --- Gestion de la Pop-up ---
