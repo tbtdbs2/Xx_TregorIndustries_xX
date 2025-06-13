@@ -163,7 +163,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // 2. Récupérer les informations de l'utilisateur professionnel
-
+$userId = $_SESSION['user_id'];
 $pro_user = null;
 
 try {
@@ -242,31 +242,7 @@ $pro_user_json = json_encode($pro_user);
 </head>
 <body>
     <header>
-    <div class="container header-container">
-        <div class="header-left">
-            <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
-            <span class="pro-text">Professionnel</span>
-        </div>
-
-        <nav class="main-nav">
-            <ul>
-                <li><a href="index.php">Accueil</a></li>
-                <li><a href="recherche.php">Mes Offres</a></li>
-                <li><a href="publier-une-offre.php">Publier une offre</a></li>
-            </ul>
-        </nav>
-
-        <div class="header-right">
-            <div class="profile-link-container">
-                <a href="profil.php" class="btn btn-secondary">Mon profil</a>
-                <?php if (isset($unanswered_reviews_count) && $unanswered_reviews_count > 0): ?>
-                    <span class="notification-bubble"><?php echo $unanswered_reviews_count; ?></span>
-                <?php endif; ?>
-            </div>
-            <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
-        </div>
-    </div>
-    </header>
+        </header>
 
     <main>
         <div class="container content-area">
