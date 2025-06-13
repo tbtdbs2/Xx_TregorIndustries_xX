@@ -19,8 +19,35 @@ if (session_status() == PHP_SESSION_NONE) {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
     <style>
+        .container.content-area{padding:32px 0;text-align:center;display:flex;flex-direction:column;align-items:center}
+        input,select{font-family:'Inter',sans-serif;font-size:16px}
+        input:focus,select:focus{outline:none}
+        .profil{box-sizing:border-box;border:1px solid #d9d9d9;border-radius:16px;padding:32px;display:flex;gap:24px;width:660px;flex-wrap:wrap;font-family:'Inter',sans-serif;font-size:16px}
+        .email,.denomination,.adresse_postal,.siren,.iban,.bic{display:flex;flex-wrap:wrap;width:595px;height:auto;gap:8px}
+        .telephone,.ville,.secteur,.code_postal{display:flex;flex-wrap:wrap;width:285px;height:auto;gap:8px}
+        #email,#denomination,#adresse,#siren,#iban,#bic{box-sizing:border-box;width:595px;height:40px;border-radius:8px;border:1px solid #d9d9d9;padding:12px 16px}
+        #telephone,#ville,#code_postal{box-sizing:border-box;width:285px;height:40px;border-radius:8px;border:1px solid #d9d9d9;padding:12px 16px}
+        #secteur{box-sizing:border-box;width:285px;height:40px;border-radius:8px;border:1px solid #d9d9d9;padding:0 12px;background-color:#fff}
+        .ville_code_postal, .siren_secteur {display: flex; gap: 24px; width: 100%;}
+        input:read-only, select:disabled{background-color:#e9ecef;color:#6c757d;cursor:not-allowed;border:1px solid #ced4da}
+        .buttons-form-profil{display:flex;gap:10px;justify-content:center;margin-top:24px}
+        .buttons-form-profil button{padding:10px 20px;font-family:'Poppins',sans-serif;font-size:16px;border-radius:8px;cursor:pointer;border:1px solid transparent}
+        #btnModifierProfil{background-color:#008c8c;color:#fff}
+        #btnConfirmerProfil{background-color:rgb(0,140,98);color:#fff}
+        #btnAnnulerProfil{background-color:rgb(255,72,90);color:#fff}
+        .error-message-server,.error-message-js{color:red;font-size:.9em;text-align:left;width:100%;margin-top:4px}
+        .error-message-js{display:none}
+        .popup-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,.5);display:flex;justify-content:center;align-items:center;z-index:1000;opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease}
+        .popup-overlay.show{opacity:1;visibility:visible}
+        .popup-content{background-color:#fff;padding:30px;border-radius:10px;text-align:center;box-shadow:0 5px 15px rgba(0,0,0,.3);max-width:400px;width:90%;transform:scale(.9);transition:transform .3s ease}
+        .popup-overlay.show .popup-content{transform:scale(1)}
+        .popup-content h2{margin-top:0;margin-bottom:15px;color:#333}
+        .popup-content p{margin-bottom:20px;line-height:1.5;color:#555}
+        .popup-content button{padding:10px 25px;border:none;border-radius:5px;cursor:pointer;font-weight:700}
+        .popup-content button.success{background-color:#008c8c;color:#fff}
+        .popup-content button.error{background-color:rgb(255,72,90);color:#fff}
+        @media (max-width:768px){.profil{width:100%;height:auto;padding:16px}.email,.denomination,.adresse_postal,.siren,.iban,.bic,.telephone,.ville,.secteur,.code_postal{width:100%}#email,#denomination,#adresse,#siren,#iban,#bic,#telephone,#ville,#secteur,#code_postal{width:100%}.ville_code_postal,.siren_secteur{flex-direction:column;gap:24px}h1{font-size:24px}}
         /* Add your custom styles here */
         .container.content-area {
             padding: 32px 0px;
@@ -237,100 +264,239 @@ if (session_status() == PHP_SESSION_NONE) {
             ?>
             
             <h1>Mes Informations</h1>
-            <div class="profil">
-                <div class="email">
+            
+            <?php if ($pro_user && !empty($pro_user)): ?>
+            <form id="profilProForm" method="POST" action="profil_pro.php">
+                <input type="hidden" name="actual_adresse_id" value="<?php echo htmlspecialchars($pro_user['actual_adresse_id'] ?? ''); ?>">
+                
+                <div class="profil">
+                    <div class="email">
                         <label for="email">Email</label>
-                        <input type="text" id="email" placeholder="john.doe@mail.com" readonly="readonly">
-                </div>
-                <div class="telephone">
-                    <label for="telephone">Téléphone</label>
-                    <input type="text" id="telephone" placeholder="+33701020304" readonly="readonly">   
-                </div>
-                <div class="denomination">
-                    <label for="denomination">Dénomination / Raison sociale</label>
-                    <input type="text" id="denomination" placeholder="toto Entreprise" readonly="readonly">
-                </div>
-                <div class="adresse_postal">
-                    <label for="adresse">Ligne d'adresse</label>
-                    <input type="text" id="adresse" placeholder="23 rue saint marc" readonly="readonly">
-                </div>
-
-                <div class="ville_code_postal">
-                    <div class="ville">
-                        <label for="ville">Ville</label>
-                        <input type="text" id="ville" placeholder="Paris" readonly="readonly">
+                        <input type="email" id="email" name="email" placeholder="john.doe@mail.com" readonly
+                               value="<?php echo htmlspecialchars($submitted_data_from_session['email'] ?? $pro_user['email'] ?? ''); ?>">
+                        <?php if (isset($validation_errors_from_session['email'])): ?>
+                            <span class="error-message-server"><?php echo htmlspecialchars($validation_errors_from_session['email']); ?></span>
+                        <?php endif; ?>
+                        <span id="emailError" class="error-message-js"></span>
                     </div>
-                    <div class="code_postal">
-                        <label for="code_postal">Code postal</label>
-                        <input type="text" id="code_postal" placeholder="75002" readonly="readonly">
+
+                    <div class="telephone">
+                        <label for="telephone">Téléphone</label>
+                        <input type="tel" id="telephone" name="telephone" placeholder="+33701020304" readonly
+                               value="<?php echo htmlspecialchars($submitted_data_from_session['telephone'] ?? $pro_user['telephone'] ?? ''); ?>">
+                        <span id="telephoneError" class="error-message-js"></span>
+                    </div>
+
+                    <div class="denomination">
+                        <label for="denomination">Dénomination / Raison sociale</label>
+                        <input type="text" id="denomination" name="denomination" placeholder="Votre Entreprise" readonly
+                               value="<?php echo htmlspecialchars($submitted_data_from_session['denomination'] ?? $pro_user['denomination'] ?? ''); ?>">
+                        <?php if (isset($validation_errors_from_session['denomination'])): ?>
+                            <span class="error-message-server"><?php echo htmlspecialchars($validation_errors_from_session['denomination']); ?></span>
+                        <?php endif; ?>
+                        <span id="denominationError" class="error-message-js"></span>
+                    </div>
+
+                    <div class="adresse_postal">
+                        <label for="adresse">Ligne d'adresse</label>
+                        <input type="text" id="adresse" name="adresse" placeholder="23 rue saint marc" readonly
+                               value="<?php echo htmlspecialchars($submitted_data_from_session['adresse'] ?? $pro_user['adresse'] ?? ''); ?>">
+                        <?php if (isset($validation_errors_from_session['adresse'])): ?>
+                            <span class="error-message-server"><?php echo htmlspecialchars($validation_errors_from_session['adresse']); ?></span>
+                        <?php endif; ?>
+                        <span id="adresseError" class="error-message-js"></span>
+                    </div>
+
+                    <div class="ville_code_postal">
+                        <div class="ville">
+                            <label for="ville">Ville</label>
+                            <input type="text" id="ville" name="ville" placeholder="Paris" readonly
+                                   value="<?php echo htmlspecialchars($submitted_data_from_session['ville'] ?? $pro_user['ville'] ?? ''); ?>">
+                            <?php if (isset($validation_errors_from_session['ville'])): ?>
+                                <span class="error-message-server"><?php echo htmlspecialchars($validation_errors_from_session['ville']); ?></span>
+                            <?php endif; ?>
+                            <span id="villeError" class="error-message-js"></span>
+                        </div>
+                        <div class="code_postal">
+                            <label for="code_postal">Code postal</label>
+                            <input type="text" id="code_postal" name="code_postal" placeholder="75002" readonly
+                                   value="<?php echo htmlspecialchars($submitted_data_from_session['code_postal'] ?? $pro_user['code_postal'] ?? ''); ?>">
+                            <?php if (isset($validation_errors_from_session['code_postal'])): ?>
+                                <span class="error-message-server"><?php echo htmlspecialchars($validation_errors_from_session['code_postal']); ?></span>
+                            <?php endif; ?>
+                            <span id="codePostalError" class="error-message-js"></span>
+                        </div>
+                    </div>
+
+                    <div class="siren_secteur">
+                        <div class="siren" style="width: 285px;">
+                             <label for="siren">Numéro de SIREN</label>
+                             <input type="text" id="siren" name="siren" placeholder="123456789" readonly
+                                    value="<?php echo htmlspecialchars($submitted_data_from_session['siren'] ?? $pro_user['siren'] ?? ''); ?>">
+                             <?php if (isset($validation_errors_from_session['siren'])): ?>
+                                 <span class="error-message-server"><?php echo htmlspecialchars($validation_errors_from_session['siren']); ?></span>
+                             <?php endif; ?>
+                             <span id="sirenError" class="error-message-js"></span>
+                        </div>
+                        <div class="secteur">
+                             <label for="secteur">Secteur</label>
+                             <select name="secteur" id="secteur" disabled>
+                                 <option value="privé" <?php echo (($submitted_data_from_session['secteur'] ?? $pro_user['secteur'] ?? '') === 'privé') ? 'selected' : ''; ?>>Privé</option>
+                                 <option value="public" <?php echo (($submitted_data_from_session['secteur'] ?? $pro_user['secteur'] ?? '') === 'public') ? 'selected' : ''; ?>>Public</option>
+                             </select>
+                        </div>
+                    </div>
+
+                    <div class="iban">
+                        <label for="iban">IBAN</label>
+                        <input type="text" id="iban" name="iban" placeholder="FR76..." readonly
+                               value="<?php echo htmlspecialchars($submitted_data_from_session['iban'] ?? $pro_user['iban'] ?? ''); ?>">
+                        <?php if (isset($validation_errors_from_session['iban'])): ?>
+                            <span class="error-message-server"><?php echo htmlspecialchars($validation_errors_from_session['iban']); ?></span>
+                        <?php endif; ?>
+                        <span id="ibanError" class="error-message-js"></span>
+                    </div>
+
+                    <div class="bic">
+                        <label for="bic">BIC</label>
+                        <input type="text" id="bic" name="bic" placeholder="AGRIFRPPXXX" readonly
+                               value="<?php echo htmlspecialchars($submitted_data_from_session['bic'] ?? $pro_user['bic'] ?? ''); ?>">
+                        <?php if (isset($validation_errors_from_session['bic'])): ?>
+                            <span class="error-message-server"><?php echo htmlspecialchars($validation_errors_from_session['bic']); ?></span>
+                        <?php endif; ?>
+                        <span id="bicError" class="error-message-js"></span>
                     </div>
                 </div>
 
-                <div class="siren">
-                    <label for="siren">Numéro de SIREN</label>
-                    <input type="text" id="siren" placeholder="123 456 789 0000" readonly="readonly">
+                <div class="buttons-form-profil">
+                    <button type="button" id="btnModifierProfil">Modifier les informations</button>
+                    <button type="submit" id="btnConfirmerProfil" style="display:none;">Confirmer</button>
+                    <button type="button" id="btnAnnulerProfil" style="display:none;">Annuler</button>
                 </div>
-                <div class="secteur">
-                    <label for="siren">Secteur</label>
-                    <select name="secteur" id="secteur">
-                        <option value="privé">Privé</option>
-                        <option value="public">Public</option>
-                    </select>
-                </div>
-                <div class="iban">
-                    <label for="iban">IBAN</label>
-                    <input type="text" id="iban" placeholder="FR76 1234 5678 9012 3456 7890 1234" readonly="readonly">
-                </div>
-                <div class="bic">
-                    <label for="bic">BIC</label>
-                    <input type="text" id="bic" placeholder="123456789" readonly="readonly">
-                </div>
-
-
-
-
-            </div>
+            </form>
+            <?php else: ?>
+                <p>Vos informations de profil n'ont pas pu être chargées. Veuillez contacter le support.</p>
+            <?php endif; ?>
         </div>
     </main>
 
+    <div id="popupOverlay" class="popup-overlay <?php if ($show_popup) echo 'show'; ?>">
+        <div class="popup-content">
+            <h2 id="popupTitle"><?php echo ($popup_type === "success") ? "Succès !" : "Erreur !"; ?></h2>
+            <p id="popupMessage"><?php echo htmlspecialchars($popup_message); ?></p>
+            <button id="popupCloseButton" class="<?php echo $popup_type; ?>">Fermer</button>
+        </div>
+    </div>
+    
     <footer>
-        <div class="container footer-content">
-            <div class="footer-section social-media">
-                <div class="social-icons">
-                    <a href="#" aria-label="X"><i class="fab fa-x-twitter"></i></a>
-                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                </div>
-            </div>
-            <div class="footer-section links">
-                <h3>Visiteur</h3>
-                <ul>
-                    <li><a href="../index.html">Accueil</a></li>
-                    <li><a href="../FO/recherche.php">Recherche d'offres</a></li>
-                    <li><a href="../FO/connexion-compte.php">Je me connecte en tant que membre</a></li>
-                </ul>
-            </div>
-            <div class="footer-section links">
-                <h3>Découvrir</h3>
-                <ul>
-                    <li><a href="index.php">Accueil</a></li>
-                    <li><a href="publier-une-offre.php">Publier une offre</a></li>
-                    <li><a href="profil.php">Profil</a></li>
-                </ul>
-            </div>
-            <div class="footer-section links">
-                <h3>Ressources</h3>
-                <ul>
-                    <li><a href="conditions-generales-d-utilisation.php">Conditions générales d'utilisation</a></li>
-                    <li><a href="contact-du-responsable-du-site.php">Contact du responsable du site</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2025 PACT. Tous droits réservés.</p>
-        </div>
-    </footer>
-    <script src="script.js" defer></script>
+       </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const profilForm = document.getElementById('profilProForm');
+        if (!profilForm) return;
+
+        const btnModifier = document.getElementById('btnModifierProfil');
+        const btnConfirmer = document.getElementById('btnConfirmerProfil');
+        const btnAnnuler = document.getElementById('btnAnnulerProfil');
+        const allInputs = profilForm.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"]');
+        const selectSecteur = document.getElementById('secteur');
+
+        const popupOverlay = document.getElementById('popupOverlay');
+        const popupCloseButton = document.getElementById('popupCloseButton');
+        
+        let initialValues = {};
+
+        function storeInitialValues() {
+            allInputs.forEach(input => initialValues[input.id] = input.value);
+            initialValues[selectSecteur.id] = selectSecteur.value;
+        }
+
+        function revertToInitialValues() {
+            allInputs.forEach(input => input.value = initialValues[input.id] || '');
+            selectSecteur.value = initialValues[selectSecteur.id] || 'privé';
+        }
+        
+        function clearAllJsErrors() {
+            document.querySelectorAll('.error-message-js').forEach(span => {
+                span.textContent = '';
+                span.style.display = 'none';
+            });
+        }
+        
+        function enterEditMode() {
+            storeInitialValues();
+            allInputs.forEach(input => input.removeAttribute('readonly'));
+            selectSecteur.removeAttribute('disabled');
+            btnModifier.style.display = 'none';
+            btnConfirmer.style.display = 'inline-block';
+            btnAnnuler.style.display = 'inline-block';
+        }
+
+        function exitEditMode() {
+            revertToInitialValues();
+            allInputs.forEach(input => input.setAttribute('readonly', 'readonly'));
+            selectSecteur.setAttribute('disabled', 'disabled');
+            btnModifier.style.display = 'inline-block';
+            btnConfirmer.style.display = 'none';
+            btnAnnuler.style.display = 'none';
+            clearAllJsErrors();
+            document.querySelectorAll('.error-message-server').forEach(span => span.style.display = 'none');
+        }
+
+        btnModifier.addEventListener('click', enterEditMode);
+        btnAnnuler.addEventListener('click', exitEditMode);
+        
+        // --- Validation Client ---
+        profilForm.addEventListener('submit', function(event) {
+            let isValid = true;
+            clearAllJsErrors();
+
+            function showError(elementId, message) {
+                const errorSpan = document.getElementById(elementId);
+                errorSpan.textContent = message;
+                errorSpan.style.display = 'block';
+                isValid = false;
+            }
+
+            // Validations
+            if (document.getElementById('denomination').value.trim() === '') showError('denominationError', 'La dénomination est requise.');
+            if (document.getElementById('adresse').value.trim() === '') showError('adresseError', 'L\'adresse est requise.');
+            if (document.getElementById('ville').value.trim() === '') showError('villeError', 'La ville est requise.');
+            
+            const codePostal = document.getElementById('code_postal').value;
+            if (codePostal.trim() === '') showError('codePostalError', 'Le code postal est requis.');
+            else if (!/^\d{5}$/.test(codePostal)) showError('codePostalError', 'Le code postal doit contenir 5 chiffres.');
+
+            const siren = document.getElementById('siren').value.replace(/\s/g, '');
+            if (siren.trim() === '') showError('sirenError', 'Le numéro de SIREN est requis.');
+            else if (!/^\d{9}$/.test(siren)) showError('sirenError', 'Le SIREN doit contenir 9 chiffres.');
+
+            const email = document.getElementById('email').value;
+            if (email.trim() === '') showError('emailError', 'L\'email est requis.');
+            else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) showError('emailError', 'Format d\'email invalide.');
+            
+            if (document.getElementById('iban').value.trim() === '') showError('ibanError', 'L\'IBAN est requis.');
+            if (document.getElementById('bic').value.trim() === '') showError('bicError', 'Le BIC est requis.');
+
+            if (!isValid) {
+                event.preventDefault();
+            }
+        });
+
+        // --- Gestion de la Pop-up ---
+        function hidePopup() {
+            if(popupOverlay) popupOverlay.classList.remove('show');
+            const url = new URL(window.location.href);
+            url.searchParams.delete('update');
+            history.replaceState(null, '', url.toString());
+        }
+
+        if(popupCloseButton) popupCloseButton.addEventListener('click', hidePopup);
+        if(popupOverlay) popupOverlay.addEventListener('click', (event) => {
+            if (event.target === popupOverlay) hidePopup();
+        });
+    });
+    </script>
 </body>
 </html>
