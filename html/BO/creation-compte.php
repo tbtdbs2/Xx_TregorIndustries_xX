@@ -22,14 +22,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $iban = $_POST['iban'] ?? '';
     $bic = $_POST['bic'] ?? '';
 
+    
+    if (!preg_match('/^[\p{L}0-9 \-\'"]{2,100}$/u', $raison_sociale)) {
+        $error_tab[] = 'Raison sociale invalide';
+    }
+
+    if (!preg_match('/^[\p{L}0-9 \-\'"]{2,100}$/u', $ville)) {
+        $error_tab[] = 'Ville invalide';
+    }
+
+    if (!preg_match('/^\d{5}$/', $code_postal)) {
+        $error_tab[] = 'Code postal invalide';
+    }
+
+    if ($siren && !preg_match('/^\d{9}$/', $siren)) {
+        $error_tab[] = 'SIREN invalide';
+    }
+
+    if (!preg_match('/^\+?\d{10,15}$/', $phone)) {
+        $error_tab[] = 'Téléphone  invalide.';
+    }
+
+    if ($iban && !preg_match('/^[A-Z]{2}[0-9A-Z]{13,30}$/', str_replace(' ', '', $iban))) {
+        $error_tab[] = 'IBAN invalide.';
+    }
+
+    if ($bic && !preg_match('/^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/', $bic)) {
+        $error_tab[] = 'BIC invalide.';
+    }
+
+    if ($password !== $password_confirm) {
+        $error_tab[] = 'Les mots de passe ne correspondent pas.';
+    }
 
     // Validation des données
     if (empty($email) || empty($raison_sociale) || empty($adresse) || empty($ville) || empty($code_postal) || empty($siren) || empty($secteur) || empty($phone) || empty($password) || empty($password_confirm)) {
         $login_error = 'Veuillez remplir tous les champs.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $login_error = 'Adresse e-mail invalide.';
-    } elseif ($password !== $password_confirm) {
-        $login_error = 'Les mots de passe ne correspondent pas.';
+    } elseif (!empty($error_tab)) {
+        foreach ($error_tab as $error) {
+            $login_error .= $error . " ";
+        }
     } else {
         // Vérification si l'utilisateur existe déjà
         $stmt = $pdo->prepare("SELECT * FROM comptes_pro WHERE email = :email OR siren = :siren");
@@ -271,8 +305,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="form-group">
                         <label for="secteur">Secteur d'activité *</label>
                         <select id="secteur" name="secteur">
-                            <option value="particulier">Privé</option>
-                            <option value="professionnel">Public</option>
+                            <option value="privé">Privé</option>
+                            <option value="public">Public</option>
                         </select>
                     </div>
                     <div class="form-group">
