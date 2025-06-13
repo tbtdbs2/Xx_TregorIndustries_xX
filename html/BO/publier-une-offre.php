@@ -1598,7 +1598,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 </div>
             `;
             container.appendChild(newGroup);
-            setMinDateForInput(newGroup.querySelector('input[type="date"]')); / Set min date for new input
+            setMinDateForInput(newGroup.querySelector('input[type="date"]')); // Set min date for new input
             addRemoveCrossIfNeeded(newGroup);
             if (offerForm.dataset.submitted === 'true') validateAllFields(newGroup);
         }
@@ -1682,7 +1682,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 </div>
             `;
             horairesContainer.appendChild(newGroup);
-            setMinDateForInput(newGroup.querySelector('input[type="date"]')); / Set min date for new input
+            setMinDateForInput(newGroup.querySelector('input[type="date"]')); // Set min date for new input
             addRemoveCrossIfNeeded(newGroup);
             if (offerForm.dataset.submitted === 'true') validateAllFields(newGroup);
         }
@@ -1782,7 +1782,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 if (field.id === 'photos' && currentSelectedFiles.length > 6) isValidField = false;
                 if (field.multiple && field.required && field.selectedOptions.length === 0) isValidField = false;
                 
-                / Check date field min attribute
+                // Check date field min attribute
                 if (field.type === 'date' && field.min && field.value && field.value < field.min) {
                     isValidField = false;
                     if(errorMessageElement) errorMessageElement.textContent = "La date ne peut pas être antérieure à aujourd'hui.";
@@ -1802,7 +1802,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                         } else if (field.id === 'photos' && currentSelectedFiles.length > 6) {
                             errorMessageElement.textContent = "Vous ne pouvez sélectionner que 6 photos maximum.";
                         } else if (field.type === 'date' && field.min && field.value && field.value < field.min) {
-                            / message already set above
+                            // message already set above
                         }
                         errorMessageElement.style.display = 'block';
                     }
