@@ -385,6 +385,11 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
         animation: fadeInModal 0.3s ease-out;
     }
     /* --- STYLES POUR LA NOTIFICATION PROFIL --- */
+
+    .main-nav ul li.nav-item-with-notification {
+        position: relative; /* Contexte pour le positionnement absolu de la bulle */
+    }
+
     .profile-link-container {
         position: relative;
         display: flex;
@@ -393,10 +398,10 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
 
     .notification-bubble {
         position: absolute;
-        top: -8px;
-        right: -8px;
-        width: 24px;
-        height: 24px;
+        top: -16px;
+        right: 80px;
+        width: 20px;
+        height: 20px;
         background-color: #dc3545;
         color: white;
         border-radius: 50%;
@@ -411,6 +416,23 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
 
     .header-right .profile-link-container + .btn-primary {
         margin-left: 1rem; 
+    }
+
+    .nav-item-with-notification .notification-bubble {
+        position: absolute;
+        top: -15px; /* Ajustez pour la position verticale */
+        right: 80px; /* Ajustez pour la position horizontale */
+        width: 20px;
+        height: 20px;
+        background-color: #dc3545;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75em; /* Police un peu plus petite pour la nav */
+        font-weight: bold;
+        border: 2px solid white;
     }
     </style>
 </head>
@@ -429,7 +451,12 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
         <nav class="main-nav">
             <ul>
                 <li><a href="index.php" class="active">Accueil</a></li>
-                <li><a href="recherche.php">Mes Offres</a></li>
+                <li class="nav-item-with-notification">
+                    <a href="recherche.php">Mes Offres</a>
+                    <?php if (isset($unanswered_reviews_count) && $unanswered_reviews_count > 0): ?>
+                        <span class="notification-bubble"><?php echo $unanswered_reviews_count; ?></span>
+                    <?php endif; ?>
+                </li>
                 <li><a href="publier-une-offre.php">Publier une offre</a></li>
             </ul>
         </nav>
@@ -437,9 +464,6 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
         <div class="header-right">
             <div class="profile-link-container">
                 <a href="profil.php" class="btn btn-secondary">Mon profil</a>
-                <?php if (isset($unanswered_reviews_count) && $unanswered_reviews_count > 0): ?>
-                    <span class="notification-bubble"><?php echo $unanswered_reviews_count; ?></span>
-                <?php endif; ?>
             </div>
             <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
         </div>
@@ -452,21 +476,29 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
             <h1>Bienvenue sur votre Espace Professionnel</h1>
             <p>Gérez vos offres, suivez vos performances et interagissez avec vos clients.</p>
             <div class="bo-quick-stats">
-                <div class="stat-card">
-                    <h3>Offres Totales</h3>
-                    <p class="stat-number">3</p> 
-                    <a href="recherche.php" class="stat-link">Voir mes offres <i class="fas fa-arrow-right fa-xs"></i></a>
-                </div>
-                <div class="stat-card">
-                    <h3>Offres Actives</h3>
-                    <p class="stat-number">2</p> 
-                    <a href="recherche.php" class="stat-link">Voir mes offres <i class="fas fa-arrow-right fa-xs"></i></a>
-                </div>
-                <div class="stat-card">
-                    <h3>Avis sur mes offres</h3>
-                    <p class="stat-number">12</p>
-                    <a href="recherche.php" class="stat-link">Voir les offres<i class="fas fa-arrow-right fa-xs"></i></a>
-                </div>
+            
+            <div class="stat-card">
+                <h3>Offres Totales</h3>
+                <p class="stat-number"><?php echo $total_offers_count ?? 0; ?></p> 
+                <a href="recherche.php" class="stat-link">Voir mes offres <i class="fas fa-arrow-right fa-xs"></i></a>
+            </div>
+
+            <div class="stat-card">
+                <h3>Offres Actives</h3>
+                <p class="stat-number"><?php echo $active_offers_count ?? 0; ?></p> 
+                <a href="recherche.php" class="stat-link">Voir mes offres <i class="fas fa-arrow-right fa-xs"></i></a>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Avis sur mes offres</h3>
+                <p class="stat-number"><?php echo $total_reviews_count ?? 0; ?></p>
+                <a href="recherche.php" class="stat-link">Gérer les avis <i class="fas fa-arrow-right fa-xs"></i></a>
+            </div>
+
+            <div class="stat-card">
+                <h3>Nouveaux Avis</h3>
+                <p class="stat-number"><?php echo $unanswered_reviews_count ?? 0; ?></p> 
+                <a href="avis-non-lus.php" class="stat-link">Voir les offres concernées <i class="fas fa-arrow-right fa-xs"></i></a>
             </div>
         </div>
     </section>
