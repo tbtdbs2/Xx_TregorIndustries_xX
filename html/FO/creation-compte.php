@@ -20,13 +20,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     $password_confirm = $_POST['password_confirm'] ?? '';
 
+    if (!preg_match('/^[\p{L}0-9 \-\'"]{2,100}$/u', $ville)) {
+        $error_tab[] = 'Ville invalide';
+    }
+
+    if (!preg_match('/^\d{5}$/', $code_postal)) {
+        $error_tab[] = 'Code postal invalide';
+    }
+
+    if (!preg_match('/^\+?\d{10,15}$/', $phone)) {
+        $error_tab[] = 'Téléphone  invalide.';
+    }
+
+    if ($password !== $password_confirm) {
+        $error_tab[] = 'Les mots de passe ne correspondent pas.';
+    }
+
     // Validation des données
     if (empty($firstname) || empty($lastname) || empty($email) || empty($alias) || empty($phone) || empty($adresse) || empty($ville) || empty($code_postal) || empty($password) || empty($password_confirm)) {
         $login_error = 'Veuillez remplir tous les champs.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $login_error = 'Adresse e-mail invalide.';
-    } elseif ($password !== $password_confirm) {
-        $login_error = 'Les mots de passe ne correspondent pas.';
+    } elseif (!empty($error_tab)) {
+        foreach ($error_tab as $error) {
+            print_r($error);
+            $login_error .= $error . " ";
+        }
     } else {
         // Vérification si l'utilisateur existe déjà
         $stmt = $pdo->prepare("SELECT * FROM comptes_membre WHERE email = :email OR alias = :alias");
