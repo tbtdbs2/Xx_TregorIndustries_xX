@@ -263,7 +263,7 @@ $pro_user_json = json_encode($pro_user);
                     <span class="notification-bubble"><?php echo $unanswered_reviews_count; ?></span>
                 <?php endif; ?>
             </div>
-            <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
+            <a href="../deconnexion.php" class="btn btn-primary">Se déconnecter</a>
         </div>
     </div>
     </header>

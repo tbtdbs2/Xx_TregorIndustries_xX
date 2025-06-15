@@ -217,7 +217,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         <div class="header-right">
             <a href="profil.php" class="btn btn-secondary">Mon profil</a>
-            <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
+            <a href="../deconnexion.php" class="btn btn-primary">Se déconnecter</a>
         </div>
     </div>
     </header>
