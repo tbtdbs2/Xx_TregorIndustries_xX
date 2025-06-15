@@ -163,7 +163,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // 2. Récupérer les informations de l'utilisateur professionnel
-$userId = $_SESSION['user_id'];
+
 $pro_user = null;
 
 try {
@@ -242,7 +242,7 @@ $pro_user_json = json_encode($pro_user);
 </head>
 <body>
     <header>
-        </header>
+    </header>
 
     <main>
         <div class="container content-area">
