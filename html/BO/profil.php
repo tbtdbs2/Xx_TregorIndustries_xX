@@ -4,7 +4,7 @@
 $userId = require_once __DIR__ . '/../../includes/auth_check_pro.php';
 
 // La session reste utilisée pour les messages flash (erreurs de validation, succès de mise à jour).
-session_start();
+//session_start();
 
 $_SESSION['user_id'] = $userId; 
 
