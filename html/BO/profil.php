@@ -6,6 +6,8 @@ $userId = require_once __DIR__ . '/../../includes/auth_check_pro.php';
 // La session reste utilisée pour les messages flash (erreurs de validation, succès de mise à jour).
 session_start();
 
+$_SESSION['user_id'] = $userId; 
+
 
 require_once __DIR__ . '/../../includes/db.php';
 
@@ -147,7 +149,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // 2. Récupérer les informations de l'utilisateur professionnel
-$userId = $_SESSION['user_id'];
+
 $pro_user = null;
 
 try {
@@ -225,7 +227,7 @@ try {
 </head>
 <body>
     <header>
-        </header>
+    </header>
 
     <main>
         <div class="container content-area">
