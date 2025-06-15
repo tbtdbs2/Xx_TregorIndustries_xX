@@ -59,6 +59,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
     } elseif (!filter_var($submitted_data['email'], FILTER_VALIDATE_EMAIL)) {
         $errors['email'] = 'Le format de l\'email est invalide.';
     }
+    // Ajout de la validation pour le numéro de téléphone
+    if (!empty(trim($submitted_data['telephone'] ?? ''))) {
+        $telephone = $submitted_data['telephone'];
+        // Vérifie si le numéro contient des lettres
+        if (preg_match('/[a-zA-Z]/', $telephone)) {
+            $errors['telephone'] = 'Le numéro de téléphone ne doit pas contenir de lettres.';
+        // Vérifie si le numéro a moins de 10 chiffres (en ignorant les espaces, +, etc.)
+        } elseif (strlen(preg_replace('/[^0-9]/', '', $telephone)) < 10) {
+            $errors['telephone'] = 'Le numéro de téléphone doit contenir au moins 10 chiffres.';
+        }
+    }
     // Validation pour IBAN et BIC (vérifications simples pour l'exemple)
     if (empty(trim($submitted_data['iban'] ?? ''))) {
         $errors['iban'] = 'L\'IBAN est requis.';
@@ -280,6 +291,9 @@ $pro_user_json = json_encode($pro_user);
                         <label for="telephone">Téléphone</label>
                         <input type="tel" id="telephone" name="telephone" placeholder="+33701020304" readonly
                                value="<?php echo htmlspecialchars($submitted_data_from_session['telephone'] ?? $pro_user['telephone'] ?? ''); ?>">
+                        <?php if (isset($validation_errors_from_session['telephone'])): ?>
+                            <span class="error-message-server"><?php echo htmlspecialchars($validation_errors_from_session['telephone']); ?></span>
+                        <?php endif; ?>
                         <span id="telephoneError" class="error-message-js"></span>
                     </div>
 
@@ -570,6 +584,18 @@ $pro_user_json = json_encode($pro_user);
             if (email.trim() === '') showError('emailError', 'L\'email est requis.');
             else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) showError('emailError', 'Format d\'email invalide.');
             
+            // Ajout de la validation pour le numéro de téléphone côté client
+            const telephone = document.getElementById('telephone').value;
+            if (telephone.trim() !== '') {
+                // Vérifie la présence de lettres
+                if (/[a-zA-Z]/.test(telephone)) {
+                    showError('telephoneError', 'Le téléphone ne doit pas contenir de lettres.');
+                // Compte uniquement les chiffres et vérifie la longueur
+                } else if (telephone.replace(/[^0-9]/g, '').length < 10) {
+                    showError('telephoneError', 'Le téléphone doit contenir au moins 10 chiffres.');
+                }
+            }
+
             if (document.getElementById('iban').value.trim() === '') showError('ibanError', 'L\'IBAN est requis.');
             if (document.getElementById('bic').value.trim() === '') showError('bicError', 'Le BIC est requis.');
 
