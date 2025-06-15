@@ -81,6 +81,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
          exit;
     }
 
+    $secteurForDb = ($submitted_data['secteur'] === 'privé') ? 1 : 0;
+
     try {
         $pdo->beginTransaction();
 
@@ -96,21 +98,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
 
         // Mettre à jour la table des comptes professionnels
         // ATTENTION: Remplacez 'comptes_pro' et les noms de colonnes par les vôtres
-        $sqlPro = "UPDATE comptes_pro SET email = :email, phone = :telephone, denomination = :denomination, siren = :siren, secteur = :secteur, iban = :iban, bic = :bic WHERE id = :userId";
+        
+        $sqlPro = "UPDATE comptes_pro SET email = :email, phone = :telephone, company_name = :denomination, siren = :siren, is_private = :secteur, iban = :iban, bic = :bic WHERE id = :userId";
         $stmtPro = $pdo->prepare($sqlPro);
         $stmtPro->execute([
             ':email' => $submitted_data['email'],
             ':telephone' => $submitted_data['telephone'],
             ':denomination' => $submitted_data['denomination'],
             ':siren' => str_replace(' ', '', $submitted_data['siren']),
-            ':secteur' => $submitted_data['secteur'],
+            ':secteur' => $secteurForDb,
             ':iban' => $submitted_data['iban'],
             ':bic' => $submitted_data['bic'],
             ':userId' => $userIdToUpdate
         ]);
 
         $pdo->commit();
-        header('Location: profil_pro.php?update=success');
+        header('Location: profil.php?update=success');
         exit;
 
     } catch (PDOException $e) {
@@ -118,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
             $pdo->rollBack();
         }
         error_log("Erreur de mise à jour du profil PRO pour user ID " . $userIdToUpdate . ": " . $e->getMessage());
-        header('Location: profil_pro.php?update=error');
+        header('Location: profil.php?update=error');
         exit;
     }
 }
@@ -182,6 +185,7 @@ try {
     $pro_user = []; // Gérer l'erreur de base de données
 }
 
+$pro_user_json = json_encode($pro_user);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -208,7 +212,7 @@ try {
         input:read-only, select:disabled{background-color:#e9ecef;color:#6c757d;cursor:not-allowed;border:1px solid #ced4da}
         .buttons-form-profil{display:flex;gap:10px;justify-content:center;margin-top:24px}
         .buttons-form-profil button{padding:10px 20px;font-family:'Poppins',sans-serif;font-size:16px;border-radius:8px;cursor:pointer;border:1px solid transparent}
-        #btnModifierProfil{background-color:#008c8c;color:#fff}
+        #btnModifierProfil{background-color:var(--couleur-principale);color:#fff}
         #btnConfirmerProfil{background-color:rgb(0,140,98);color:#fff}
         #btnAnnulerProfil{background-color:rgb(255,72,90);color:#fff}
         .error-message-server,.error-message-js{color:red;font-size:.9em;text-align:left;width:100%;margin-top:4px}
@@ -220,13 +224,37 @@ try {
         .popup-content h2{margin-top:0;margin-bottom:15px;color:#333}
         .popup-content p{margin-bottom:20px;line-height:1.5;color:#555}
         .popup-content button{padding:10px 25px;border:none;border-radius:5px;cursor:pointer;font-weight:700}
-        .popup-content button.success{background-color:#008c8c;color:#fff}
+        .popup-content button.success{background-color:var(--couleur-principale);color:#fff}
         .popup-content button.error{background-color:rgb(255,72,90);color:#fff}
         @media (max-width:768px){.profil{width:100%;height:auto;padding:16px}.email,.denomination,.adresse_postal,.siren,.iban,.bic,.telephone,.ville,.secteur,.code_postal{width:100%}#email,#denomination,#adresse,#siren,#iban,#bic,#telephone,#ville,#secteur,#code_postal{width:100%}.ville_code_postal,.siren_secteur{flex-direction:column;gap:24px}h1{font-size:24px}}
     </style>
 </head>
 <body>
     <header>
+    <div class="container header-container">
+        <div class="header-left">
+            <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
+            <span class="pro-text">Professionnel</span>
+        </div>
+
+        <nav class="main-nav">
+            <ul>
+                <li><a href="index.php">Accueil</a></li>
+                <li><a href="recherche.php">Mes Offres</a></li>
+                <li><a href="publier-une-offre.php">Publier une offre</a></li>
+            </ul>
+        </nav>
+
+        <div class="header-right">
+            <div class="profile-link-container">
+                <a href="profil.php" class="btn btn-secondary">Mon profil</a>
+                <?php if (isset($unanswered_reviews_count) && $unanswered_reviews_count > 0): ?>
+                    <span class="notification-bubble"><?php echo $unanswered_reviews_count; ?></span>
+                <?php endif; ?>
+            </div>
+            <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
+        </div>
+    </div>
     </header>
 
     <main>
@@ -234,7 +262,7 @@ try {
             <h1>Mes Informations</h1>
             
             <?php if ($pro_user && !empty($pro_user)): ?>
-            <form id="profilProForm" method="POST" action="profil_pro.php">
+            <form id="profilProForm" method="POST" action="profil.php">
                 <input type="hidden" name="actual_adresse_id" value="<?php echo htmlspecialchars($pro_user['actual_adresse_id'] ?? ''); ?>">
                 
                 <div class="profil">
@@ -307,11 +335,11 @@ try {
                              <span id="sirenError" class="error-message-js"></span>
                         </div>
                         <div class="secteur">
-                             <label for="secteur">Secteur</label>
-                             <select name="secteur" id="secteur" disabled>
-                                 <option value="privé" <?php echo (($submitted_data_from_session['secteur'] ?? $pro_user['secteur'] ?? '') === 'privé') ? 'selected' : ''; ?>>Privé</option>
-                                 <option value="public" <?php echo (($submitted_data_from_session['secteur'] ?? $pro_user['secteur'] ?? '') === 'public') ? 'selected' : ''; ?>>Public</option>
-                             </select>
+                            <label for="secteur">Secteur</label>
+                            <select name="secteur" id="secteur" disabled>
+                                <option value="privé" <?php echo (($submitted_data_from_session['secteur'] ?? ($pro_user['secteur'] == 1 ? 'privé' : 'public')) === 'privé') ? 'selected' : ''; ?>>Privé</option>
+                                <option value="public" <?php echo (($submitted_data_from_session['secteur'] ?? ($pro_user['secteur'] == 1 ? 'privé' : 'public')) === 'public') ? 'selected' : ''; ?>>Public</option>
+                            </select>
                         </div>
                     </div>
 
@@ -355,9 +383,64 @@ try {
             <button id="popupCloseButton" class="<?php echo $popup_type; ?>">Fermer</button>
         </div>
     </div>
+
+    <div id="emailConfirmationPopup" class="popup-overlay">
+        <div class="popup-content">
+            <h2>Confirmer le changement d'e-mail ?</h2>
+            <p>
+                Modifier votre adresse e-mail vous déconnectera par mesure de sécurité. 
+                Vous devrez vous reconnecter avec votre nouvelle adresse. <br><br>
+                Voulez-vous continuer ?
+            </p>
+            <div class="buttons-form-profil">
+                <button type="button" id="btnConfirmEmailChange" class="success" style="background-color:rgb(0,140,98); color: #fff;">Oui, confirmer</button>
+                <button type="button" id="btnCancelEmailChange" class="error" style="background-color:rgb(255,72,90); color: #fff;">Annuler</button>
+            </div>
+        </div>
+    </div>
     
     <footer>
-       </footer>
+        <div class="container footer-content">
+            <div class="footer-section social-media">
+                <div class="social-icons">
+                    <a href="#" aria-label="X"><i class="fab fa-x-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="footer-section links">
+                <h3>Visiteur</h3>
+                <ul>
+                    <li><a href="../index.html">Accueil</a></li>
+                    <li><a href="../FO/recherche.php">Recherche d'offres</a></li>
+                    <li><a href="../FO/connexion-compte.php">Je me connecte en tant que membre</a></li>
+                </ul>
+            </div>
+            <div class="footer-section links">
+                <h3>Découvrir</h3>
+                <ul>
+                    <li><a href="index.php">Accueil</a></li>
+                    <li><a href="publier-une-offre.php">Publier une offre</a></li>
+                    <li><a href="profil.php">Profil</a></li>
+                </ul>
+            </div>
+            <div class="footer-section links">
+                <h3>Ressources</h3>
+                <ul>
+                    <li><a href="conditions-generales-d-utilisation.php">Conditions générales d'utilisation</a></li>
+                    <li><a href="contact-du-responsable-du-site.php">Contact du responsable du site</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 PACT. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+    <script id="initial-data" type="application/json">
+        <?php echo $pro_user_json; ?>
+    </script>
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -372,13 +455,44 @@ try {
 
         const popupOverlay = document.getElementById('popupOverlay');
         const popupCloseButton = document.getElementById('popupCloseButton');
+
+            // --- NOUVEAU : Popup de confirmation d'email ---
+        const emailPopup = document.getElementById('emailConfirmationPopup');
+        const btnConfirmEmailChange = document.getElementById('btnConfirmEmailChange');
+        const btnCancelEmailChange = document.getElementById('btnCancelEmailChange');
+
         
         let initialValues = {};
 
-        function storeInitialValues() {
-            allInputs.forEach(input => initialValues[input.id] = input.value);
-            initialValues[selectSecteur.id] = selectSecteur.value;
+        let isEmailChangeConfirmed = false; 
+
+        function loadInitialValuesFromServer() {
+            try {
+                const initialDataScript = document.getElementById('initial-data');
+                if (initialDataScript && initialDataScript.textContent) {
+                    const serverData = JSON.parse(initialDataScript.textContent);
+                    // On peuple initialValues avec les vraies données du serveur
+                    initialValues = {
+                        email: serverData.email || '',
+                        telephone: serverData.telephone || '',
+                        denomination: serverData.denomination || '',
+                        adresse: serverData.adresse || '',
+                        ville: serverData.ville || '',
+                        code_postal: serverData.code_postal || '',
+                        siren: serverData.siren || '',
+                        // On convertit la valeur numérique du secteur en texte
+                        secteur: serverData.secteur == 1 ? 'privé' : 'public',
+                        iban: serverData.iban || '',
+                        bic: serverData.bic || ''
+                    };
+                }
+            } catch (e) {
+                console.error("Impossible de lire ou d'analyser les données initiales du serveur.", e);
+            }
         }
+        
+        // On exécute cette fonction une seule fois au chargement de la page.
+        loadInitialValuesFromServer();
 
         function revertToInitialValues() {
             allInputs.forEach(input => input.value = initialValues[input.id] || '');
@@ -393,7 +507,7 @@ try {
         }
         
         function enterEditMode() {
-            storeInitialValues();
+            isEmailChangeConfirmed = false;
             allInputs.forEach(input => input.removeAttribute('readonly'));
             selectSecteur.removeAttribute('disabled');
             btnModifier.style.display = 'none';
@@ -417,6 +531,18 @@ try {
         
         // --- Validation Client ---
         profilForm.addEventListener('submit', function(event) {
+
+                    // --- NOUVEAU : Vérification du changement d'email ---
+            const initialEmail = initialValues['email'];
+            const currentEmail = document.getElementById('email').value;
+
+            // Si l'email a changé ET que l'utilisateur n'a pas encore confirmé via la popup
+            if (currentEmail !== initialEmail && !isEmailChangeConfirmed) {
+                event.preventDefault(); // Arrêter la soumission du formulaire
+                emailPopup.classList.add('show'); // Afficher la popup de confirmation
+                return; // Sortir de la fonction pour attendre l'action de l'utilisateur
+            }
+
             let isValid = true;
             clearAllJsErrors();
 
@@ -450,6 +576,17 @@ try {
             if (!isValid) {
                 event.preventDefault();
             }
+        });
+
+        // --- NOUVEAU : GESTION DES BOUTONS DE LA POPUP D'EMAIL ---
+        btnConfirmEmailChange.addEventListener('click', function() {
+            isEmailChangeConfirmed = true; // Mettre le drapeau à vrai
+            emailPopup.classList.remove('show'); // Cacher la popup
+            profilForm.submit(); // Soumettre le formulaire pour de bon
+        });
+
+        btnCancelEmailChange.addEventListener('click', function() {
+            emailPopup.classList.remove('show'); // Cacher la popup, ne rien faire d'autre
         });
 
         // --- Gestion de la Pop-up ---
