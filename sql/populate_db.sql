@@ -208,7 +208,7 @@ SET @repas_id_3 = UUID();
 INSERT INTO `repas` (`id`, `name`) VALUES
 (@repas_id_1, 'Déjeuner'),
 (@repas_id_2, 'Dîner'),
-(@repas_id_3, 'Menu enfant');
+(@repas_id_3, 'Boissons');
 
 SET @langue_id_1 = UUID();
 SET @langue_id_2 = UUID();
@@ -223,8 +223,8 @@ SET @option_id_1 = UUID();
 SET @option_id_2 = UUID();
 
 INSERT INTO `options` (`id`, `name`, `price`) VALUES
-(@option_id_1, 'Visibilité Or', 50.00),
-(@option_id_2, 'Visibilité Platine', 100.00);
+(@option_id_1, 'En relief', 10.00),
+(@option_id_2, 'A la une', 20.00);
 
 
 -- =================================================================================
