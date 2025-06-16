@@ -1,3 +1,124 @@
+<?php
+
+session_start(); // Démarre la session PHP (doit être la première chose)
+
+require_once '../composants/generate_uuid.php';
+require_once __DIR__ . '/../../includes/db.php';
+
+$login_error = ''; // Variable pour stocker les messages d'erreur de connexion
+// Vérification si le formulaire a été soumis
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Récupération des données du formulaire
+    $email = $_POST['email'] ?? '';
+    $raison_sociale = $_POST['cp-name'] ?? ''; // correspond à "Dénomination / Raison sociale"
+    $adresse = $_POST['adresse'] ?? '';
+    $ville = $_POST['ville'] ?? '';
+    $code_postal = $_POST['code_postal'] ?? '';
+    $siren = $_POST['siren'] ?? '';
+    $secteur = $_POST['secteur'] ?? '';
+    $phone = $_POST['tel'] ?? '';
+    $password = $_POST['password'] ?? '';
+    $password_confirm = $_POST['password_confirm'] ?? '';
+    $iban = $_POST['iban'] ?? '';
+    $bic = $_POST['bic'] ?? '';
+
+    
+    if (!preg_match('/^[\p{L}0-9 \-\'"]{2,100}$/u', $raison_sociale)) {
+        $error_tab[] = 'Raison sociale invalide';
+    }
+
+    if (!preg_match('/^[\p{L}0-9 \-\'"]{2,100}$/u', $ville)) {
+        $error_tab[] = 'Ville invalide';
+    }
+
+    if (!preg_match('/^\d{5}$/', $code_postal)) {
+        $error_tab[] = 'Code postal invalide';
+    }
+
+    if ($siren && !preg_match('/^\d{9}$/', $siren)) {
+        $error_tab[] = 'SIREN invalide';
+    }
+
+    if (!preg_match('/^\+?\d{10,15}$/', $phone)) {
+        $error_tab[] = 'Téléphone  invalide.';
+    }
+
+    if ($iban && !preg_match('/^[A-Z]{2}[0-9A-Z]{13,30}$/', str_replace(' ', '', $iban))) {
+        $error_tab[] = 'IBAN invalide.';
+    }
+
+    if ($bic && !preg_match('/^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/', $bic)) {
+        $error_tab[] = 'BIC invalide.';
+    }
+
+    if ($password !== $password_confirm) {
+        $error_tab[] = 'Les mots de passe ne correspondent pas.';
+    }
+
+    // Validation des données
+    if (empty($email) || empty($raison_sociale) || empty($adresse) || empty($ville) || empty($code_postal) || empty($siren) || empty($secteur) || empty($phone) || empty($password) || empty($password_confirm)) {
+        $login_error = 'Veuillez remplir tous les champs.';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $login_error = 'Adresse e-mail invalide.';
+    } elseif (!empty($error_tab)) {
+        foreach ($error_tab as $error) {
+            $login_error .= $error . " ";
+        }
+    } else {
+        // Vérification si l'utilisateur existe déjà
+        $stmt = $pdo->prepare("SELECT * FROM comptes_pro WHERE email = :email OR siren = :siren");
+        $stmt->execute(['email' => $email, 'siren' => $siren]);
+        if ($stmt->rowCount() > 0) {
+            $login_error = 'Un compte avec cet e-mail ou ce SIREN existe déjà.';
+        } else {
+            // Insertion de l'utilisateur dans la base de données
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            // 1. Insertion de l'adresse
+            $stmtAdresse = $pdo->prepare("
+                INSERT INTO adresses (id, street, postal_code, city)
+                VALUES (:id_adresse, :adresse, :code_postal, :ville)
+            ");
+            $adresse_id = generate_uuid(); // Génération d'un UUID pour l'adresse
+            $stmtAdresse->execute([
+                'id_adresse' => $adresse_id,
+                'adresse' => $adresse,
+                'code_postal' => $code_postal,
+                'ville' => $ville
+            ]);
+
+            // 3. Insertion du compte membre
+            $stmtMembre = $pdo->prepare("
+                INSERT INTO comptes_pro (id, adresse_id, email, password, phone, company_name, is_private, siren, iban, bic)
+                VALUES (:id_compte_pro, :adresse_id, :email, :password, :phone, :company_name, :is_private, :siren, :iban, :bic)
+            ");
+            $id_compte_pro = generate_uuid(); // Génération d'un UUID pour le compte membre
+            $is_private = ($secteur === "privé") ? 1 : 0;
+            if ($stmtMembre->execute(['id_compte_pro' => $id_compte_pro, 'adresse_id' => $adresse_id, 'email' => $email, 'password' => $password, 'phone' => $phone, 'company_name' => $raison_sociale, 'is_private' => $is_private, 'siren' => $siren, 'iban' => $iban, 'bic' => $bic])) {
+                // Redirection vers la page de connexion ou une autre page après l'inscription réussie
+                header('Location: connexion-compte.php');
+                exit();
+            } else {
+                $login_error = 'Erreur lors de la création du compte. Veuillez réessayer.';
+            }
+        }
+    }
+} else {
+    // Si le formulaire n'a pas été soumis, on initialise les variables
+    $email = '';
+    $raison_sociale = '';
+    $adresse = '';
+    $ville = '';
+    $code_postal = '';
+    $siren = '';
+    $secteur = '';
+    $phone = '';
+    $password = '';
+    $password_confirm = '';
+    $iban = '';
+    $bic = '';
+    $login_error = '';// Réinitialise l'erreur de connexion
+}
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -123,34 +244,18 @@
     </style>
 </head>
 <body>
-    <header>
-    <div class="container header-container">
-        <div class="header-left">
-            <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
-            <span class="pro-text">Professionnel</span>
-        </div>
-
-        <nav class="main-nav">
-            <ul>
-                <li><a href="index.php">Accueil</a></li>
-                <li><a href="recherche.php">Mes Offres</a></li>
-                <li><a href="publier-une-offre.php">Publier une offre</a></li>
-            </ul>
-        </nav>
-
-        <div class="header-right">
-            <a href="profil.php" class="btn btn-secondary">Mon profil</a>
-            <a href="connexion-compte.php" class="btn btn-primary">Se déconnecter</a>
-        </div>
-    </div>
-    </header>
-
     <main>
         <div class="container content-area">
             <h1>Inscription</h1>
             <p>Le début d'une grande collaboration !</p>
+            <?php
+            // Affichage du message d'erreur pour l'utilisateur
+            if (!empty($login_error)) {
+                echo '<p style="color: red; text-align: center; margin-bottom: 15px;">' . htmlspecialchars($login_error) . '</p>';
+            }
+            ?>
             <div class="register-container">
-                <form class="register-form">
+                <form class="register-form" action="creation-compte.php" method="POST">
                     <div class="form-group full-width">
                         <label for="email">Email *</label>
                         <input type="email" id="email" name="email" placeholder="adressemail@exemple.com">
@@ -173,13 +278,13 @@
                     </div>
                     <div class="form-group full-width">
                         <label for="siren">Numéro de SIREN</label>
-                        <input type="text" id="siren" name="siren" placeholder="123 456 789 0000">
+                        <input type="text" id="siren" name="siren" placeholder="123 456 789">
                     </div>
                     <div class="form-group">
                         <label for="secteur">Secteur d'activité *</label>
                         <select id="secteur" name="secteur">
-                            <option value="particulier">Privé</option>
-                            <option value="professionnel">Public</option>
+                            <option value="privé">Privé</option>
+                            <option value="public">Public</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -210,45 +315,6 @@
             </div>
         </div>
     </main>
-
-    <footer>
-        <div class="container footer-content">
-            <div class="footer-section social-media">
-                <div class="social-icons">
-                    <a href="#" aria-label="X"><i class="fab fa-x-twitter"></i></a>
-                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                </div>
-            </div>
-            <div class="footer-section links">
-                <h3>Visiteur</h3>
-                <ul>
-                    <li><a href="../index.html">Accueil</a></li>
-                    <li><a href="../FO/recherche.php">Recherche d'offres</a></li>
-                    <li><a href="../FO/connexion-compte.php">Je me connecte en tant que membre</a></li>
-                </ul>
-            </div>
-            <div class="footer-section links">
-                <h3>Découvrir</h3>
-                <ul>
-                    <li><a href="index.php">Accueil</a></li>
-                    <li><a href="publier-une-offre.php">Publier une offre</a></li>
-                    <li><a href="profil.php">Profil</a></li>
-                </ul>
-            </div>
-            <div class="footer-section links">
-                <h3>Ressources</h3>
-                <ul>
-                    <li><a href="conditions-generales-d-utilisation.php">Conditions générales d'utilisation</a></li>
-                    <li><a href="contact-du-responsable-du-site.php">Contact du responsable du site</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2025 PACT. Tous droits réservés.</p>
-        </div>
-    </footer>
     <script src="script.js" defer></script>
 </body>
 </html>

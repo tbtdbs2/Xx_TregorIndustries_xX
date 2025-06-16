@@ -455,10 +455,10 @@
             </video>
             <div class="hero-content">
                 <h1>Découvrez la région PACA</h1>
-                <div class="search-bar-container">
-                    <input type="text" placeholder="Rechercher">
+                <form action="FO/recherche.php" method="GET" class="search-bar-container">
+                    <input type="text" name="q" placeholder="Rechercher une activité, une destination..." required>
                     <button type="submit" aria-label="Rechercher"><i class="fas fa-search"></i></button>
-                </div>
+                </form>
             </div>
         </section>
 
