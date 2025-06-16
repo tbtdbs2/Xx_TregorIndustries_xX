@@ -496,7 +496,7 @@ function display_stars($rating) {
     <main class="main-content-offre">
         <div class="container">
             <div class="breadcrumb-bar">
-                <a href="recherche.php"><i class="fas fa-arrow-left"></i> Retour à la recherche</a>
+                <a href="recherche.php"><i class="fas fa-arrow-left"></i>Retour à la recherche</a>
             </div>
 
             <div class="offre-container">
