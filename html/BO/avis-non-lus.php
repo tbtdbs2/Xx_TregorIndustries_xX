@@ -166,7 +166,7 @@ $offres_avec_avis_non_lus = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="profile-link-container">
                 <a href="profil.php" class="btn btn-secondary">Mon profil</a>
             </div>
-            <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
+            <a href="../deconnexion.php" class="btn btn-primary">Se déconnecter</a>
         </div>
     </div>
     </header>
