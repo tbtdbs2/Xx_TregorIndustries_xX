@@ -1,9 +1,9 @@
 -- Désactiver temporairement les vérifications de clés étrangères pour faciliter l'insertion
 SET FOREIGN_KEY_CHECKS=0;
 
--- Vider les tables (optionnel, soyez TRÈS prudent si vous avez des données importantes)
--- Décommentez les lignes suivantes pour vider les tables avant l'insertion.
-
+-- =================================================================================
+-- VIDAGE DES TABLES
+-- =================================================================================
 DELETE FROM `photos_avis`;
 DELETE FROM `reponses_pro`;
 DELETE FROM `avis`;
@@ -37,200 +37,356 @@ DELETE FROM `options`;
 DELETE FROM `auth_tokens`;
 
 
--- Peuplement des adresses
+-- =================================================================================
+-- PEUPLEMENT DES DONNÉES DE BASE
+-- =================================================================================
+
+-- -------------------------------------
+-- Adresses
+-- -------------------------------------
+-- Membres
 SET @adresse_id_1 = UUID();
 SET @adresse_id_2 = UUID();
 SET @adresse_id_3 = UUID();
+-- Pros
 SET @adresse_id_4 = UUID();
 SET @adresse_id_5 = UUID();
+SET @adresse_id_6 = UUID();
+SET @adresse_id_7 = UUID();
+SET @adresse_id_8 = UUID();
+SET @adresse_id_9 = UUID();
+SET @adresse_id_10 = UUID();
+SET @adresse_id_11 = UUID();
+-- Offres
+SET @adresse_offre_1 = UUID();
+SET @adresse_offre_2 = UUID();
+SET @adresse_offre_3 = UUID();
+SET @adresse_offre_4 = UUID();
+SET @adresse_offre_5 = UUID();
+SET @adresse_offre_6 = UUID();
+SET @adresse_offre_7 = UUID();
+SET @adresse_offre_8 = UUID();
+SET @adresse_offre_9 = UUID();
+SET @adresse_offre_10 = UUID();
 
+-- Insertion des adresses
 INSERT INTO `adresses` (`id`, `street`, `postal_code`, `city`) VALUES
-(@adresse_id_1, '2 Quai de la Marine', '22300', 'Lannion'),
-(@adresse_id_2, '18 Boulevard des Mimosas', '22700', 'Perros-Guirec'),
-(@adresse_id_3, '5 Rue des Korrigans', '22560', 'Trébeurden'),
-(@adresse_id_4, '101 Rue du Commerce', '75015', 'Paris'),
-(@adresse_id_5, '22 Vieux Port', '13002', 'Marseille');
+-- Adresses Membres (Bretagne)
+(@adresse_id_1, '8 Rue de Siam', '29200', 'Brest'),
+(@adresse_id_2, '3 Place du Général Leclerc', '22300', 'Lannion'),
+(@adresse_id_3, '15 Rue Saint-Malo', '35000', 'Rennes'),
+-- Adresses Pros (PACA)
+(@adresse_id_4, '21 Rue de la République', '84000', 'Avignon'),
+(@adresse_id_5, '3 Place Masséna', '06000', 'Nice'),
+(@adresse_id_6, '7 Boulevard de Strasbourg', '83000', 'Toulon'),
+(@adresse_id_7, 'Plage de l''Almanarre', '83400', 'Hyères'),
+(@adresse_id_8, '42 Cours Mirabeau', '13100', 'Aix-en-Provence'),
+(@adresse_id_9, '8 Place du Palais', '06600', 'Antibes'),
+(@adresse_id_10, 'Port de Toulon', '83000', 'Toulon'),
+(@adresse_id_11, 'Rue d''Italie', '13100', 'Aix-en-Provence'),
+-- Adresses Offres (PACA)
+(@adresse_offre_1, '12 Quai de Rive Neuve', '13007', 'Marseille'),
+(@adresse_offre_2, '25 Rue d''Italie', '13100', 'Aix-en-Provence'),
+(@adresse_offre_3, 'Promenade des Anglais', '06000', 'Nice'),
+(@adresse_offre_4, 'J4 Esplanade', '13002', 'Marseille'),
+(@adresse_offre_5, 'Plage de l''Almanarre', '83400', 'Hyères'),
+(@adresse_offre_6, '15 Rue des Pinceaux', '13100', 'Aix-en-Provence'),
+(@adresse_offre_7, 'Route de l''Aéroport', '83400', 'Hyères'),
+(@adresse_offre_8, 'Boulevard du Littoral', '06600', 'Antibes'),
+(@adresse_offre_9, 'Palais des Papes', '84000', 'Avignon'),
+(@adresse_offre_10, 'Théâtre du Jeu de Paume', '13100', 'Aix-en-Provence');
 
--- Peuplement des comptes pro
-SET @compte_pro_id_1 = UUID();
-SET @compte_pro_id_2 = UUID();
 
-INSERT INTO `comptes_pro` (`id`, `adresse_id`, `email`, `password`, `phone`, `company_name`, `is_private`, `siren`, `iban`, `bic`) VALUES
-(@compte_pro_id_1, @adresse_id_1, 'contact@aventurebretonne.bzh', 'aventureMDP', '0296112233', 'Aventure Bretonne', 0, '123456789', 'FR7612345678901234567890123', 'AGRIFRPPXXX'),
-(@compte_pro_id_2, @adresse_id_4, 'reservations@parisexplorer.fr', 'parisExplorerMDP', '0144556677', 'Paris Explorer SAS', 0, '987654321', 'FR7698765432109876543210987', 'BNPAFRPPXXX');
-
--- Peuplement des comptes membre
+-- -------------------------------------
+-- Comptes Membre
+-- -------------------------------------
 SET @compte_membre_id_1 = UUID();
 SET @compte_membre_id_2 = UUID();
 SET @compte_membre_id_3 = UUID();
 
 INSERT INTO `comptes_membre` (`id`, `adresse_id`, `email`, `password`, `phone`, `lastname`, `firstname`, `alias`) VALUES
-(@compte_membre_id_1, @adresse_id_2, 'yann.le-goff@email.bzh', 'passwordMembre123', '0610203040', 'Le Goff', 'Yann', 'YannLG'),
-(@compte_membre_id_2, @adresse_id_3, 'marie.riou@email.fr', 'autreMotDePasse456', '0650607080', 'Riou', 'Marie', 'MarieR22'),
-(@compte_membre_id_3, @adresse_id_5, 'pierre.durand@email.com', 'encoreUnPass789', '0780900010', 'Durand', 'Pierre', 'Pierro13');
+(@compte_membre_id_1, @adresse_id_1, 'iwan.cochet@etudiant.univ-rennes.fr', '$2y$10$NotARealHashButAnExample1', '0610203040', 'Cochet', 'Iwan', 'iwanc'),
+(@compte_membre_id_2, @adresse_id_2, 'evan.collet@etudiant.univ-rennes.fr', '$2y$10$NotARealHashButAnExample2', '0650607080', 'Collet', 'Evan', 'evanc'),
+(@compte_membre_id_3, @adresse_id_3, 'louis.milin@etudiant.univ-rennes.fr', '$2y$10$NotARealHashButAnExample3', '0780900010', 'Milin', 'Louis', 'louism');
 
--- Peuplement des tags
-SET @tag_id_plein_air = UUID();
-SET @tag_id_famille = UUID();
-SET @tag_id_sport = UUID();
-SET @tag_id_culture = UUID();
-SET @tag_id_gastronomie = UUID();
-SET @tag_id_mer = UUID();
+-- -------------------------------------
+-- Comptes Professionnels
+-- -------------------------------------
+SET @compte_pro_id_1 = UUID();
+SET @compte_pro_id_2 = UUID();
+SET @compte_pro_id_3 = UUID();
+SET @compte_pro_id_4 = UUID();
+SET @compte_pro_id_5 = UUID();
+SET @compte_pro_id_6 = UUID();
+SET @compte_pro_id_7 = UUID();
+SET @compte_pro_id_8 = UUID();
+
+INSERT INTO `comptes_pro` (`id`, `adresse_id`, `email`, `password`, `phone`, `company_name`, `is_private`, `siren`, `iban`, `bic`) VALUES
+-- Privé
+(@compte_pro_id_1, @adresse_id_4, 'contact@gout-des-calanques.fr', '$2y$10$NewProHash1', '0491876543', 'SARL Le Goût des Calanques', 1, '111222333', 'FR7611122233344455566677889', 'BNPAFRPPXXX'),
+(@compte_pro_id_2, @adresse_id_5, 'hello@escape-provence.com', '$2y$10$NewProHash2', '0492345678', 'Escape Game Provence', 1, '444555666', 'FR7644455566677788899900011', 'SOGEFRPPXXX'),
+(@compte_pro_id_3, @adresse_id_6, 'info@velosriviera.com', '$2y$10$NewProHash3', '0493987654', 'Vélos Bleus de la Riviera', 1, '777888999', 'FR7677788899900011122233344', 'CEPAFRPPXXX'),
+-- Associatif
+(@compte_pro_id_4, @adresse_id_7, 'contact@patrimoine-var.org', '$2y$10$NewProHash4', '0494112233', 'Les Amis du Patrimoine Varois', 0, '121212121', NULL, NULL),
+(@compte_pro_id_5, @adresse_id_8, 'info@voile-saint-tropez.fr', '$2y$10$NewProHash5', '0494543210', 'Club de Voile de Saint-Tropez', 0, '343434343', NULL, NULL),
+-- Public
+(@compte_pro_id_6, @adresse_id_9, 'evenementiel@cannes.fr', '$2y$10$NewProHash6', '0493392424', 'Mairie de Cannes - Événements', 0, '565656565', NULL, NULL),
+(@compte_pro_id_7, @adresse_id_10, 'accueil@mercantour.fr', '$2y$10$NewProHash7', '0493032315', 'Parc National du Mercantour', 0, '787878787', NULL, NULL),
+-- Privé
+(@compte_pro_id_8, @adresse_id_11, 'manager@la-cantina-nice.fr', '$2y$10$NewProHash8', '0493887766', 'La Cantina', 1, '909090909', 'FR7690909090989898987654321', 'CMCIFRPPXXX');
+
+
+-- -------------------------------------
+-- Tags, Prestations, etc.
+-- -------------------------------------
+SET @tag_id_1 = UUID();
+SET @tag_id_2 = UUID();
+SET @tag_id_3 = UUID();
+SET @tag_id_4 = UUID();
+SET @tag_id_5 = UUID();
+SET @tag_id_6 = UUID();
+SET @tag_id_7 = UUID();
+SET @tag_id_8 = UUID();
+SET @tag_id_9 = UUID();
+SET @tag_id_10 = UUID();
+SET @tag_id_11 = UUID();
+SET @tag_id_12 = UUID();
+SET @tag_id_13 = UUID();
+SET @tag_id_14 = UUID();
+SET @tag_id_15 = UUID();
+SET @tag_id_16 = UUID();
+SET @tag_id_17 = UUID();
+SET @tag_id_18 = UUID();
+SET @tag_id_19 = UUID();
+SET @tag_id_20 = UUID();
+SET @tag_id_21 = UUID();
+SET @tag_id_22 = UUID();
+SET @tag_id_23 = UUID();
+SET @tag_id_24 = UUID();
+SET @tag_id_25 = UUID();
 
 INSERT INTO `tags` (`id`, `name`) VALUES
-(@tag_id_plein_air, 'Plein air'),
-(@tag_id_famille, 'Famille'),
-(@tag_id_sport, 'Sport'),
-(@tag_id_culture, 'Culture'),
-(@tag_id_gastronomie, 'Gastronomie'),
-(@tag_id_mer, 'Mer');
+(@tag_id_1, 'Culturel'),
+(@tag_id_2, 'Patrimoine'),
+(@tag_id_3, 'Histoire'),
+(@tag_id_4, 'Urbain'),
+(@tag_id_5, 'Nature'),
+(@tag_id_6, 'Plein air'),
+(@tag_id_7, 'Sport'),
+(@tag_id_8, 'Nautique'),
+(@tag_id_9, 'Gastronomie'),
+(@tag_id_10, 'Musée'),
+(@tag_id_11, 'Atelier'),
+(@tag_id_12, 'Musique'),
+(@tag_id_13, 'Famille'),
+(@tag_id_14, 'Cinéma'),
+(@tag_id_15, 'Cirque'),
+(@tag_id_16, 'Son et lumière'),
+(@tag_id_17, 'Humour'),
+(@tag_id_18, 'Française'),
+(@tag_id_19, 'Fruits de mer'),
+(@tag_id_20, 'Asiatique'),
+(@tag_id_21, 'Indienne'),
+(@tag_id_22, 'Italienne'),
+(@tag_id_23, 'Gastronomique'),
+(@tag_id_24, 'Restauration rapide'),
+(@tag_id_25, 'Crêperie');
 
--- --- Catégories et Offres ---
+SET @prestation_id_1 = UUID();
+SET @prestation_id_2 = UUID();
+SET @prestation_id_3 = UUID();
 
--- OFFRE 1: Activité - Kayak en Côte de Granit Rose
-SET @categorie_activite_kayak_id = UUID();
-INSERT INTO `categories` (`id`, `type`) VALUES (@categorie_activite_kayak_id, 'activite');
-INSERT INTO `activites` (`categorie_id`, `duration`, `minimum_price`, `required_age`) VALUES
-(@categorie_activite_kayak_id, 180, 35.00, 8);
-
-SET @offre_kayak_id = UUID();
-INSERT INTO `offres` (`id`, `categorie_id`, `adresse_id`, `pro_id`, `title`, `summary`, `description`, `main_photo`, `rating`, `reviews_nb`, `accessibility`, `website`, `phone`, `price`, `created_at`, `updated_at`) VALUES
-(@offre_kayak_id, @categorie_activite_kayak_id, @adresse_id_2, @compte_pro_id_1, 'Kayak Granit Rose', 'Explorez la Côte de Granit Rose en kayak de mer.', 'Une balade de 3h accompagnée par un moniteur diplômé. Découvrez des paysages à couper le souffle accessibles uniquement par la mer. Matériel fourni.', 'uploads/offres/kayak_granit_rose.jpg', 4.7, 75, 'Savoir nager est requis. Enfants à partir de 8 ans accompagnés.', 'http:/aventurebretonne.bzh/kayak', '0296112233', 40.00, NOW(), NOW());
-
-INSERT INTO `photos_offres` (`id`, `offre_id`, `url`) VALUES
-(UUID(), @offre_kayak_id, 'uploads/offres/kayak_granit_rose_detail1.jpg'),
-(UUID(), @offre_kayak_id, 'uploads/offres/kayak_granit_rose_detail2.jpg');
-
-INSERT INTO `statuts` (`id`, `offre_id`, `status`, `changed_at`) VALUES (UUID(), @offre_kayak_id, 1, NOW());
-
-INSERT INTO `offres_tags` (`offre_id`, `tag_id`) VALUES
-(@offre_kayak_id, @tag_id_plein_air),
-(@offre_kayak_id, @tag_id_sport),
-(@offre_kayak_id, @tag_id_mer),
-(@offre_kayak_id, @tag_id_famille);
-
--- OFFRE 2: Visite - Château de la Roche Jagu
-SET @categorie_visite_chateau_id = UUID();
-INSERT INTO `categories` (`id`, `type`) VALUES (@categorie_visite_chateau_id, 'visite');
-INSERT INTO `visites` (`categorie_id`, `duration`, `minimum_price`, `date`, `start_time`, `is_guided_tour`) VALUES
-(@categorie_visite_chateau_id, 90, 8.00, DATE_ADD(CURDATE(), INTERVAL 10 DAY), '15:00:00', 1);
-
-SET @offre_chateau_id = UUID();
-INSERT INTO `offres` (`id`, `categorie_id`, `adresse_id`, `pro_id`, `title`, `summary`, `description`, `main_photo`, `rating`, `reviews_nb`, `accessibility`, `website`, `phone`, `price`, `created_at`, `updated_at`) VALUES
-(@offre_chateau_id, @categorie_visite_chateau_id, @adresse_id_1, @compte_pro_id_1, 'Visite Château Roche Jagu', 'Découvrez le château médiéval et ses jardins remarquables.', 'Visite guidée du château et promenade libre dans les jardins contemporains d''inspiration médiévale surplombant le Trieux.', 'uploads/offres/roche_jagu.jpg', 4.5, 120, 'Partiellement accessible PMR (jardins). Château avec escaliers.', 'http:/www.larochejagu.fr', '0296112233', 10.00, NOW(), NOW());
-
-INSERT INTO `statuts` (`id`, `offre_id`, `status`, `changed_at`) VALUES (UUID(), @offre_chateau_id, 1, NOW());
-INSERT INTO `offres_tags` (`offre_id`, `tag_id`) VALUES
-(@offre_chateau_id, @tag_id_culture),
-(@offre_chateau_id, @tag_id_famille),
-(@offre_chateau_id, @tag_id_plein_air);
-
-
--- OFFRE 3: Restauration - Crêperie Bretonne
-SET @categorie_creperie_id = UUID();
-INSERT INTO `categories` (`id`, `type`) VALUES (@categorie_creperie_id, 'restauration');
-INSERT INTO `restaurations` (`categorie_id`, `menu_url`, `price_range`) VALUES
-(@categorie_creperie_id, 'http:/aventurebretonne.bzh/creperie/menu', '€');
-
-SET @offre_creperie_id = UUID();
-INSERT INTO `offres` (`id`, `categorie_id`, `adresse_id`, `pro_id`, `title`, `summary`, `description`, `main_photo`, `rating`, `reviews_nb`, `accessibility`, `website`, `phone`, `price`, `created_at`, `updated_at`) VALUES
-(@offre_creperie_id, @categorie_creperie_id, @adresse_id_3, @compte_pro_id_1, 'Crêperie du Port', 'Crêpes et galettes traditionnelles face à la mer.', 'Dégustez nos spécialités bretonnes, galettes de sarrasin et crêpes de froment, élaborées avec des produits locaux. Terrasse ensoleillée.', 'uploads/offres/creperie_port.jpg', 4.6, 95, 'Accessible PMR.', 'http:/aventurebretonne.bzh/creperie', '0296112233', 15.00, NOW(), NOW());
-
-INSERT INTO `statuts` (`id`, `offre_id`, `status`, `changed_at`) VALUES (UUID(), @offre_creperie_id, 1, NOW());
-INSERT INTO `offres_tags` (`offre_id`, `tag_id`) VALUES
-(@offre_creperie_id, @tag_id_gastronomie),
-(@offre_creperie_id, @tag_id_famille),
-(@offre_creperie_id, @tag_id_mer);
-
-
--- --- Peuplement des tables liées ---
-
--- Prestations
-SET @presta_id_wifi = UUID();
-SET @presta_id_parking = UUID();
-SET @presta_id_pmr = UUID();
-SET @presta_id_animaux = UUID();
 INSERT INTO `prestations` (`id`, `name`) VALUES
-(@presta_id_wifi, 'Wifi gratuit'),
-(@presta_id_parking, 'Parking gratuit'),
-(@presta_id_pmr, 'Accessible PMR'),
-(@presta_id_animaux, 'Animaux acceptés');
+(@prestation_id_1, 'Équipement de sécurité'),
+(@prestation_id_2, 'Moniteur diplômé'),
+(@prestation_id_3, 'Assurance');
 
--- Lier prestations à l'activité Kayak
-INSERT INTO `activites_prestations_incluses` (`activite_id`, `prestation_id`) VALUES
-(@categorie_activite_kayak_id, @presta_id_parking);
-INSERT INTO `activites_prestations_non_incluses` (`activite_id`, `prestation_id`) VALUES
-(@categorie_activite_kayak_id, @presta_id_wifi); -- Supposons wifi non inclus
+SET @repas_id_1 = UUID();
+SET @repas_id_2 = UUID();
+SET @repas_id_3 = UUID();
 
--- Horaires pour l'activité Kayak
-INSERT INTO `horaires_activites` (`id`, `activite_id`, `date`, `start_time`) VALUES
-(UUID(), @categorie_activite_kayak_id, DATE_ADD(CURDATE(), INTERVAL 3 DAY), '10:00:00'),
-(UUID(), @categorie_activite_kayak_id, DATE_ADD(CURDATE(), INTERVAL 3 DAY), '14:30:00'),
-(UUID(), @categorie_activite_kayak_id, DATE_ADD(CURDATE(), INTERVAL 4 DAY), '09:30:00');
-
--- Langues
-SET @lang_id_fr = UUID();
-SET @lang_id_en = UUID();
-SET @lang_id_br = UUID();
-INSERT INTO `langues` (`id`, `language`) VALUES
-(@lang_id_fr, 'Français'),
-(@lang_id_en, 'Anglais'),
-(@lang_id_br, 'Breton');
-
--- Lier langues à la visite du château
-INSERT INTO `visites_langues` (`visite_id`, `langue_id`) VALUES
-(@categorie_visite_chateau_id, @lang_id_fr),
-(@categorie_visite_chateau_id, @lang_id_en);
-
--- Repas
-SET @repas_id_midi = UUID();
-SET @repas_id_soir = UUID();
-SET @repas_id_gouter = UUID();
 INSERT INTO `repas` (`id`, `name`) VALUES
-(@repas_id_midi, 'Déjeuner'),
-(@repas_id_soir, 'Dîner'),
-(@repas_id_gouter, 'Goûter');
+(@repas_id_1, 'Déjeuner'),
+(@repas_id_2, 'Dîner'),
+(@repas_id_3, 'Menu enfant');
 
--- Lier repas à la crêperie
-INSERT INTO `restaurations_repas` (`restauration_id`, `repas_id`) VALUES
-(@categorie_creperie_id, @repas_id_midi),
-(@categorie_creperie_id, @repas_id_soir),
-(@categorie_creperie_id, @repas_id_gouter);
+SET @langue_id_1 = UUID();
+SET @langue_id_2 = UUID();
+SET @langue_id_3 = UUID();
 
--- Horaires pour la crêperie
-INSERT INTO `horaires_restaurants` (`id`, `restauration_id`, `day`, `start_time`, `end_time`) VALUES
-(UUID(), @categorie_creperie_id, 'mardi', '12:00:00', '14:30:00'),
-(UUID(), @categorie_creperie_id, 'mardi', '19:00:00', '21:30:00'),
-(UUID(), @categorie_creperie_id, 'mercredi', '12:00:00', '14:30:00'),
-(UUID(), @categorie_creperie_id, 'mercredi', '19:00:00', '21:30:00'),
-(UUID(), @categorie_creperie_id, 'jeudi', '12:00:00', '14:30:00'),
-(UUID(), @categorie_creperie_id, 'jeudi', '19:00:00', '21:30:00'),
-(UUID(), @categorie_creperie_id, 'vendredi', '12:00:00', '14:30:00'),
-(UUID(), @categorie_creperie_id, 'vendredi', '19:00:00', '22:00:00'),
-(UUID(), @categorie_creperie_id, 'samedi', '12:00:00', '22:00:00'), -- Continu
-(UUID(), @categorie_creperie_id, 'dimanche', '12:00:00', '15:00:00');
+INSERT INTO `langues` (`id`, `language`) VALUES
+(@langue_id_1, 'Français'),
+(@langue_id_2, 'Anglais'),
+(@langue_id_3, 'Italien');
 
--- Avis
-INSERT INTO `avis` (`id`, `membre_id`, `offre_id`, `title`, `comment`, `rating`, `visit_date`, `context`, `viewed`, `thumb_up_nb`, `thumb_down_nb`, `published_at`) VALUES
-(UUID(), @compte_membre_id_1, @offre_kayak_id, 'Incroyable !', 'Une expérience mémorable, le moniteur était génial et le site est magnifique. A refaire !', 5.0, DATE_SUB(CURDATE(), INTERVAL 7 DAY), 'famille', 1, 22, 0, UNIX_TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 6 DAY))),
-(UUID(), @compte_membre_id_2, @offre_chateau_id, 'Belle découverte', 'Le château est bien conservé et les jardins sont superbes. La guide était passionnée.', 4.0, DATE_SUB(CURDATE(), INTERVAL 12 DAY), 'couple', 0, 10, 1, UNIX_TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 11 DAY))),
-(UUID(), @compte_membre_id_3, @offre_creperie_id, 'Délicieuses crêpes', 'Les meilleures crêpes que j''ai mangées depuis longtemps. Service rapide et agréable.', 4.5, DATE_SUB(CURDATE(), INTERVAL 3 DAY), 'amis', 1, 15, 0, UNIX_TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 2 DAY)));
+SET @option_id_1 = UUID();
+SET @option_id_2 = UUID();
 
--- Options (pour futures souscriptions)
-SET @option_premium_id = UUID();
-SET @option_highlight_id = UUID();
 INSERT INTO `options` (`id`, `name`, `price`) VALUES
-(@option_premium_id, 'Mise en avant Premium', 29.99),
-(@option_highlight_id, 'Offre à la Une', 19.99);
+(@option_id_1, 'Visibilité Or', 50.00),
+(@option_id_2, 'Visibilité Platine', 100.00);
 
 
--- auth_tokens (exemple simple)
+-- =================================================================================
+-- PEUPLEMENT DES OFFRES
+-- =================================================================================
+
+-- -------------------------------------
+-- Catégories
+-- -------------------------------------
+SET @categorie_id_1 = UUID();
+SET @categorie_id_2 = UUID();
+SET @categorie_id_3 = UUID();
+SET @categorie_id_4 = UUID();
+SET @categorie_id_5 = UUID();
+SET @categorie_id_6 = UUID();
+SET @categorie_id_7 = UUID();
+SET @categorie_id_8 = UUID();
+SET @categorie_id_9 = UUID();
+SET @categorie_id_10 = UUID();
+
+INSERT INTO `categories` (`id`, `type`) VALUES
+(@categorie_id_1, 'restauration'),
+(@categorie_id_2, 'restauration'),
+(@categorie_id_3, 'visite'),
+(@categorie_id_4, 'visite'),
+(@categorie_id_5, 'activite'),
+(@categorie_id_6, 'activite'),
+(@categorie_id_7, 'parc_attractions'),
+(@categorie_id_8, 'parc_attractions'),
+(@categorie_id_9, 'spectacle'),
+(@categorie_id_10, 'spectacle');
+
+
+-- -------------------------------------
+-- Offres
+-- -------------------------------------
+SET @offre_id_1 = UUID();
+SET @offre_id_2 = UUID();
+SET @offre_id_3 = UUID();
+SET @offre_id_4 = UUID();
+SET @offre_id_5 = UUID();
+SET @offre_id_6 = UUID();
+SET @offre_id_7 = UUID();
+SET @offre_id_8 = UUID();
+SET @offre_id_9 = UUID();
+SET @offre_id_10 = UUID();
+
+INSERT INTO `offres` (`id`, `categorie_id`, `adresse_id`, `pro_id`, `title`, `summary`, `description`, `main_photo`, `reviews_nb`, `accessibility`, `website`, `phone`, `price`, `created_at`, `updated_at`) VALUES
+-- Restaurations
+(@offre_id_1, @categorie_id_1, @adresse_offre_1, @compte_pro_id_8, 'La Cantina Niçoise', 'Ambiance conviviale et saveurs italiennes sur le Cours Saleya.', 'Notre restaurant vous propose des spécialités niçoises et italiennes. Pissaladière, socca, et pâtes fraîches maison.', '/photos/la_cantina.jpg', 0, 'Terrasse accessible PMR', 'https://lacantina-nice.fr', '0493887766', 22.00, NOW(), NOW()),
+(@offre_id_2, @categorie_id_2, @adresse_offre_2, @compte_pro_id_1, 'Le Goût des Calanques', 'Restaurant gastronomique face à la mer à Cassis.', 'Dégustez notre menu "Retour de Pêche", une ode aux produits de la Méditerranée dans un cadre exceptionnel.', '/photos/gout_calanques.jpg', 0, 'Accessible PMR', 'https://gout-des-calanques.fr', '0491876543', 90.00, NOW(), NOW()),
+-- Visites
+(@offre_id_3, @categorie_id_3, @adresse_offre_3, @compte_pro_id_4, 'Visite de Bormes-les-Mimosas', 'Balade historique dans un des plus beaux villages du Var.', 'Organisée par les Amis du Patrimoine, cette visite vous contera l''histoire du village, de son château à ses ruelles fleuries.', '/photos/bormes.jpg', 0, 'Difficile pour PMR (pentes, escaliers)', 'https://patrimoine-var.org', '0494112233', 10.00, NOW(), NOW()),
+(@offre_id_4, @categorie_id_4, @adresse_offre_4, @compte_pro_id_7, 'Randonnée des Merveilles', 'Excursion guidée dans le Parc National du Mercantour.', 'Découvrez les gravures rupestres protohistoriques avec un guide du parc. Une journée de marche et d''histoire en pleine nature.', '/photos/mercantour.jpg', 0, 'Non accessible PMR', 'https://mercantour.fr', '0493032315', 35.00, NOW(), NOW()),
+-- Activités
+(@offre_id_5, @categorie_id_5, @adresse_offre_5, @compte_pro_id_5, 'Stage de Voile à St-Tropez', 'Apprenez à naviguer sur un voilier habitable.', 'Stage de 2 jours pour découvrir les bases de la voile et de la navigation dans le golfe mythique de Saint-Tropez.', '/photos/voile.jpg', 0, 'Non accessible', 'https://voile-saint-tropez.fr', '0494543210', 250.00, NOW(), NOW()),
+(@offre_id_6, @categorie_id_6, @adresse_offre_6, @compte_pro_id_3, 'Tour du Cap d''Antibes à Vélo', 'Louez un vélo électrique et suivez notre guide.', 'Une balade facile de 3 heures pour découvrir les villas de milliardaires et les criques secrètes du Cap d''Antibes.', '/photos/velo_antibes.jpg', 0, 'Accessible si vélo adapté', 'https://velosriviera.com', '0493987654', 40.00, NOW(), NOW()),
+-- Parcs d'attractions
+(@offre_id_7, @categorie_id_7, @adresse_offre_7, @compte_pro_id_2, 'Parc "L''Enigme Absolue"', 'Un parc d''attractions basé sur la résolution d''énigmes.', 'Parcourez nos 10 salles thématiques, déjouez les pièges et résolvez le mystère final. Une aventure pour toute la famille.', '/photos/enigmeparc.jpg', 0, 'Partiellement accessible', 'https://escape-provence.com/parc', '0492345678', 28.00, NOW(), NOW()),
+(@offre_id_8, @categorie_id_8, @adresse_offre_8, @compte_pro_id_7, 'Ecomusée de la Faune Alpine', 'Découvrez la faune du Mercantour à la Maison du Parc.', 'Un espace muséographique ludique pour comprendre l''écosystème de la montagne, avec des expositions et un film 3D.', '/photos/ecomusee.jpg', 0, 'Accessible PMR', 'https://mercantour.fr/ecomusee', '0493032315', 8.00, NOW(), NOW()),
+-- Spectacles
+(@offre_id_9, @categorie_id_9, @adresse_offre_9, @compte_pro_id_6, 'Cinéma sur la Plage', 'Projection en plein air pendant le Festival de Cannes.', 'Assistez gratuitement à la projection d''un classique du cinéma, les pieds dans le sable sur la plage Macé.', '/photos/cinema_plage.jpg', 0, 'Zone PMR prévue', 'https://cannes.fr', '0493392424', 0.00, NOW(), NOW()),
+(@offre_id_10, @categorie_id_10, @adresse_offre_10, @compte_pro_id_2, 'Spectacle "Mentalista"', 'Un show de magie et de mentalisme immersif.', 'Dans notre salle de spectacle, laissez-vous bluffer par les tours incroyables de notre magicien résident.', '/photos/magie.jpg', 0, 'Accessible PMR', 'https://escape-provence.com/spectacle', '0492345678', 22.00, NOW(), NOW());
+
+-- -------------------------------------
+-- Tables spécifiques et tables de liaison
+-- -------------------------------------
+INSERT INTO `restaurations` (`categorie_id`, `menu_url`, `price_range`) VALUES
+(@categorie_id_1, 'https://lacantina-nice.fr/menu', '€€'),
+(@categorie_id_2, 'https://gout-des-calanques.fr/menu', '€€€');
+
+INSERT INTO `visites` (`categorie_id`, `duration`, `minimum_price`, `date`, `start_time`, `is_guided_tour`) VALUES
+(@categorie_id_3, 90, 10.00, '2025-07-15', '10:30:00', 1),
+(@categorie_id_4, 360, 35.00, '2025-08-01', '09:00:00', 1);
+
+INSERT INTO `activites` (`categorie_id`, `duration`, `minimum_price`, `required_age`) VALUES
+(@categorie_id_5, 1440, 250.00, 18),
+(@categorie_id_6, 180, 40.00, 14);
+
+INSERT INTO `parcs_attractions` (`categorie_id`, `minimum_price`, `required_age`, `attraction_nb`, `map_url`) VALUES
+(@categorie_id_7, 28.00, 8, 10, 'https://escape-provence.com/parc/map'),
+(@categorie_id_8, 8.00, 0, 5, 'https://mercantour.fr/ecomusee/plan');
+
+INSERT INTO `spectacles` (`categorie_id`, `duration`, `minimum_price`, `date`, `start_time`, `capacity`) VALUES
+(@categorie_id_9, 120, 0.00, '2025-07-20', '21:30:00', 1000),
+(@categorie_id_10, 75, 22.00, '2025-09-15', '21:00:00', 150);
+
+INSERT INTO `offres_tags` (`offre_id`, `tag_id`) VALUES
+(@offre_id_1, @tag_id_9),
+(@offre_id_1, @tag_id_22),
+(@offre_id_2, @tag_id_9),
+(@offre_id_2, @tag_id_23),
+(@offre_id_2, @tag_id_19),
+(@offre_id_3, @tag_id_1),
+(@offre_id_3, @tag_id_2),
+(@offre_id_4, @tag_id_5),
+(@offre_id_4, @tag_id_6),
+(@offre_id_4, @tag_id_3),
+(@offre_id_5, @tag_id_7),
+(@offre_id_5, @tag_id_8),
+(@offre_id_6, @tag_id_7),
+(@offre_id_6, @tag_id_6),
+(@offre_id_6, @tag_id_13),
+(@offre_id_7, @tag_id_13),
+(@offre_id_8, @tag_id_5),
+(@offre_id_8, @tag_id_10),
+(@offre_id_9, @tag_id_14),
+(@offre_id_9, @tag_id_1),
+(@offre_id_10, @tag_id_1);
+
+INSERT INTO `activites_prestations_incluses` (`activite_id`, `prestation_id`) VALUES
+(@categorie_id_5, @prestation_id_1),
+(@categorie_id_5, @prestation_id_2),
+(@categorie_id_6, @prestation_id_1);
+
+INSERT INTO `visites_langues` (`visite_id`, `langue_id`) VALUES
+(@categorie_id_3, @langue_id_1),
+(@categorie_id_4, @langue_id_1),
+(@categorie_id_4, @langue_id_3);
+
+INSERT INTO `restaurations_repas` (`restauration_id`, `repas_id`) VALUES
+(@categorie_id_1, @repas_id_1),
+(@categorie_id_1, @repas_id_2),
+(@categorie_id_2, @repas_id_2);
+
+
+-- =================================================================================
+-- PEUPLEMENT DU CONTENU UTILISATEUR
+-- =================================================================================
+
+-- -------------------------------------
+-- Avis
+-- -------------------------------------
+SET @avis_id_1 = UUID();
+SET @avis_id_2 = UUID();
+
+INSERT INTO `avis` (`id`, `membre_id`, `offre_id`, `title`, `comment`, `rating`, `visit_date`, `context`, `viewed`, `thumb_up_nb`, `thumb_down_nb`, `published_at`) VALUES
+(@avis_id_1, @compte_membre_id_1, @offre_id_5, 'Expérience géniale !', 'Le stage de voile était parfait. Le moniteur, Fred, est un excellent pédagogue. On apprend en toute sécurité dans un cadre de rêve. Je reviendrai !', 5, '2025-08-10', 'solo', 1, 18, 0, NOW()),
+(@avis_id_2, @compte_membre_id_3, @offre_id_7, 'Original et bien fait', 'On a passé un super après-midi à L''Enigme Absolue. Les décors sont immersifs et les énigmes sont bien pensées. Idéal pour un groupe d''amis.', 4.5, '2025-07-25', 'amis', 1, 11, 0, NOW());
+
+-- -------------------------------------
+-- Réponses des professionnels
+-- -------------------------------------
+SET @reponse_id_1 = UUID();
+
+INSERT INTO `reponses_pro` (`id`, `pro_id`, `avis_id`, `content`, `published_at`) VALUES
+(@reponse_id_1, @compte_pro_id_5, @avis_id_1, 'Merci Iwan ! Nous sommes ravis que le stage avec Fred vous ait plu. Le golfe de Saint-Tropez est un terrain de jeu magnifique. Au plaisir de vous revoir sur l''eau.', NOW());
+
+-- Le reste (photos, statuts, tokens) est généré de la même manière
+INSERT INTO `photos_offres` (`id`, `offre_id`, `url`) VALUES (UUID(), @offre_id_5, '/photos/offres/voile_st_tropez_2.jpg');
+INSERT INTO `photos_avis` (`id`, `avis_id`, `url`) VALUES (UUID(), @avis_id_1, '/photos/avis/selfie_voilier.jpg');
+INSERT INTO `statuts` (`id`, `offre_id`, `status`, `changed_at`) SELECT UUID(), `id`, 1, NOW() FROM `offres`;
 INSERT INTO `auth_tokens` (`id`, `email`, `token`) VALUES
-(UUID(), 'contact@aventurebretonne.bzh', SHA2(CONCAT('secret_token_1', NOW()), 256)),
-(UUID(), 'yann.le-goff@email.bzh', SHA2(CONCAT('secret_token_2', NOW()), 256));
+(UUID(), 'evan.collet@etudiant.univ-rennes.fr', 'fake_jwt_token_for_evan_collet_xyz'),
+(UUID(), 'contact@patrimoine-var.org', 'fake_jwt_token_for_patrimoine_var_abc');
 
+
+-- =================================================================================
+-- FINALISATION
+-- =================================================================================
 
 -- Réactiver les vérifications de clés étrangères
 SET FOREIGN_KEY_CHECKS=1;
 
-SELECT 'Peuplement de la base de données terminé avec des UUIDs générés par SQL.' AS status;
+SELECT 'Peuplement de la base de données terminé.' AS status;
