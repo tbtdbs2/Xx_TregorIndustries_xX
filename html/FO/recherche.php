@@ -13,6 +13,14 @@ $category_type = isset($_GET['category_type']) ? trim($_GET['category_type']) : 
 $destination = isset($_GET['destination']) ? trim($_GET['destination']) : '';
 $priceMin = isset($_GET['price_min_input']) && $_GET['price_min_input'] !== '' ? (float)$_GET['price_min_input'] : null;
 $priceMax = isset($_GET['price_max_input']) && $_GET['price_max_input'] !== '' ? (float)$_GET['price_max_input'] : null;
+
+// NOUVEAU : Récupération du filtre de note
+$minRating = isset($_GET['min_rating']) && $_GET['min_rating'] !== '' ? (float)$_GET['min_rating'] : null;
+
+// NOUVEAU : Récupération du filtre de date
+$selectedDate = isset($_GET['date']) && $_GET['date'] !== '' ? $_GET['date'] : null;
+
+
 $sort = isset($_GET['sort']) ? $_GET['sort'] : 'note';
 
 // --- CORRECTION : LOGIQUE POUR PRÉ-REMPLIR LE FILTRE CATÉGORIE ---
@@ -30,60 +38,135 @@ if (!empty($category_type) && empty($category_id)) {
 
 
 // --- CONSTRUCTION DE LA REQUÊTE SQL ---
-$sql = 'SELECT offres.*, categories.type as category_type FROM offres 
-        JOIN adresses ON offres.adresse_id = adresses.id
-        JOIN categories ON offres.categorie_id = categories.id';
+$sql = 'SELECT o.*, c.type as category_type, 
+               COALESCE(o.rating, 0) as offer_rating
+        FROM offres o
+        JOIN adresses a ON o.adresse_id = a.id
+        JOIN categories c ON o.categorie_id = c.id';
+
 $conditions = [];
 $params = [];
 
 if (!empty($searchTerm)) {
-    $conditions[] = '(offres.title LIKE ? OR offres.summary LIKE ?)';
+    $conditions[] = '(o.title LIKE ? OR o.summary LIKE ?)';
     $likeTerm = '%' . $searchTerm . '%';
     $params[] = $likeTerm;
     $params[] = $likeTerm;
 }
 
-// Le filtrage se fait maintenant principalement par ID, ce qui est plus performant
-// et résout le problème de sélection dans le formulaire.
 if (!empty($category_id)) {
-    $conditions[] = 'offres.categorie_id = ?';
+    $conditions[] = 'o.categorie_id = ?';
     $params[] = $category_id;
 } elseif (!empty($category_type)) { 
-    // On garde ce fallback au cas où, mais la logique ci-dessus devrait prévaloir
-    $conditions[] = 'categories.type = ?';
+    $conditions[] = 'c.type = ?';
     $params[] = $category_type;
 }
 
-
 if (!empty($destination)) {
-    $conditions[] = 'adresses.city LIKE ?';
+    $conditions[] = 'a.city LIKE ?';
     $params[] = '%' . $destination . '%';
 }
 
 if ($priceMin !== null) {
-    $conditions[] = 'offres.price >= ?';
+    $conditions[] = 'o.price >= ?';
     $params[] = $priceMin;
 }
 if ($priceMax !== null) {
-    $conditions[] = 'offres.price <= ?';
+    $conditions[] = 'o.price <= ?';
     $params[] = $priceMax;
+}
+
+// NOUVEAU : Condition pour le filtre de note
+if ($minRating !== null) {
+    $conditions[] = 'COALESCE(o.rating, 0) >= ?'; // Utilise COALESCE pour gérer les ratings NULL (les considérer comme 0)
+    $params[] = $minRating;
 }
 
 if (!empty($conditions)) {
     $sql .= ' WHERE ' . implode(' AND ', $conditions);
 }
 
+// NOUVEAU : Gestion complexe du filtre de date
+if ($selectedDate) {
+    $selectedDateTime = new DateTime($selectedDate);
+    $selectedDayOfWeek = strtolower($selectedDateTime->format('l')); // 'monday', 'tuesday', etc.
+    
+    // On doit filtrer les résultats déjà obtenus par la première requête
+    // Pour cela, on va récupérer les IDs des offres qui correspondent à la date
+    // Et ensuite les utiliser dans une clause IN ou similaire.
+    // C'est plus simple de faire un deuxième passe ou de construire la requête de manière plus complexe.
+    // Pour la simplicité et la lisibilité, nous allons faire un post-filtrage ici
+    // ou une sous-requête complexe si nécessaire.
+    // Étant donné la complexité de la jointure des horaires, on va d'abord récupérer toutes les offres
+    // qui correspondent aux autres filtres, puis les filtrer par PHP.
+    // Ou, mieux, adapter la requête SQL pour inclure la logique de date.
+
+    // Pour l'intégration SQL, cela nécessiterait des jointures conditionnelles ou des UNION.
+    // Pour simplifier et éviter une requête trop lourde, nous allons ajouter une logique après la récupération.
+    // Cependant, pour que le filtre soit efficace côté BDD, il faut l'intégrer.
+
+    // La stratégie la plus robuste est de faire un LEFT JOIN conditionnel ou d'utiliser EXISTS
+    // car une offre peut avoir plusieurs types d'horaires.
+
+    $dateConditions = [];
+    $dateParams = [];
+
+    // Sub-query pour activités
+    $dateConditions[] = 'EXISTS (SELECT 1 FROM horaires_activites ha 
+                                JOIN activites a_cat ON ha.activite_id = a_cat.categorie_id 
+                                WHERE o.categorie_id = a_cat.categorie_id AND ha.date = ?)';
+    $dateParams[] = $selectedDate;
+
+    // Sub-query pour spectacles
+    $dateConditions[] = 'EXISTS (SELECT 1 FROM spectacles s_cat 
+                                WHERE o.categorie_id = s_cat.categorie_id AND s_cat.date = ?)';
+    $dateParams[] = $selectedDate;
+    
+    // Sub-query pour visites
+    $dateConditions[] = 'EXISTS (SELECT 1 FROM visites v_cat 
+                                WHERE o.categorie_id = v_cat.categorie_id AND v_cat.date = ?)';
+    $dateParams[] = $selectedDate;
+
+    // Sub-query pour parcs_attractions et restaurations (basé sur horaires_attractions / horaires_restaurants)
+    // Ici, le filtre est basé sur le jour de la semaine
+    $dateConditions[] = 'EXISTS (SELECT 1 FROM horaires_attractions hat
+                                JOIN attractions attr ON hat.attraction_id = attr.id
+                                JOIN parcs_attractions pa_cat ON attr.parc_attractions_id = pa_cat.categorie_id
+                                WHERE o.categorie_id = pa_cat.categorie_id AND hat.day = ?)';
+    $dateParams[] = $selectedDayOfWeek;
+
+    $dateConditions[] = 'EXISTS (SELECT 1 FROM horaires_restaurants hres
+                                JOIN restaurations r_cat ON hres.restauration_id = r_cat.categorie_id
+                                WHERE o.categorie_id = r_cat.categorie_id AND hres.day = ?)';
+    $dateParams[] = $selectedDayOfWeek;
+    
+    // Si des conditions de date sont définies, nous devons les encapsuler correctement.
+    // Il faut que l'offre corresponde à AU MOINS UNE des conditions de date.
+    if (!empty($dateConditions)) {
+        // Ajout d'une condition OR englobant toutes les conditions de date
+        if (!empty($conditions)) {
+            $sql .= ' AND (' . implode(' OR ', $dateConditions) . ')';
+        } else {
+            $sql .= ' WHERE (' . implode(' OR ', $dateConditions) . ')';
+        }
+        $params = array_merge($params, $dateParams);
+    }
+}
+
+
 // --- AJOUT DU TRI ---
 switch ($sort) {
     case 'price_asc':
-        $sql .= ' ORDER BY offres.price ASC';
+        $sql .= ' ORDER BY o.price ASC';
         break;
     case 'price_desc':
-        $sql .= ' ORDER BY offres.price DESC';
+        $sql .= ' ORDER BY o.price DESC';
         break;
     case 'note':
+        $sql .= ' ORDER BY offer_rating DESC, o.id DESC'; // Tri par note (la plus haute en premier), puis par ID si notes égales
+        break;
     default:
-        $sql .= ' ORDER BY offres.id DESC';
+        $sql .= ' ORDER BY o.id DESC';
         break;
 }
 
@@ -102,6 +185,19 @@ function getSortLink($sortValue, $currentSort, $filters) {
 
 $current_filters = $_GET;
 unset($current_filters['sort']);
+
+// Helper pour le rendu des étoiles
+function renderStars($rating) {
+    $output = '';
+    for ($i = 1; $i <= 5; $i++) {
+        if ($rating >= $i) {
+            $output .= '<i class="fas fa-star"></i>';
+        } else {
+            $output .= '<i class="far fa-star"></i>';
+        }
+    }
+    return $output;
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -158,6 +254,25 @@ unset($current_filters['sort']);
         @media (max-width: 992px) { .search-page-container { flex-direction: column; } .filters-sidebar { width: 100%; margin-bottom: 20px; } .results-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } }
         @media (max-width: 768px) { .search-and-sort-controls { flex-direction: column; align-items: stretch; } .search-bar-results { width: 100%; } .sort-options { display: flex; justify-content: space-between; width: 100%; gap: 5px; } .sort-options .sort-button { margin-left: 0; flex-grow: 1; padding: 8px 10px; } .results-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } .filters-sidebar { padding: 15px;} .price-input-container { flex-direction: column; align-items: stretch; gap: 10px; } .price-input-separator { display: none; } }
         @media (max-width: 520px) { .results-grid { grid-template-columns: 1fr; } .card .card-image-wrapper { height: 180px; } }
+
+        /* Styles pour le filtre de note */
+        .star-rating-filter {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        .star-rating-filter .star-option {
+            cursor: pointer;
+            color: var(--couleur-bordure); /* Couleur des étoiles non sélectionnées */
+            font-size: 1.2em;
+        }
+        .star-rating-filter .star-option.selected,
+        .star-rating-filter .star-option:hover {
+            color: var(--couleur-principale); /* Couleur des étoiles sélectionnées ou survolées */
+        }
+        .star-rating-filter .star-option.active {
+             color: var(--couleur-principale);
+        }
     </style>
 </head>
 <body>
@@ -198,22 +313,25 @@ unset($current_filters['sort']);
                     </div>
                 </div>
                 <input type="hidden" name="q" value="<?php echo htmlspecialchars($searchTerm); ?>">
-                <div class="filter-group" title="Ce filtre n'est pas encore actif.">
-                    <h3 style="color:#999;">Date (Inactif)</h3>
-                    <div class="input-with-icon"> <input type="date" id="date" name="date" disabled> </div>
-                </div>
-                <div class="filter-group" title="Ce filtre n'est pas encore actif.">
-                    <h3 style="color:#999;">Notes (Inactif)</h3>
-                    <div class="label">Minimale</div>
-                    <div class="star-rating-filter"> <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-                </div>
-                <div class="filter-group" title="Ce filtre n'est pas encore actif.">
-                    <h3 style="color:#999;">Statut (Inactif)</h3>
-                    <div class="status-filter">
-                       <label><input type="radio" name="status" value="open" disabled> Ouvert</label>
-                       <label><input type="radio" name="status" value="closed" disabled> Fermé</label>
+                
+                <div class="filter-group">
+                    <h3>Date</h3>
+                    <div class="input-with-icon">
+                        <input type="date" id="date" name="date" value="<?php echo htmlspecialchars($selectedDate); ?>">
+                        <i class="fas fa-calendar-alt"></i>
                     </div>
                 </div>
+
+                <div class="filter-group">
+                    <h3>Note minimale</h3>
+                    <div class="star-rating-filter" id="min-rating-filter">
+                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                            <i class="fas fa-star star-option <?php if ($minRating >= $i) echo 'active'; ?>" data-rating="<?php echo $i; ?>"></i>
+                        <?php endfor; ?>
+                        <input type="hidden" name="min_rating" id="min-rating-input" value="<?php echo htmlspecialchars((string)$minRating); ?>">
+                    </div>
+                </div>
+
                 <button type="button" id="reset-filters-btn" class="reset-filters-btn">Réinitialiser les filtres</button>
             </form>
 
@@ -225,6 +343,8 @@ unset($current_filters['sort']);
                         <input type="hidden" name="destination" value="<?php echo htmlspecialchars($destination); ?>">
                         <input type="hidden" name="price_min_input" value="<?php echo htmlspecialchars((string)$priceMin); ?>">
                         <input type="hidden" name="price_max_input" value="<?php echo htmlspecialchars((string)$priceMax); ?>">
+                        <input type="hidden" name="date" value="<?php echo htmlspecialchars($selectedDate); ?>">
+                        <input type="hidden" name="min_rating" value="<?php echo htmlspecialchars((string)$minRating); ?>">
                         <button type="submit" aria-label="Rechercher"><i class="fas fa-search"></i></button>
                     </form>
                     <div class="sort-options">
@@ -249,7 +369,7 @@ unset($current_filters['sort']);
                                     <div class="card-content">
                                         <h3 class="card-title"><?php echo htmlspecialchars($offer['title']); ?></h3>
                                         <div class="star-rating">
-                                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
+                                            <?php echo renderStars($offer['offer_rating']); ?>
                                         </div>
                                         <p class="card-description"><?php echo htmlspecialchars($offer['summary']); ?></p>
                                         <span class="card-more">Voir plus</span>
@@ -313,33 +433,45 @@ unset($current_filters['sort']);
                 mobileNavLinks.classList.toggle('active');
             });
         }
-    });
 
-    const filtersForm = document.getElementById('filters-form');
-    const resetFiltersBtn = document.getElementById('reset-filters-btn');
+        const filtersForm = document.getElementById('filters-form');
+        const resetFiltersBtn = document.getElementById('reset-filters-btn');
+        const minRatingFilter = document.getElementById('min-rating-filter');
+        const minRatingInput = document.getElementById('min-rating-input');
 
-    filtersForm.addEventListener('change', function() {
-        // Ne soumet le formulaire que si ce n'est pas un champ de saisie de prix qui change
-        // pour éviter de recharger à chaque chiffre tapé. On pourrait ajouter un bouton "Appliquer".
-        if(document.activeElement.type !== 'number') {
-            filtersForm.submit();
-        }
-    });
-    
-    // On pourrait ajouter un listener sur le bouton "Entrée" pour les champs prix
-    document.querySelectorAll('input[type="number"]').forEach(input => {
-        input.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
+        // Soumission du formulaire lors du changement des filtres (sauf input type number)
+        filtersForm.addEventListener('change', function(e) {
+            if(e.target.type !== 'number' && e.target.id !== 'min-rating-input') { // Exclure l'input caché de la note
                 filtersForm.submit();
             }
         });
-    });
+        
+        // Soumission du formulaire pour les champs prix lors de la touche "Entrée"
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    filtersForm.submit();
+                }
+            });
+        });
 
+        // Gestion du filtre de note
+        if (minRatingFilter) {
+            minRatingFilter.addEventListener('click', function(e) {
+                if (e.target.classList.contains('star-option')) {
+                    const rating = e.target.dataset.rating;
+                    minRatingInput.value = rating;
+                    filtersForm.submit();
+                }
+            });
+        }
 
-    resetFiltersBtn.addEventListener('click', function() {
-        const url = new URL(window.location);
-        url.search = ''; // Vide tous les paramètres de l'URL
-        window.location.href = url.href;
+        // Réinitialisation des filtres
+        resetFiltersBtn.addEventListener('click', function() {
+            const url = new URL(window.location);
+            url.search = ''; // Vide tous les paramètres de l'URL
+            window.location.href = url.href;
+        });
     });
     </script>
 </body>

@@ -3,6 +3,32 @@
 session_start();
 require_once __DIR__ . '/../../includes/db.php';
 
+// --- Début de la logique de vérification de connexion du membre (adaptée de auth_check_membre.php) ---
+$is_logged_in_member = false;
+$membre_id = null;
+
+if (isset($_COOKIE['auth_token']) && isset($_COOKIE['user_type']) && $_COOKIE['user_type'] === 'membre') {
+    if (isset($pdo)) {
+        $token = $_COOKIE['auth_token'];
+        $stmt = $pdo->prepare("SELECT email FROM auth_tokens WHERE token = :token");
+        $stmt->execute([':token' => $token]);
+        $auth_user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($auth_user) {
+            $stmt_membre = $pdo->prepare("SELECT id FROM comptes_membre WHERE email = :email");
+            $stmt_membre->execute(['email' => $auth_user['email']]);
+            $membre_user = $stmt_membre->fetch(PDO::FETCH_ASSOC);
+
+            if ($membre_user) {
+                $is_logged_in_member = true; // L'utilisateur est connecté en tant que membre
+                $membre_id = $membre_user['id']; // Récupère l'ID du membre
+            }
+        }
+    }
+}
+// --- Fin de la logique de vérification de connexion du membre ---
+
+
 // 1. Récupérer l'ID de l'offre depuis l'URL
 $offer_id = $_GET['id'] ?? null;
 
@@ -35,11 +61,29 @@ try {
     }
 
     // 3. Récupérer les photos supplémentaires
-    $photo_stmt = $pdo->prepare("SELECT url FROM photos_offres WHERE offre_id = :offer_id AND url != :main_photo");
-    $photo_stmt->execute(['offer_id' => $offer_id, 'main_photo' => $offer['main_photo']]);
-    $photos = $photo_stmt->fetchAll(PDO::FETCH_ASSOC);
+    $photo_stmt = $pdo->prepare("SELECT url FROM photos_offres WHERE offre_id = :offer_id");
+    $photo_stmt->execute(['offer_id' => $offer_id]);
+    $all_photos_raw = $photo_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // 4. Récupérer les avis pour l'offre (REQUÊTE CORRIGÉE)
+    $photos_display = [];
+    $main_photo_found = false;
+
+    // S'assurer que la main_photo est toujours la première si elle existe
+    foreach($all_photos_raw as $p) {
+        if ($p['url'] === $offer['main_photo']) {
+            array_unshift($photos_display, $p);
+            $main_photo_found = true;
+        } else {
+            $photos_display[] = $p;
+        }
+    }
+    // Si pour une raison quelconque la main_photo n'était pas dans photos_offres mais définie dans offres
+    if (!$main_photo_found && !empty($offer['main_photo'])) {
+        array_unshift($photos_display, ['url' => $offer['main_photo']]);
+    }
+
+
+    // 4. Récupérer les avis pour l'offre
     $reviews_sql = "
         SELECT
             r.title, r.comment, r.rating, r.published_at,
@@ -193,12 +237,12 @@ function display_stars($rating) {
             border-radius: 8px;
         }
 
-        .gallery-image-container { 
+        .gallery-image-container {
             display: flex;
             height: 450px;
         }
 
-        .gallery-image-container img { 
+        .gallery-image-container img {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -476,6 +520,131 @@ function display_stars($rating) {
         .carousel-arrow.prev-arrow { left: 15px; }
         .carousel-arrow.next-arrow { right: 15px; }
         
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            cursor: pointer;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            margin-top: 20px;
+        }
+
+        .modal-body h2 {
+            font-size: 1.5em;
+            color: var(--couleur-texte);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .modal-body form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: var(--font-weight-medium);
+            color: var(--couleur-texte);
+        }
+
+        .modal-body form input[type="text"],
+        .modal-body form textarea,
+        .modal-body form select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--couleur-bordure);
+            border-radius: 6px;
+            font-size: 0.95em;
+            box-sizing: border-box;
+        }
+
+        .modal-body form textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .modal-body .rating-input .stars {
+            font-size: 1.5em;
+            color: var(--couleur-bordure);
+            margin-bottom: 15px;
+        }
+        .modal-body .rating-input .stars i {
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .modal-body .rating-input .stars i.fas {
+            color: gold; /* Couleur des étoiles remplies */
+        }
+
+        .modal-body form button {
+            background-color: var(--couleur-principale);
+            color: var(--couleur-blanche);
+            padding: 12px 25px;
+            border-radius: 8px;
+            border: none;
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        .modal-body form button:hover {
+            background-color: var(--couleur-principale-hover);
+        }
+
+        /* Message d'erreur dans la modale */
+        .modal-error-message {
+            color: red;
+            font-size: 0.85em;
+            margin-top: -10px;
+            margin-bottom: 10px;
+            display: none; /* Hidden by default */
+        }
+
+
         @media (max-width: 992px) {
             .offre-gallery-and-purchase, .offre-detailed-info { flex-direction: column; }
             .offre-gallery, .offre-purchase-details,
@@ -492,7 +661,7 @@ function display_stars($rating) {
     </style>
 </head>
 <body>
-    <?php require_once 'header.php'; ?>
+    <?php require_once 'header.php'; // Assurez-vous que ce fichier existe et est adapté pour les membres ?>
     <main class="main-content-offre">
         <div class="container">
             <div class="breadcrumb-bar">
@@ -503,8 +672,7 @@ function display_stars($rating) {
                 <div class="offre-gallery-and-purchase">
                     <div class="offre-gallery cards-container-wrapper" id="offreImageCarouselWrapper">
                         <div class="gallery-image-container cards-container">
-                            <img src="../../<?php echo htmlspecialchars($offer['main_photo']); ?>" alt="<?php echo htmlspecialchars($offer['title']); ?>">
-                            <?php foreach ($photos as $photo): ?>
+                            <?php foreach ($photos_display as $photo): ?>
                                 <img src="../../<?php echo htmlspecialchars($photo['url']); ?>" alt="Photo de <?php echo htmlspecialchars($offer['title']); ?>">
                             <?php endforeach; ?>
                         </div>
@@ -515,7 +683,7 @@ function display_stars($rating) {
                         <button class="offre-favorite-btn" aria-label="Ajouter aux favoris"><i class="far fa-heart"></i><i class="fas fa-heart"></i></button>
                         <h1 class="title"><?php echo htmlspecialchars($offer['title']); ?></h1>
                         <div class="avis-rating">
-                            <?php echo display_stars($offer['rating']); ?>
+                            <?php echo display_stars($offer['rating'] ?? 0); ?>
                         </div>
                         <p class="provider">Proposé par <?php echo htmlspecialchars($offer['pro_company_name']); ?></p>
                         <p class="price"><?php echo htmlspecialchars(number_format($offer['price'], 2, ',', ' ')); ?>€</p>
@@ -567,7 +735,7 @@ function display_stars($rating) {
                                             <div class="avis-user-info">
                                                 <span class="name"><?php echo htmlspecialchars($review['title']); ?></span>
                                                 <div class="username-date">
-                                                    <?php echo htmlspecialchars($review['user_alias']); ?> - 
+                                                    <?php echo htmlspecialchars($review['user_alias']); ?> -
                                                     <?php echo date('d/m/Y', $review['published_at']); ?>
                                                 </div>
                                             </div>
@@ -584,7 +752,11 @@ function display_stars($rating) {
                         <?php endif; ?>
                     </div>
                     <div class="avis-footer">
-                        <a href="creation-compte.php" class="btn-laisser-avis">Laisser un avis</a>
+                        <button class="btn-laisser-avis" id="openAvisModalBtn"
+                                data-offer-id="<?php echo htmlspecialchars($offer_id); ?>"
+                                data-is-logged-in="<?php echo $is_logged_in_member ? 'true' : 'false'; ?>">
+                            Laisser un avis
+                        </button>
                         <div class="avis-navigation">
                             <button class="prev-avis" aria-label="Avis précédents"><i class="fas fa-chevron-left"></i></button>
                             <button class="next-avis" aria-label="Avis suivants"><i class="fas fa-chevron-right"></i></button>
@@ -600,10 +772,10 @@ function display_stars($rating) {
             <div class="footer-section social-media">
                 <a href="../index.html"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="footer-logo"></a>
                 <div class="social-icons">
-                    <a href="#" aria-label="X"><i class="fab fa-x-twitter"></i></a>
-                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" aria-label="Twitter PACT"><i class="fab fa-x-twitter"></i></a>
+                    <a href="#" aria-label="Instagram PACT"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="YouTube PACT"><i class="fab fa-youtube"></i></a>
+                    <a href="#" aria-label="LinkedIn PACT"><i class="fab fa-linkedin-in"></i></a>
                 </div>
             </div>
             <div class="footer-section links">
@@ -633,114 +805,303 @@ function display_stars($rating) {
             <p>&copy; 2025 PACT. Tous droits réservés.</p>
         </div>
     </footer>
+
+    <div id="avisModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <div class="modal-body">
+                </div>
+        </div>
+    </div>
+
     <script src="script.js" defer></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const favoriteButton = document.querySelector('.offre-favorite-btn');
-            if (favoriteButton) {
-                favoriteButton.addEventListener('click', function() { this.classList.toggle('active'); });
+    <script src="script.js" defer></script>
+<script src="script.js" defer></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const favoriteButton = document.querySelector('.offre-favorite-btn');
+        if (favoriteButton) {
+            favoriteButton.addEventListener('click', function() { this.classList.toggle('active'); });
+        }
+
+        const avisListContainer = document.querySelector('.avis-list');
+        const allAvisCards = avisListContainer ? Array.from(avisListContainer.querySelectorAll('.avis-card')) : [];
+        const prevAvisBtn = document.querySelector('.prev-avis');
+        const nextAvisBtn = document.querySelector('.next-avis');
+
+        let currentAvisPage = 1;
+        const avisPerPage = 3; // Nombre d'avis à afficher par page
+        let totalAvisPages = 0;
+
+        function displayCurrentAvisPage() {
+            if (!avisListContainer || allAvisCards.length === 0) return;
+            const startIndex = (currentAvisPage - 1) * avisPerPage;
+            const endIndex = startIndex + avisPerPage;
+
+            allAvisCards.forEach((card, index) => {
+                if (index >= startIndex && index < endIndex) {
+                    card.style.display = 'flex'; // Ou 'block' selon le style initial des cartes
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function updateAvisNavigation() {
+            if (!prevAvisBtn || !nextAvisBtn) return;
+            totalAvisPages = Math.ceil(allAvisCards.length / avisPerPage);
+            prevAvisBtn.disabled = currentAvisPage === 1;
+            nextAvisBtn.disabled = currentAvisPage === totalAvisPages || allAvisCards.length === 0;
+
+            if (allAvisCards.length > 0) {
+                displayCurrentAvisPage();
+            } else { // S'il n'y a aucun avis
+                if(avisListContainer) avisListContainer.innerHTML = "<p>Aucun avis pour le moment.</p>";
             }
+        }
 
-            const avisListContainer = document.querySelector('.avis-list');
-            const allAvisCards = avisListContainer ? Array.from(avisListContainer.querySelectorAll('.avis-card')) : [];
-            const prevAvisBtn = document.querySelector('.prev-avis');
-            const nextAvisBtn = document.querySelector('.next-avis');
-            
-            let currentAvisPage = 1;
-            const avisPerPage = 3; / Nombre d'avis à afficher par page
-            let totalAvisPages = 0;
-
-            function displayCurrentAvisPage() {
-                if (!avisListContainer || allAvisCards.length === 0) return;
-                const startIndex = (currentAvisPage - 1) * avisPerPage;
-                const endIndex = startIndex + avisPerPage;
-
-                allAvisCards.forEach((card, index) => {
-                    if (index >= startIndex && index < endIndex) {
-                        card.style.display = 'flex'; / Ou 'block' selon le style initial des cartes
-                    } else {
-                        card.style.display = 'none';
+        if (allAvisCards.length > 0) { // S'il y a des avis, initialiser la pagination
+            if (prevAvisBtn) {
+                prevAvisBtn.addEventListener('click', () => {
+                    if (currentAvisPage > 1) {
+                        currentAvisPage--;
+                        updateAvisNavigation();
                     }
                 });
             }
 
-            function updateAvisNavigation() {
-                if (!prevAvisBtn || !nextAvisBtn) return;
-                totalAvisPages = Math.ceil(allAvisCards.length / avisPerPage);
-                prevAvisBtn.disabled = currentAvisPage === 1;
-                nextAvisBtn.disabled = currentAvisPage === totalAvisPages || allAvisCards.length === 0;
-                
-                if (allAvisCards.length > 0) {
-                    displayCurrentAvisPage();
-                } else { / S'il n'y a aucun avis
-                    if(avisListContainer) avisListContainer.innerHTML = "<p>Aucun avis pour le moment.</p>";
-                }
-                / console.log(`Page d'avis actuelle: ${currentAvisPage}, Total pages: ${totalAvisPages}`);
+            if (nextAvisBtn) {
+                nextAvisBtn.addEventListener('click', () => {
+                    if (currentAvisPage < totalAvisPages) {
+                        currentAvisPage++;
+                        updateAvisNavigation();
+                    }
+                });
             }
-            
-            if (allAvisCards.length > 0) { / S'il y a des avis, initialiser la pagination
-                if (prevAvisBtn) {
-                    prevAvisBtn.addEventListener('click', () => {
-                        if (currentAvisPage > 1) {
-                            currentAvisPage--;
-                            updateAvisNavigation();
-                        }
-                    });
-                }
-
-                if (nextAvisBtn) {
-                    nextAvisBtn.addEventListener('click', () => {
-                        if (currentAvisPage < totalAvisPages) {
-                            currentAvisPage++;
-                            updateAvisNavigation();
-                        }
-                    });
-                }
-                updateAvisNavigation(); / Appel initial pour afficher la première page et définir l'état des boutons
-            } else if (prevAvisBtn && nextAvisBtn) { / S'il n'y a pas d'avis, désactiver les boutons
-                 updateAvisNavigation(); / Appel pour gérer le cas où il n'y a pas d'avis
-            }
-
-            const offreCarouselWrapper = document.getElementById('offreImageCarouselWrapper');
-            if (offreCarouselWrapper) {
-                updateOffreCarouselArrowsVisibility(offreCarouselWrapper);
-                const imageContainer = offreCarouselWrapper.querySelector('.gallery-image-container.cards-container');
-                if (imageContainer) {
-                    let scrollEndTimer;
-                    imageContainer.addEventListener('scroll', () => {
-                        clearTimeout(scrollEndTimer);
-                        scrollEndTimer = setTimeout(() => updateOffreCarouselArrowsVisibility(offreCarouselWrapper), 100); 
-                    });
-                }
-            }
-        });
-
-        function scrollOffreCarousel(carouselWrapperId, direction) {
-            const wrapper = document.getElementById(carouselWrapperId);
-            if (!wrapper) return;
-            const container = wrapper.querySelector('.gallery-image-container.cards-container');
-            if (!container) return;
-            container.scrollBy({ left: direction * wrapper.clientWidth, behavior: 'smooth' });
+            updateAvisNavigation(); // Appel initial pour afficher la première page et définir l'état des boutons
+        } else if (prevAvisBtn && nextAvisBtn) { // S'il n'y a pas d'avis, désactiver les boutons
+             updateAvisNavigation(); // Appel pour gérer le cas où il n'y a pas d'avis
         }
 
-        function updateOffreCarouselArrowsVisibility(wrapperElement) {
-            const container = wrapperElement.querySelector('.gallery-image-container.cards-container');
-            const prevArrow = wrapperElement.querySelector('.carousel-arrow.prev-arrow');
-            const nextArrow = wrapperElement.querySelector('.carousel-arrow.next-arrow');
-            if (!container || !prevArrow || !nextArrow) return;
-            
-            const atStart = container.scrollLeft < 10;
-            const atEnd = container.scrollWidth - container.scrollLeft - container.clientWidth < 10;
-            const hasNoScroll = container.scrollWidth <= container.clientWidth;
-
-            prevArrow.style.display = (atStart || hasNoScroll) ? 'none' : 'flex';
-            nextArrow.style.display = (atEnd || hasNoScroll) ? 'none' : 'flex';
+        const offreCarouselWrapper = document.getElementById('offreImageCarouselWrapper');
+        if (offreCarouselWrapper) {
+            updateOffreCarouselArrowsVisibility(offreCarouselWrapper);
+            const imageContainer = offreCarouselWrapper.querySelector('.gallery-image-container.cards-container');
+            if (imageContainer) {
+                let scrollEndTimer;
+                imageContainer.addEventListener('scroll', () => {
+                    clearTimeout(scrollEndTimer);
+                    scrollEndTimer = setTimeout(() => updateOffreCarouselArrowsVisibility(offreCarouselWrapper), 100);
+                });
+            }
         }
 
-        window.addEventListener('resize', () => {
-            const offreCarouselWrapper = document.getElementById('offreImageCarouselWrapper');
-            if (offreCarouselWrapper) updateOffreCarouselArrowsVisibility(offreCarouselWrapper);
-        });
-    </script>
+        // Modal Logic for "Laisser un avis" button
+        const openAvisModalBtn = document.getElementById('openAvisModalBtn');
+        const avisModal = document.getElementById('avisModal');
+        const closeModalButton = document.querySelector('#avisModal .close-button');
+        const modalBody = document.querySelector('#avisModal .modal-body');
+
+        if (openAvisModalBtn) {
+            openAvisModalBtn.addEventListener('click', function() {
+                const isUserLoggedIn = this.dataset.isLoggedIn === 'true';
+                const offerId = this.dataset.offerId;
+
+                if (isUserLoggedIn) {
+                    // Load the review form into the modal
+                    fetch(`laisser-avis-modal.php?offer_id=${offerId}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                // If response is not ok (e.g., 401 Unauthorized from laisser-avis-modal.php)
+                                // Try to parse as JSON first, then fall back to text
+                                return response.json().catch(() => response.text());
+                            }
+                            return response.text(); // Expecting HTML normally
+                        })
+                        .then(data => {
+                            if (typeof data === 'object' && data.error) {
+                                // Handle JSON error response, e.g., if not authenticated
+                                alert('Erreur: ' + data.error);
+                                if (data.error === 'Non authentifié.') {
+                                     window.location.href = 'connexion-compte.php?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+                                }
+                                return; // Stop further processing
+                            }
+                            // Assume HTML content otherwise
+                            modalBody.innerHTML = data;
+                            avisModal.style.display = 'flex'; // Show the modal
+                            initializeModalFormLogic(); // Initialize form-specific JS (e.g., star rating)
+                        })
+                        .catch(error => {
+                            console.error('Error loading review form:', error);
+                            modalBody.innerHTML = '<p>Impossible de charger le formulaire d\'avis. Veuillez réessayer plus tard.</p>';
+                            avisModal.style.display = 'flex';
+                        });
+                } else {
+                    // Redirect to login page if not logged in
+                    window.location.href = 'connexion-compte.php?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+                }
+            });
+        }
+
+        if (closeModalButton) {
+            closeModalButton.addEventListener('click', function() {
+                avisModal.style.display = 'none';
+            });
+        }
+
+        // Close modal when clicking outside of it
+        if (avisModal) {
+            avisModal.addEventListener('click', function(event) {
+                if (event.target === avisModal) {
+                    avisModal.style.display = 'none';
+                }
+            });
+        }
+
+        function initializeModalFormLogic() {
+            const ratingStars = document.querySelectorAll('#avisModal .rating-input .fa-star');
+            const ratingInput = document.getElementById('rating_input');
+            // Récupérer la valeur initiale de rating_input pour l'état des étoiles
+            let currentRating = ratingInput ? parseInt(ratingInput.value) || 0 : 0;
+
+            function updateStars(rating) {
+                ratingStars.forEach((star, index) => {
+                    if (index < rating) {
+                        star.classList.remove('far');
+                        star.classList.add('fas');
+                        star.style.color = 'gold';
+                    } else {
+                        star.classList.remove('fas');
+                        star.classList.add('far');
+                        star.style.color = 'var(--couleur-bordure)';
+                    }
+                });
+            }
+
+            // Initialiser l'affichage des étoiles basé sur currentRating
+            if (ratingInput) {
+                updateStars(currentRating);
+            }
+
+            ratingStars.forEach(star => {
+                star.addEventListener('click', function() {
+                    currentRating = parseInt(this.dataset.rating);
+                    if (ratingInput) ratingInput.value = currentRating;
+                    updateStars(currentRating);
+                });
+            });
+
+            // Set max attribute for visit_date to today's date
+            const visitDateInput = document.getElementById('visit_date');
+            if (visitDateInput) {
+                const today = new Date().toISOString().split('T')[0];
+                visitDateInput.setAttribute('max', today);
+            }
+
+            // Handle form submission inside the modal via AJAX
+            const avisForm = document.getElementById('avisForm');
+            // MODIFICATION ICI: Ciblez l'élément d'erreur directement depuis modalBody ou avisForm
+            const errorMessageElement = avisForm ? avisForm.querySelector('.modal-error-message') : null;
+
+
+            if (avisForm) { // Vérifiez que le formulaire existe avant d'ajouter l'écouteur
+                avisForm.addEventListener('submit', function(event) {
+                    event.preventDefault(); // Prevent default form submission
+
+                    const formData = new FormData(avisForm);
+                    
+                    // Récupérer les champs pour la validation avant envoi
+                    const titleInput = document.getElementById('avis_title');
+                    const commentInput = document.getElementById('avis_comment');
+                    const ratingValue = ratingInput ? parseInt(ratingInput.value) : 0;
+                    const visitDateValue = document.getElementById('visit_date').value;
+                    const contextValue = document.getElementById('context').value;
+
+                    let errors = [];
+
+                    if (titleInput.value.trim() === '') errors.push('Veuillez entrer un titre pour votre avis.');
+                    if (commentInput.value.trim() === '') errors.push('Veuillez entrer votre commentaire.');
+                    if (ratingValue < 1 || ratingValue > 5) errors.push('Veuillez donner une note entre 1 et 5 étoiles.');
+                    if (visitDateValue === '') errors.push('Veuillez entrer la date de votre visite.');
+                    if (new Date(visitDateValue) > new Date()) errors.push('La date de visite ne peut pas être future.');
+                    if (contextValue === '') errors.push('Veuillez sélectionner un contexte de visite.');
+
+                    if (errors.length > 0) {
+                        if (errorMessageElement) { // Vérifiez que l'élément d'erreur existe
+                            errorMessageElement.innerHTML = errors.join('<br>');
+                            errorMessageElement.style.display = 'block';
+                        } else {
+                            console.error("Element d'erreur introuvable."); // Log pour le débogage
+                        }
+                        return; // Arrêter l'envoi du formulaire si des erreurs de validation JS existent
+                    }
+
+
+                    if (errorMessageElement) { // Vérifiez que l'élément d'erreur existe avant de cacher
+                        errorMessageElement.style.display = 'none'; // Hide previous errors
+                    }
+
+                    fetch('submit-avis.php', { // This file will process the form
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json()) // Expect JSON response
+                    .then(data => {
+                        if (data.success) {
+                            alert('Avis soumis avec succès !');
+                            avisModal.style.display = 'none';
+                            location.reload(); // Simple reload for now to see the new review
+                        } else {
+                            // Display errors
+                            if (errorMessageElement) { // Vérifiez que l'élément d'erreur existe
+                                errorMessageElement.textContent = Object.values(data.errors).join('\n');
+                                errorMessageElement.style.display = 'block';
+                            } else {
+                                console.error("Element d'erreur introuvable après la soumission AJAX."); // Log pour le débogage
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error submitting review:', error);
+                        if (errorMessageElement) { // Vérifiez que l'élément d'erreur existe
+                            errorMessageElement.textContent = 'Une erreur est survenue. Veuillez réessayer.';
+                            errorMessageElement.style.display = 'block';
+                        } else {
+                             console.error("Element d'erreur introuvable dans le catch AJAX."); // Log pour le débogage
+                        }
+                    });
+                });
+            }
+        }
+    });
+
+    function scrollOffreCarousel(carouselWrapperId, direction) {
+        const wrapper = document.getElementById(carouselWrapperId);
+        if (!wrapper) return;
+        const container = wrapper.querySelector('.gallery-image-container.cards-container');
+        if (!container) return;
+        container.scrollBy({ left: direction * wrapper.clientWidth, behavior: 'smooth' });
+    }
+
+    function updateOffreCarouselArrowsVisibility(wrapperElement) {
+        const container = wrapperElement.querySelector('.gallery-image-container.cards-container');
+        const prevArrow = wrapperElement.querySelector('.carousel-arrow.prev-arrow');
+        const nextArrow = wrapperElement.querySelector('.carousel-arrow.next-arrow');
+        if (!container || !prevArrow || !nextArrow) return;
+
+        const atStart = container.scrollLeft < 10;
+        const atEnd = container.scrollWidth - container.scrollLeft - container.clientWidth < 10;
+        const hasNoScroll = container.scrollWidth <= container.clientWidth;
+
+        prevArrow.style.display = (atStart || hasNoScroll) ? 'none' : 'flex';
+        nextArrow.style.display = (atEnd || hasNoScroll) ? 'none' : 'flex';
+    }
+
+    window.addEventListener('resize', () => {
+        const offreCarouselWrapper = document.getElementById('offreImageCarouselWrapper');
+        if (offreCarouselWrapper) updateOffreCarouselArrowsVisibility(offreCarouselWrapper);
+    });
+</script>
 </body>
 </html>
