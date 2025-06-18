@@ -20,9 +20,6 @@ $minRating = isset($_GET['min_rating']) && $_GET['min_rating'] !== '' ? (float)$
 // NOUVEAU : Récupération du filtre de date
 $selectedDate = isset($_GET['date']) && $_GET['date'] !== '' ? $_GET['date'] : null;
 
-// NOUVEAU : Récupération du filtre de statut
-$statusFilter = isset($_GET['status']) ? $_GET['status'] : null; // 'open', 'closed' ou null
-
 
 $sort = isset($_GET['sort']) ? $_GET['sort'] : 'note';
 
@@ -42,22 +39,10 @@ if (!empty($category_type) && empty($category_id)) {
 
 // --- CONSTRUCTION DE LA REQUÊTE SQL ---
 $sql = 'SELECT o.*, c.type as category_type, 
-               COALESCE(s.status, 0) as current_status, 
                COALESCE(o.rating, 0) as offer_rating
         FROM offres o
         JOIN adresses a ON o.adresse_id = a.id
         JOIN categories c ON o.categorie_id = c.id';
-// NOUVEAU : Jointure pour le statut. On utilise LEFT JOIN pour inclure les offres sans statut explicite (considérées comme fermées par défaut ou en attente)
-// et on prend le statut le plus récent.
-$sql .= ' LEFT JOIN (
-            SELECT offre_id, status
-            FROM statuts
-            WHERE (offre_id, changed_at) IN (
-                SELECT offre_id, MAX(changed_at)
-                FROM statuts
-                GROUP BY offre_id
-            )
-        ) s ON o.id = s.offre_id';
 
 $conditions = [];
 $params = [];
@@ -95,15 +80,6 @@ if ($priceMax !== null) {
 if ($minRating !== null) {
     $conditions[] = 'COALESCE(o.rating, 0) >= ?'; // Utilise COALESCE pour gérer les ratings NULL (les considérer comme 0)
     $params[] = $minRating;
-}
-
-// NOUVEAU : Condition pour le filtre de statut
-if ($statusFilter !== null) {
-    if ($statusFilter === 'open') {
-        $conditions[] = 'COALESCE(s.status, 0) = 1'; // Statut 1 pour "ouvert"
-    } elseif ($statusFilter === 'closed') {
-        $conditions[] = 'COALESCE(s.status, 0) = 0'; // Statut 0 pour "fermé" (ou non trouvé dans la table statuts)
-    }
 }
 
 if (!empty($conditions)) {
@@ -297,16 +273,6 @@ function renderStars($rating) {
         .star-rating-filter .star-option.active {
              color: var(--couleur-principale);
         }
-        /* Styles pour le filtre de statut */
-        .status-filter label {
-            display: inline-flex;
-            align-items: center;
-            margin-right: 15px;
-            cursor: pointer;
-        }
-        .status-filter input[type="radio"] {
-            margin-right: 5px;
-        }
     </style>
 </head>
 <body>
@@ -357,21 +323,12 @@ function renderStars($rating) {
                 </div>
 
                 <div class="filter-group">
-                    <h3>Notes</h3>
-                    <div class="label">Minimale</div>
+                    <h3>Note minimale</h3>
                     <div class="star-rating-filter" id="min-rating-filter">
                         <?php for ($i = 1; $i <= 5; $i++): ?>
                             <i class="fas fa-star star-option <?php if ($minRating >= $i) echo 'active'; ?>" data-rating="<?php echo $i; ?>"></i>
                         <?php endfor; ?>
                         <input type="hidden" name="min_rating" id="min-rating-input" value="<?php echo htmlspecialchars((string)$minRating); ?>">
-                    </div>
-                </div>
-
-                <div class="filter-group">
-                    <h3>Statut</h3>
-                    <div class="status-filter">
-                       <label><input type="radio" name="status" value="open" <?php if ($statusFilter === 'open') echo 'checked'; ?>> Ouvert</label>
-                       <label><input type="radio" name="status" value="closed" <?php if ($statusFilter === 'closed') echo 'checked'; ?>> Fermé</label>
                     </div>
                 </div>
 
@@ -388,7 +345,6 @@ function renderStars($rating) {
                         <input type="hidden" name="price_max_input" value="<?php echo htmlspecialchars((string)$priceMax); ?>">
                         <input type="hidden" name="date" value="<?php echo htmlspecialchars($selectedDate); ?>">
                         <input type="hidden" name="min_rating" value="<?php echo htmlspecialchars((string)$minRating); ?>">
-                        <input type="hidden" name="status" value="<?php echo htmlspecialchars($statusFilter); ?>">
                         <button type="submit" aria-label="Rechercher"><i class="fas fa-search"></i></button>
                     </form>
                     <div class="sort-options">
