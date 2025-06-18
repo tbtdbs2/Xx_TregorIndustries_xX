@@ -793,6 +793,56 @@ if ($edit_mode && empty($_POST)) { // Si c'est la première fois qu'on charge la
         .remove-icon-cross{position:absolute;top:8px;right:8px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:1.4em;color:#888;cursor:pointer;border-radius:50%;line-height:1;transition:color .2s ease,background-color .2s ease}
         #categorie-specific-fields .horaire-group-inputs{display:flex;flex-wrap:wrap;gap:var(--espacement-standard);align-items:flex-end;margin-bottom:var(--espacement-petit)}
         #categorie-specific-fields .horaire-group-inputs>div{display:flex;flex-direction:column;flex-grow:1;min-width:120px}
+        /* --- STYLES POUR LA NOTIFICATION PROFIL --- */
+
+    .main-nav ul li.nav-item-with-notification {
+        position: relative; /* Contexte pour le positionnement absolu de la bulle */
+    }
+
+    .profile-link-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .notification-bubble {
+        position: absolute;
+        top: -16px;
+        right: 80px;
+        width: 20px;
+        height: 20px;
+        background-color: #dc3545;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8em;
+        font-weight: bold;
+        border: 2px solid white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .header-right .profile-link-container + .btn-primary {
+        margin-left: 1rem; 
+    }
+
+    .nav-item-with-notification .notification-bubble {
+        position: absolute;
+        top: -15px; /* Ajustez pour la position verticale */
+        right: 80px; /* Ajustez pour la position horizontale */
+        width: 20px;
+        height: 20px;
+        background-color: #dc3545;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75em; /* Police un peu plus petite pour la nav */
+        font-weight: bold;
+        border: 2px solid white;
+    }
     </style>
 </head>
 <body>
@@ -802,16 +852,25 @@ if ($edit_mode && empty($_POST)) { // Si c'est la première fois qu'on charge la
             <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
             <span class="pro-text">Professionnel</span>
         </div>
+
         <nav class="main-nav">
             <ul>
-                <li><a href="index.php">Accueil</a></li>
-                <li><a href="recherche.php">Mes Offres</a></li>
+                <li><a href="index.php" class="active">Accueil</a></li>
+                <li class="nav-item-with-notification">
+                    <a href="recherche.php">Mes Offres</a>
+                    <?php if (isset($unanswered_reviews_count) && $unanswered_reviews_count > 0): ?>
+                        <span class="notification-bubble"><?php echo $unanswered_reviews_count; ?></span>
+                    <?php endif; ?>
+                </li>
                 <li><a href="publier-une-offre.php">Publier une offre</a></li>
             </ul>
         </nav>
+
         <div class="header-right">
-            <a href="profil.php" class="btn btn-secondary">Mon profil</a>
-            <a href="../deconnexion.php" class="btn btn-primary">Se déconnecter</a>
+            <div class="profile-link-container">
+                <a href="profil.php" class="btn btn-secondary">Mon profil</a>
+            </div>
+            <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
         </div>
     </div>
     </header>
