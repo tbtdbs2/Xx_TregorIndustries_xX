@@ -19,7 +19,9 @@ $priceMin = isset($_GET['price_min_input']) && $_GET['price_min_input'] !== '' ?
 $priceMax = isset($_GET['price_max_input']) && $_GET['price_max_input'] !== '' ? (float)$_GET['price_max_input'] : null;
 $sort = $_GET['sort'] ?? 'note';
 
-$sql = 'SELECT offres.*, categories.type as category_type FROM offres 
+$sql = 'SELECT offres.*, categories.type as category_type,
+        (SELECT s.status FROM statuts s WHERE s.offre_id = offres.id ORDER BY s.changed_at DESC LIMIT 1) as current_status
+        FROM offres 
         JOIN adresses ON offres.adresse_id = adresses.id
         JOIN categories ON offres.categorie_id = categories.id';
 $conditions = [];
@@ -141,27 +143,85 @@ unset($current_filters['sort']);
 
         @media (max-width: 992px) { .search-page-container { flex-direction: column; } .filters-sidebar { width: 100%; } }
         @media (max-width: 768px) { .search-and-sort-controls { flex-direction: column; align-items: stretch; } .sort-options { justify-content: space-around; } }
+
+    .main-nav ul li.nav-item-with-notification {
+        position: relative; /* Contexte pour le positionnement absolu de la bulle */
+    }
+
+    .profile-link-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .notification-bubble {
+        position: absolute;
+        top: -16px;
+        right: 80px;
+        width: 20px;
+        height: 20px;
+        background-color: #dc3545;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8em;
+        font-weight: bold;
+        border: 2px solid white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .header-right .profile-link-container + .btn-primary {
+        margin-left: 1rem; 
+    }
+
+    .nav-item-with-notification .notification-bubble {
+        position: absolute;
+        top: -15px; /* Ajustez pour la position verticale */
+        right: 80px; /* Ajustez pour la position horizontale */
+        width: 20px;
+        height: 20px;
+        background-color: #dc3545;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75em; /* Police un peu plus petite pour la nav */
+        font-weight: bold;
+        border: 2px solid white;
+    }
     </style>
 </head>
 <body>
     <header>
-        <div class="container header-container">
-            <div class="header-left">
-                <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo PACT Pro" class="logo"></a>
-                <span class="pro-text">Professionnel</span>
-            </div>
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="index.php">Accueil</a></li>
-                    <li><a href="recherche.php" class="active">Mes Offres</a></li>
-                    <li><a href="publier-une-offre.php">Publier une offre</a></li>
-                </ul>
-            </nav>
-            <div class="header-right">
-                <a href="profil.php" class="btn btn-secondary">Mon profil</a>
-                <a href="../deconnexion.php" class="btn btn-primary">Se déconnecter</a>
-            </div>
+    <div class="container header-container">
+        <div class="header-left">
+            <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
+            <span class="pro-text">Professionnel</span>
         </div>
+
+        <nav class="main-nav">
+            <ul>
+                <li><a href="index.php" class="active">Accueil</a></li>
+                <li class="nav-item-with-notification">
+                    <a href="recherche.php">Mes Offres</a>
+                    <?php if (isset($unanswered_reviews_count) && $unanswered_reviews_count > 0): ?>
+                        <span class="notification-bubble"><?php echo $unanswered_reviews_count; ?></span>
+                    <?php endif; ?>
+                </li>
+                <li><a href="publier-une-offre.php">Publier une offre</a></li>
+            </ul>
+        </nav>
+
+        <div class="header-right">
+            <div class="profile-link-container">
+                <a href="profil.php" class="btn btn-secondary">Mon profil</a>
+            </div>
+            <a href="../deconnexion.php" class="btn btn-primary">Se déconnecter</a>
+        </div>
+    </div>
     </header>
     
     <main>
@@ -224,15 +284,23 @@ unset($current_filters['sort']);
                         <?php foreach ($offers as $offer): ?>
                             <div class="card-bo">
                                 <div class="card-image-wrapper">
-                                    <img src="../<?php echo htmlspecialchars($offer['main_photo'] ?? 'FO/images/placeholder.jpg'); ?>" alt="<?php echo htmlspecialchars($offer['title']); ?>">
+                                    <img src="../<?php echo htmlspecialchars($offer['main_photo'] ?? 'BO/images/placeholder.png'); ?>" alt="<?php echo htmlspecialchars($offer['title']); ?>">
                                 </div>
                                 <div class="card-content">
                                     <h3 class="card-title"><?php echo htmlspecialchars($offer['title']); ?></h3>
                                     <p class="card-category"><?php echo htmlspecialchars(ucfirst($offer['category_type'])); ?></p>
                                     <div class="card-actions-bo">
                                         <a href="offre.php?id=<?= $offer['id'] ?>" class="btn-action btn-view"><i class="fas fa-eye"></i> Voir</a>
-                                        <a href="publier-une-offre.php?edit=<?= $offer['id'] ?>" class="btn-action btn-edit"><i class="fas fa-edit"></i> Modifier</a>
-                                        <a href="supprimer-offre.php?id=<?= $offer['id'] ?>" class="btn-action btn-delete" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette offre ? Cette action est irréversible.');"><i class="fas fa-trash"></i> Supprimer</a>
+                                        <a href="modifier-offre.php?id=<?= $offer['id'] ?>" class="btn-action btn-edit"><i class="fas fa-edit"></i> Modifier</a>
+                                        <?php if ($offer['current_status']): // Si le statut est 1 (Actif) ?>
+                                                <a href="../composants/changer-status-offre.php?id=<?= $offer['id'] ?>&status=0" class="btn-action btn-delete" onclick="return confirm('Êtes-vous sûr de vouloir désactiver cette offre ?');">
+                                                    <i class="fas fa-toggle-off"></i> Rendre Inactif
+                                                </a>
+                                            <?php else: // Si le statut est 0 (Inactif) ?>
+                                                <a href="../composants/changer-status-offre.php?id=<?= $offer['id'] ?>&status=1" class="btn-action btn-view" style="background-color: #d4edda; color: #155724;" onclick="return confirm('Êtes-vous sûr de vouloir réactiver cette offre ?');">
+                                                    <i class="fas fa-toggle-on"></i> Rendre Actif
+                                                </a>
+                                            <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
