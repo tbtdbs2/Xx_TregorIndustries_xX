@@ -361,6 +361,69 @@ unset($current_filters['sort']);
             if(event.target.tagName === 'SELECT') {
                 filtersForm.submit();
             }
+            
+            const couleurPrincipale = getComputedStyle(document.documentElement).getPropertyValue('--couleur-principale').trim();
+
+            const setupStarRatingFilter = (filterId, valueInputId, isMaxRating = false) => {
+                const ratingValueInput = document.getElementById(valueInputId); // Renommé pour clarté
+                const starRatingFilter = document.getElementById(filterId);
+                
+                if (starRatingFilter && ratingValueInput) {
+                    const stars = Array.from(starRatingFilter.querySelectorAll('.fa-star'));
+                    
+                    const setStarsVisual = (currentRating) => {
+                        stars.forEach(s => {
+                            const starValue = parseInt(s.dataset.value, 10);
+                            let isSelected = false;
+                            
+                            // La logique de sélection visuelle est la même : on colore jusqu'à l'étoile cliquée.
+                            // L'interprétation (min/max) se fait au moment du filtrage des données.
+                            if (currentRating > 0) {
+                                isSelected = starValue <= currentRating;
+                            }
+
+                            s.classList.toggle('selected', isSelected);
+                            s.style.color = isSelected ? couleurPrincipale : '#e0e0e0'; 
+                        });
+                    };
+
+                    starRatingFilter.addEventListener('click', function(e) {
+                        if (e.target.classList.contains('fa-star') && e.target.dataset.value) {
+                            const rating = e.target.dataset.value;
+                            if (ratingValueInput.value === rating) { 
+                                ratingValueInput.value = ""; 
+                                setStarsVisual(0);
+                            } else {
+                                ratingValueInput.value = rating;
+                                setStarsVisual(rating);
+                            }
+                        }
+                    });
+
+                    starRatingFilter.addEventListener('mouseover', function(e) {
+                        if (e.target.classList.contains('fa-star') && e.target.dataset.value) {
+                            const ratingHover = parseInt(e.target.dataset.value, 10);
+                            stars.forEach(s => {
+                                const starValue = parseInt(s.dataset.value, 10);
+                                // La logique de survol colore aussi jusqu'à l'étoile survolée.
+                                if (starValue <= ratingHover) {
+                                    s.style.color = couleurPrincipale;
+                                } else {
+                                     s.style.color = '#e0e0e0';
+                                }
+                            });
+                        }
+                    });
+
+                    starRatingFilter.addEventListener('mouseout', function() {
+                        setStarsVisual(ratingValueInput.value || 0); 
+                    });
+                    setStarsVisual(ratingValueInput.value || 0); 
+                }
+            };
+
+            setupStarRatingFilter('min-rating', 'min-rating-value', false); // false pour Note Minimale
+            setupStarRatingFilter('max-rating', 'max-rating-value', true);  // true pour Note Maximale (même si la logique visuelle JS est la même ici)
         });
         
         // Soumission pour les champs texte/nombre lors de l'appui sur "Entrée"
