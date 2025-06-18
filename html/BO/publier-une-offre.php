@@ -6,6 +6,36 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
 require_once '../composants/generate_uuid.php';
 require_once '../../includes/db.php';
 
+// Récupération des IDs d'options pour les abonnements
+$option_premium_id = null;
+$option_offre_speciale_id = null;
+
+try {
+    $stmt_options = $pdo->query("SELECT id, name FROM options WHERE name IN ('Mise en avant Premium', 'Offre à la Une')");
+    $options_data = $stmt_options->fetchAll(PDO::FETCH_KEY_PAIR); // Récupère id => name
+
+    // Inverser pour avoir name => id
+    $options_map = array_flip($options_data);
+
+    $option_premium_id = $options_map['Mise en avant Premium'] ?? null;
+    $option_offre_speciale_id = $options_map['Offre à la Une'] ?? null;
+
+    // Si une option n'existe pas, l'insérer (utile pour le premier déploiement ou si vous n'utilisez pas populate_db.sql)
+    if (is_null($option_premium_id)) {
+        $option_premium_id = generate_uuid();
+        $pdo->prepare("INSERT INTO options (id, name, price) VALUES (?, ?, ?)")->execute([$option_premium_id, 'Mise en avant Premium', 29.99]);
+    }
+    if (is_null($option_offre_speciale_id)) {
+        $option_offre_speciale_id = generate_uuid();
+        $pdo->prepare("INSERT INTO options (id, name, price) VALUES (?, ?, ?)")->execute([$option_offre_speciale_id, 'Offre à la Une', 19.99]);
+    }
+
+} catch (PDOException $e) {
+    error_log("Erreur lors du chargement/insertion des options d'abonnement : " . $e->getMessage());
+    $erreurs['db_options'] = "Impossible de charger les options payantes."; // Ajoutez ceci à votre tableau d'erreurs global
+}
+
+
 // 3. Logique de traitement du formulaire
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
@@ -71,7 +101,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
     // --- CATEGORY PREPARATION (MODIFIED LOGIC from previous step) ---
     $categorie_form_value = filter_input(INPUT_POST, 'categorie', FILTER_VALIDATE_INT);
-    $categorie_type_enum_for_new_row = null; 
+    $categorie_type_enum_for_new_row = null;
 
     if ($categorie_form_value === false || $categorie_form_value === null || $categorie_form_value < 1 || $categorie_form_value > 5) {
         $erreurs["categorie"] = "Veuillez sélectionner une catégorie valide.";
@@ -110,10 +140,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             $site_web = $site_input;
         }
     }
-    
+
     $date_offre_principale = null;
-    $isDateHandledByCategory = in_array($categorie_form_value, [1, 3, 4]); 
-    
+    $isDateHandledByCategory = in_array($categorie_form_value, [1, 3, 4]);
+
     if (!$isDateHandledByCategory && !empty($_POST["date"])) {
         if (!preg_match("/^\d{4}-\d{2}-\d{2}$/", $_POST["date"])) {
             $erreurs["date"] = "Format de date invalide pour l'offre. Utilisez YYYY-MM-DD.";
@@ -180,7 +210,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                         $allowed_extensions = ["jpg", "jpeg", "png", "gif"];
 
                         if (in_array($mime_type, $allowed_mime_types) && in_array($file_extension, $allowed_extensions)) {
-                            if ($file_size <= 40000000) { 
+                            if ($file_size <= 40000000) {
                                 $new_file_name = uniqid('offre_', true) . '.' . $file_extension;
                                 $dest_path_absolute = $target_dir_absolute . $new_file_name;
                                 if (move_uploaded_file($file_tmp_path, $dest_path_absolute)) {
@@ -266,7 +296,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             $stmtOffer = $pdo->prepare($sqlOffer);
             $stmtOffer->execute([
                 ':id' => $offre_id_uuid,
-                ':categorie_id' => $categorie_id_for_offer_and_specific_table, 
+                ':categorie_id' => $categorie_id_for_offer_and_specific_table,
                 ':adresse_id' => $adresse_id_uuid,
                 ':pro_id' => $current_pro_id,
                 ':title' => $titre,
@@ -291,14 +321,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     ]);
                 }
             }
-            
+
             // 4. Statut initial de l'offre
             $statut_id_uuid = generate_uuid();
             $stmtStatut = $pdo->prepare("INSERT INTO statuts (id, offre_id, status, changed_at) VALUES (:id, :offre_id, :status, NOW())");
             $stmtStatut->execute([
                 ':id' => $statut_id_uuid,
                 ':offre_id' => $offre_id_uuid,
-                ':status' => 1 
+                ':status' => 1
             ]);
 
 
@@ -307,7 +337,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 case 'activite':
                     $duree_activite = filter_input(INPUT_POST, 'duree', FILTER_VALIDATE_INT, ["options" => ["min_range" => 1]]);
                     if ($duree_activite === false || $duree_activite === null) $erreurs["duree_activite"] = "Durée activité (minutes) requise et doit être un nombre positif.";
-                    
+
                     $prix_min_act_str = $_POST['prix_minimum_activite'] ?? '';
                     $prix_min_act = null;
                     if ($prix_min_act_str !== '') {
@@ -321,11 +351,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                          $age_req_act = filter_var($age_req_act_str, FILTER_VALIDATE_INT, ["options" => ["min_range" => 0]]);
                          if ($age_req_act === false) $erreurs["age_requis_activite"] = "Âge requis activité invalide.";
                     }
-                    
+
                     if (empty($erreurs["duree_activite"]) && empty($erreurs["prix_minimum_activite"]) && empty($erreurs["age_requis_activite"])) {
                         $stmtAct = $pdo->prepare("INSERT INTO activites (categorie_id, duration, minimum_price, required_age) VALUES (:cat_id, :duration, :min_price, :req_age)");
                         $stmtAct->execute([
-                            ':cat_id' => $categorie_id_for_offer_and_specific_table, 
+                            ':cat_id' => $categorie_id_for_offer_and_specific_table,
                             ':duration' => $duree_activite,
                             ':min_price' => $prix_min_act ?? $prix,
                             ':req_age' => $age_req_act ?? 0
@@ -343,12 +373,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                                 }
 
                                 if (empty($h_debut)) $erreurs["horaire_activite_debut_".$key] = "Heure de début requise pour l'horaire d'activité " . ($key+1) . ".";
-                                
+
                                 if (!empty($h_date) && !empty($h_debut) && !isset($erreurs["horaire_activite_date_passee_".$key])) {
                                     $horaire_act_id_uuid = generate_uuid();
                                     $stmtHoraireAct->execute([
                                         ':id' => $horaire_act_id_uuid,
-                                        ':act_id' => $categorie_id_for_offer_and_specific_table, 
+                                        ':act_id' => $categorie_id_for_offer_and_specific_table,
                                         ':date' => $h_date,
                                         ':start_time' => $h_debut
                                     ]);
@@ -407,17 +437,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
                     $heure_debut_visite = validate_input($_POST["heure_debut_visite"] ?? '');
                     if (empty($heure_debut_visite)) $erreurs["heure_debut_visite"] = "Heure de début visite requise.";
-                    
+
                     if (empty($date_offre_principale) && !isset($erreurs["date_passee"])) $erreurs["date_visite"] = "Date de la visite requise.";
                     elseif (isset($erreurs["date_passee"])) $erreurs["date_visite_passee"] = "La date de la visite ne peut pas être passée.";
 
 
                     $visite_guidee = isset($_POST["visite_guidee"]) ? 1 : 0;
-                    
+
                     if (empty($erreurs["duree_visite"]) && empty($erreurs["prix_minimum_visite"]) && empty($erreurs["heure_debut_visite"]) && empty($erreurs["date_visite"]) && empty($erreurs["date_visite_passee"])) {
                         $stmtVis = $pdo->prepare("INSERT INTO visites (categorie_id, duration, minimum_price, date, start_time, is_guided_tour) VALUES (:cat_id, :duration, :min_price, :date, :start_time, :is_guided)");
                         $stmtVis->execute([
-                            ':cat_id' => $categorie_id_for_offer_and_specific_table, 
+                            ':cat_id' => $categorie_id_for_offer_and_specific_table,
                             ':duration' => $duree_visite_minutes,
                             ':min_price' => $prix_min_vis ?? $prix,
                             ':date' => $date_offre_principale,
@@ -436,7 +466,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                                     $stmtLangSearch->execute([':lang_code' => $lang_code_valide]);
                                     $lang_row = $stmtLangSearch->fetch();
                                     if ($lang_row) {
-                                        $stmtVisLangInsert->execute([':vis_id' => $categorie_id_for_offer_and_specific_table, ':lang_id' => $lang_row['id']]); 
+                                        $stmtVisLangInsert->execute([':vis_id' => $categorie_id_for_offer_and_specific_table, ':lang_id' => $lang_row['id']]);
                                     } else {
                                         $erreurs["langue_inconnue_".$lang_code_valide] = "La langue '".$lang_code_valide."' n'est pas configurée.";
                                     }
@@ -483,7 +513,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     if (empty($erreurs["duree_spectacle"]) && empty($erreurs["prix_minimum_spectacle"]) && empty($erreurs["date_spectacle"]) && empty($erreurs["heure_debut_spectacle"]) && empty($erreurs["capacite_spectacle"]) && empty($erreurs["date_spectacle_validite"]) && empty($erreurs["date_spectacle_passee"])) {
                         $stmtSpec = $pdo->prepare("INSERT INTO spectacles (categorie_id, duration, minimum_price, date, start_time, capacity) VALUES (:cat_id, :duration, :min_price, :date, :start_time, :capacity)");
                         $stmtSpec->execute([
-                            ':cat_id' => $categorie_id_for_offer_and_specific_table, 
+                            ':cat_id' => $categorie_id_for_offer_and_specific_table,
                             ':duration' => $duree_spectacle,
                             ':min_price' => $prix_min_spec ?? $prix,
                             ':date' => $date_spectacle,
@@ -507,7 +537,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                         $age_req_parc = filter_var($age_req_parc_str, FILTER_VALIDATE_INT, ["options" => ["min_range" => 0]]);
                         if ($age_req_parc === false) $erreurs["age_requis_parc"] = "Âge requis parc invalide.";
                     }
-                    
+
                     $nb_attr_parc_str = $_POST['nombre_total_attractions_parc'] ?? '';
                     $nb_attr_parc = null;
                     if ($nb_attr_parc_str !== '') {
@@ -521,7 +551,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                         if (!filter_var($maps_url_input, FILTER_VALIDATE_URL)) {
                             $erreurs["maps_url_parc"] = "URL du plan du parc invalide.";
                         } else {
-                            $maps_url_parc = $maps_url_input;
+                            $maps_url_parc = $maps_input;
                         }
                     }
                     if (empty($maps_url_parc)) $erreurs["maps_url_parc_required"] = "L'URL du plan du parc est requise.";
@@ -529,7 +559,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     if (empty($erreurs["prix_minimum_parc"]) && empty($erreurs["age_requis_parc"]) && empty($erreurs["nombre_total_attractions_parc"]) && empty($erreurs["maps_url_parc"]) && empty($erreurs["maps_url_parc_required"])) {
                         $stmtParc = $pdo->prepare("INSERT INTO parcs_attractions (categorie_id, minimum_price, required_age, attraction_nb, map_url) VALUES (:cat_id, :min_price, :req_age, :attr_nb, :map_url)");
                         $stmtParc->execute([
-                            ':cat_id' => $categorie_id_for_offer_and_specific_table, 
+                            ':cat_id' => $categorie_id_for_offer_and_specific_table,
                             ':min_price' => $prix_min_parc ?? $prix,
                             ':req_age' => $age_req_parc ?? 0,
                             ':attr_nb' => $nb_attr_parc ?? 0,
@@ -549,16 +579,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                                 $attraction_id_uuid = generate_uuid();
                                 $stmtAttractionInsert->execute([
                                     ':id' => $attraction_id_uuid,
-                                    ':parc_id' => $categorie_id_for_offer_and_specific_table, 
+                                    ':parc_id' => $categorie_id_for_offer_and_specific_table,
                                     ':name' => $attr_nom
                                 ]);
 
                                 if (isset($attr_data['horaires']) && is_array($attr_data['horaires'])) {
                                     foreach ($attr_data['horaires'] as $h_key => $h_data) {
-                                        $h_date_str = validate_input($h_data['date'] ?? ''); 
+                                        $h_date_str = validate_input($h_data['date'] ?? '');
                                         $h_debut = validate_input($h_data['heure_debut'] ?? '');
                                         $h_fin = validate_input($h_data['heure_fin'] ?? '');
-                                        $day_of_week_for_db = null; 
+                                        $day_of_week_for_db = null;
 
                                         if (empty($h_date_str)) $erreurs["attraction_".$attr_key."_horaire_date_".$h_key] = "Date requise pour l'horaire de ".$attr_nom.".";
                                         elseif (new DateTime() > new DateTime($h_date_str) && (new DateTime($h_date_str))->format('Y-m-d') !== (new DateTime())->format('Y-m-d')) {
@@ -567,11 +597,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
                                         if (empty($h_debut)) $erreurs["attraction_".$attr_key."_horaire_debut_".$h_key] = "Début requis pour l'horaire de ".$attr_nom.".";
                                         if (empty($h_fin)) $erreurs["attraction_".$attr_key."_horaire_fin_".$h_key] = "Fin requise pour l'horaire de ".$attr_nom.".";
-                                        
+
                                         if (!empty($h_date_str) && !empty($h_debut) && !empty($h_fin) && !isset($erreurs["attraction_".$attr_key."_horaire_date_passee_".$h_key])) {
                                             try {
                                                 $date_obj_attr = new DateTime($h_date_str);
-                                                $day_of_week_php = $date_obj_attr->format('l'); 
+                                                $day_of_week_php = $date_obj_attr->format('l');
                                                 switch (strtolower($day_of_week_php)) {
                                                     case 'monday': $day_of_week_for_db = 'lundi'; break;
                                                     case 'tuesday': $day_of_week_for_db = 'mardi'; break;
@@ -588,7 +618,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                                                     $horaire_attr_id_uuid = generate_uuid();
                                                     $stmtHoraireAttrInsert->execute([
                                                         ':id' => $horaire_attr_id_uuid,
-                                                        ':attr_id' => $attraction_id_uuid, 
+                                                        ':attr_id' => $attraction_id_uuid,
                                                         ':day' => $day_of_week_for_db,
                                                         ':start_time' => $h_debut,
                                                         ':end_time' => $h_fin
@@ -639,7 +669,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     if (empty($erreurs["lien_menu_restaurant"]) && empty($erreurs["lien_menu_restaurant_required"]) && empty($erreurs["prix_moyen_restaurant"]) && empty($erreurs["prix_moyen_restaurant_required"])) {
                         $stmtResto = $pdo->prepare("INSERT INTO restaurations (categorie_id, menu_url, price_range) VALUES (:cat_id, :menu_url, :price_range)");
                         $stmtResto->execute([
-                            ':cat_id' => $categorie_id_for_offer_and_specific_table, 
+                            ':cat_id' => $categorie_id_for_offer_and_specific_table,
                             ':menu_url' => $menu_url_resto,
                             ':price_range' => $prix_range_enum
                         ]);
@@ -656,7 +686,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                                         if (count($_POST['plats']) > 1 || !empty(array_filter(array_slice($_POST['plats'], $idx+1)))) {
                                            $erreurs["plat_restaurant_nom_".$idx] = "Le nom du plat " . ($idx+1) . " est requis s'il est ajouté.";
                                         }
-                                        continue; 
+                                        continue;
                                     }
 
                                     $stmtRepasSearch->execute([':name' => $plat_nom]);
@@ -670,7 +700,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                                         $stmtRepasInsert->execute([':id' => $repas_id_uuid, ':name' => $plat_nom]);
                                     }
                                     $stmtRestoRepasInsert->execute([
-                                        ':resto_id' => $categorie_id_for_offer_and_specific_table, 
+                                        ':resto_id' => $categorie_id_for_offer_and_specific_table,
                                         ':repas_id' => $repas_id_uuid
                                     ]);
                                 }
@@ -683,6 +713,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             if (!empty($erreurs)) {
                 $pdo->rollBack();
             } else {
+                // 6. Gestion des souscriptions payantes
+                $stmtSouscription = $pdo->prepare("INSERT INTO souscriptions (offre_id, option_id, duration, taken_date, launch_date) VALUES (:offre_id, :option_id, :duration, :taken_date, :launch_date)");
+
+                if (isset($_POST['mettre_a_la_une']) && $option_premium_id) {
+                    $stmtSouscription->execute([
+                        ':offre_id' => $offre_id_uuid,
+                        ':option_id' => $option_premium_id,
+                        ':duration' => 30, // Exemple: 30 jours pour "Mettre à la une"
+                        ':taken_date' => date('Y-m-d'),
+                        ':launch_date' => date('Y-m-d') // Lancez immédiatement après publication
+                    ]);
+                }
+
+                if (isset($_POST['offre_speciale']) && $option_offre_speciale_id) {
+                    $stmtSouscription->execute([
+                        ':offre_id' => $offre_id_uuid,
+                        ':option_id' => $option_offre_speciale_id,
+                        ':duration' => 15, // Exemple: 15 jours pour "Offre Spéciale"
+                        ':taken_date' => date('Y-m-d'),
+                        ':launch_date' => date('Y-m-d')
+                    ]);
+                }
+
                 $pdo->commit();
                 $notification_message = "L'offre \"" . htmlspecialchars($titre) . "\" a été publiée avec succès !";
                 header("Location: index.php?publish_status=success&notification_message=" . urlencode($notification_message));
@@ -694,7 +747,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 $pdo->rollBack();
             }
             error_log("Database Insertion Error: " . $e->getMessage() . " - Data: " . json_encode($_POST));
-            if ($e->getCode() == '23000') { 
+            if ($e->getCode() == '23000') {
                  $erreurs["db_general"] = "Une erreur de contrainte de base de données est survenue (ex: duplicata). Détail: " . $e->getMessage();
             } else {
                 $erreurs["db_general"] = "Une erreur est survenue lors de la publication de votre offre : " . $e->getMessage() . ". Veuillez réessayer. ";
@@ -716,7 +769,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
-        
+
 
         /* Style pour les sections du formulaire */
         .form-section {
@@ -746,13 +799,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             width: 100%;
             padding: var(--espacement-standard);
             border: var(--bordure-standard-interface);
-            border-radius: var(--border-radius-bouton); 
+            border-radius: var(--border-radius-bouton);
             font-size: 1em;
             font-family: var(--police-principale);
             margin-bottom: var(--espacement-double);
             background-color: var(--couleur-blanche);
             box-sizing: border-box;
-            height: auto; 
+            height: auto;
         }
 
         /* Réinitialisation de l'apparence pour le select de catégorie */
@@ -767,7 +820,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             min-height: 100px;
         }
 
-        .form-group { 
+        .form-group {
             margin-bottom: var(--espacement-double);
         }
 
@@ -818,14 +871,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
         .error-message {
             color: red;
             font-size: 0.9em;
-            margin-top: -10px; 
+            margin-top: -10px;
             margin-bottom: 10px;
-            display: none; 
+            display: none;
         }
 
         /* bouton de soumission principal */
         form#offer-form button[type="submit"] {
-            background-color: var(--couleur-principale); 
+            background-color: var(--couleur-principale);
             color: var(--couleur-blanche);
             width: 80%;
             padding: var(--espacement-moyen);
@@ -843,11 +896,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
         }
 
         /* Section pour la visite guidée */
-        #langues-guidees { 
+        #langues-guidees {
             display: none; /* Caché par défaut, affiché par JS */
         }
-        #langues-guidees.show { 
-            display: block; 
+        #langues-guidees.show {
+            display: block;
         }
 
         /* Style pour les champs spécifiques aux catégorie(dynamiquement ajoutés) */
@@ -857,7 +910,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             color: var(--couleur-texte);
             font-size: 1.1em;
             font-weight: var(--font-weight-semibold);
-            padding-bottom: var(--espacement-petit); 
+            padding-bottom: var(--espacement-petit);
         }
 
         #categorie-specific-fields .item-group {
@@ -880,7 +933,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
         .text-add-link {
             background: none !important;
             border: none !important;
-            padding: var(--espacement-standard) 0 !important; 
+            padding: var(--espacement-standard) 0 !important;
             color: var(--couleur-principale);
             cursor: pointer;
             text-decoration: none;
@@ -908,7 +961,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             color: #888;
             cursor: pointer;
             border-radius: 50%;
-            line-height: 1; 
+            line-height: 1;
             transition: color 0.2s ease, background-color 0.2s ease;
         }
         .remove-icon-cross:hover {
@@ -921,8 +974,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             display: flex;
             flex-wrap: wrap;
             gap: var(--espacement-standard);
-            align-items: flex-end; 
-            margin-bottom: var(--espacement-petit); 
+            align-items: flex-end;
+            margin-bottom: var(--espacement-petit);
         }
         #categorie-specific-fields .horaire-group-inputs > div {
             display: flex;
@@ -931,20 +984,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             min-width: 120px; /* Empêche les champs d'être trop petits */
         }
         #categorie-specific-fields .horaire-group-inputs label {
-            margin-bottom: var(--espacement-petit); 
+            margin-bottom: var(--espacement-petit);
             font-size: 0.9em;
         }
         #categorie-specific-fields .horaire-group-inputs input[type="time"],
         #categorie-specific-fields .horaire-group-inputs input[type="date"] {
-            margin-bottom: 0; 
-            padding: var(--espacement-standard); 
+            margin-bottom: 0;
+            padding: var(--espacement-standard);
         }
 
         /* Titre pour un groupe d'attraction spécifique */
         #categorie-specific-fields .attraction-group h3 {
             margin-top: 0;
             margin-bottom: var(--espacement-standard);
-            color: var(--couleur-principale); 
+            color: var(--couleur-principale);
         }
 
         .data-display {
@@ -957,7 +1010,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
         .data-display h3 { margin-top: 0; margin-bottom: var(--espacement-moyen); color: var(--couleur-principale); }
         .data-display p { margin-bottom: var(--espacement-standard); }
         .data-display ul { list-style-type: none; padding-left: 0; }
-        .data-display li { margin-bottom: var(--espacement-petit); } 
+        .data-display li { margin-bottom: var(--espacement-petit); }
 
         /* Prévisualisation des images */
         #image-preview-container {
@@ -1001,38 +1054,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             font-size: 13px;
             font-weight: bold;
             cursor: pointer;
-            line-height: 22px; 
+            line-height: 22px;
             text-align: center;
             transition: background-color 0.2s ease;
         }
         #image-preview-container .delete-image-btn:hover {
-            background-color: rgba(220, 53, 69, 0.9); 
+            background-color: rgba(220, 53, 69, 0.9);
         }
 
         /* Modale pour l'image agrandie */
         #image-modal {
-            display: none; 
+            display: none;
             position: fixed;
-            z-index: 1050; 
+            z-index: 1050;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
             overflow: auto; /* Permet de scroller si l'image est trop grande */
-            background-color: rgba(0,0,0,0.85); 
+            background-color: rgba(0,0,0,0.85);
             justify-content: center; /* Centre l'image horizontalement */
             align-items: center; /* Centre l'image verticalement */
             padding: var(--espacement-double);
             box-sizing: border-box;
         }
-        #image-modal.show-modal { 
+        #image-modal.show-modal {
             display: flex;
         }
         #modal-image-content {
             margin: auto;
             display: block;
             max-width: 90%;
-            max-height: 90vh; 
+            max-height: 90vh;
             border-radius: var(--border-radius-standard);
         }
         #close-modal {
@@ -1079,7 +1132,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
     }
 
     .header-right .profile-link-container + .btn-primary {
-        margin-left: 1rem; 
+        margin-left: 1rem;
     }
 
     .nav-item-with-notification .notification-bubble {
@@ -1127,7 +1180,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             <div class="profile-link-container">
                 <a href="profil.php" class="btn btn-secondary">Mon profil</a>
             </div>
-            <a href="../deconnexion.php" class="btn btn-primary">Se déconnecter</a>
+            <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
         </div>
     </div>
     </header>
@@ -1323,14 +1376,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
         const serverPostData = <?php echo json_encode($_POST); ?>;
         const today = new Date().toISOString().split('T')[0];
-        
+
         // Met la date du jours comme date minimal (pour le calandrier)
-        function setMinDateForInput(inputElement) { 
+        function setMinDateForInput(inputElement) {
             if (inputElement) {
                 inputElement.setAttribute('min', today);
             }
         }
-        // Genere et affiche dynamiquement les champs de formulaire spécifiques à la catégorie sélectionnée (activité, visite, etc.) 
+        // Genere et affiche dynamiquement les champs de formulaire spécifiques à la catégorie sélectionnée (activité, visite, etc.)
         function fetchCategorieFields(categorieId, postData = {}) {
             let htmlContent = '';
             const isDateHandledByCategoryOrNotApplicable = (categorieId === '1' || categorieId === '3' || categorieId === '4');
@@ -1456,7 +1509,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 `;
             }
             categorieSpecificFields.innerHTML = htmlContent;
-            
+
             // Set min date for date_spectacle if it exists
             const dateSpectacleInput = document.getElementById('date_spectacle');
             setMinDateForInput(dateSpectacleInput);
@@ -1781,7 +1834,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 if (field.type === 'file' && field.required && currentSelectedFiles.length === 0) isValidField = false;
                 if (field.id === 'photos' && currentSelectedFiles.length > 6) isValidField = false;
                 if (field.multiple && field.required && field.selectedOptions.length === 0) isValidField = false;
-                
+
                 // Check date field min attribute
                 if (field.type === 'date' && field.min && field.value && field.value < field.min) {
                     isValidField = false;
@@ -1861,7 +1914,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             updateFileInput();
             validatePhotosField();
         }
-        
+
         // Affiche les prévisualisations des images actuellement sélectionnées.
         function renderPhotoPreviews() {
             imagePreviewContainer.innerHTML = '';
@@ -1891,8 +1944,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 reader.readAsDataURL(file);
             });
         }
-        
-        // met à jour l'objet FileList du champ de saisie de fichier 
+
+        // met à jour l'objet FileList du champ de saisie de fichier
         function updateFileInput() {
             const dataTransfer = new DataTransfer();
             currentSelectedFiles.forEach(file => dataTransfer.items.add(file));
