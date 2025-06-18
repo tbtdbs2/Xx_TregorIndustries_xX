@@ -686,7 +686,7 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
             const couleurPrincipale = getComputedStyle(document.documentElement).getPropertyValue('--couleur-principale').trim();
 
             const setupStarRatingFilter = (filterId, valueInputId, isMaxRating = false) => {
-                const ratingValueInput = document.getElementById(valueInputId); / Renommé pour clarté
+                const ratingValueInput = document.getElementById(valueInputId); // Renommé pour clarté
                 const starRatingFilter = document.getElementById(filterId);
                 
                 if (starRatingFilter && ratingValueInput) {
@@ -697,8 +697,8 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
                             const starValue = parseInt(s.dataset.value, 10);
                             let isSelected = false;
                             
-                            / La logique de sélection visuelle est la même : on colore jusqu'à l'étoile cliquée.
-                            / L'interprétation (min/max) se fait au moment du filtrage des données.
+                            // La logique de sélection visuelle est la même : on colore jusqu'à l'étoile cliquée.
+                            // L'interprétation (min/max) se fait au moment du filtrage des données.
                             if (currentRating > 0) {
                                 isSelected = starValue <= currentRating;
                             }
@@ -726,7 +726,7 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
                             const ratingHover = parseInt(e.target.dataset.value, 10);
                             stars.forEach(s => {
                                 const starValue = parseInt(s.dataset.value, 10);
-                                / La logique de survol colore aussi jusqu'à l'étoile survolée.
+                                // La logique de survol colore aussi jusqu'à l'étoile survolée.
                                 if (starValue <= ratingHover) {
                                     s.style.color = couleurPrincipale;
                                 } else {
@@ -743,8 +743,8 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
                 }
             };
 
-            setupStarRatingFilter('min-rating', 'min-rating-value', false); / false pour Note Minimale
-            setupStarRatingFilter('max-rating', 'max-rating-value', true);  / true pour Note Maximale (même si la logique visuelle JS est la même ici)
+            setupStarRatingFilter('min-rating', 'min-rating-value', false); // false pour Note Minimale
+            setupStarRatingFilter('max-rating', 'max-rating-value', true);  // true pour Note Maximale (même si la logique visuelle JS est la même ici)
 
 
             const sortButtons = document.querySelectorAll('.sort-options button');
