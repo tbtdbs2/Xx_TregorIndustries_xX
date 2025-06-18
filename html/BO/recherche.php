@@ -1,345 +1,148 @@
 <?php
-$current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
+// 1. SÉCURISATION ET INITIALISATION
+$pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
+require_once __DIR__ . '/../../includes/db.php';
+
+// 2. LOGIQUE PHP
+$all_categories = [];
+try {
+    $category_stmt = $pdo->query('SELECT id, type FROM categories ORDER BY type');
+    $all_categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    error_log("Erreur de BDD (catégories): " . $e->getMessage());
+}
+
+$searchTerm = $_GET['q'] ?? '';
+$category_id = $_GET['category'] ?? '';
+$destination = $_GET['destination'] ?? '';
+$priceMin = isset($_GET['price_min_input']) && $_GET['price_min_input'] !== '' ? (float)$_GET['price_min_input'] : null;
+$priceMax = isset($_GET['price_max_input']) && $_GET['price_max_input'] !== '' ? (float)$_GET['price_max_input'] : null;
+$sort = $_GET['sort'] ?? 'note';
+
+$sql = 'SELECT offres.*, categories.type as category_type,
+        (SELECT s.status FROM statuts s WHERE s.offre_id = offres.id ORDER BY s.changed_at DESC LIMIT 1) as current_status
+        FROM offres 
+        JOIN adresses ON offres.adresse_id = adresses.id
+        JOIN categories ON offres.categorie_id = categories.id';
+$conditions = [];
+$params = [];
+
+$conditions[] = 'offres.pro_id = :pro_id';
+$params[':pro_id'] = $pro_id;
+
+if (!empty($searchTerm)) {
+    $conditions[] = '(offres.title LIKE :keyword OR offres.summary LIKE :keyword)';
+    $params[':keyword'] = '%' . $searchTerm . '%';
+}
+
+if (!empty($category_id)) {
+    $conditions[] = 'offres.categorie_id = :category_id';
+    $params[':category_id'] = $category_id;
+}
+
+if (!empty($destination)) {
+    $conditions[] = 'adresses.city LIKE :destination';
+    $params[':destination'] = '%' . $destination . '%';
+}
+
+if ($priceMin !== null) {
+    $conditions[] = 'offres.price >= :price_min';
+    $params[':price_min'] = $priceMin;
+}
+if ($priceMax !== null) {
+    $conditions[] = 'offres.price <= :price_max';
+    $params[':price_max'] = $priceMax;
+}
+
+if (!empty($conditions)) {
+    $sql .= ' WHERE ' . implode(' AND ', $conditions);
+}
+
+switch ($sort) {
+    case 'price_asc':
+        $sql .= ' ORDER BY offres.price ASC';
+        break;
+    case 'price_desc':
+        $sql .= ' ORDER BY offres.price DESC';
+        break;
+    case 'note':
+    default:
+        $sql .= ' ORDER BY offres.created_at DESC';
+        break;
+}
+
+$offers = [];
+try {
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $offers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    error_log("Erreur de BDD (recherche offres): " . $e->getMessage());
+}
+
+function getSortLink($sortValue, $currentSort, $filters) {
+    $filters['sort'] = $sortValue;
+    $queryString = http_build_query($filters);
+    $activeClass = ($sortValue == $currentSort) ? 'active' : '';
+    $labels = ['note' => 'Plus récents', 'price_asc' => 'Prix croissant', 'price_desc' => 'Prix décroissant'];
+    return '<a href="?' . $queryString . '" class="sort-button ' . $activeClass . '">' . $labels[$sortValue] . '</a>';
+}
+
+$current_filters = $_GET;
+unset($current_filters['sort']);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACT - Recherche</title><link rel="icon" href="images/Logo2withoutbg.png">
+    <title>Mes Offres - PACT Pro</title>
+    <link rel="icon" href="images/Logo2withoutbgorange.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #fff;
-            margin: 0;
-            padding: 0;
-            background-color: #f8f9fa; 
-        }
-
-        .mobile-icons,
-        .mobile-nav-links {
-            display: none;
-        }
-
-        /* Afficher uniquement sur mobile (<=768px) */
-        @media (max-width: 768px) {
-            .mobile-icons,
-            .mobile-nav-links {
-                display: block; /* ou flex selon le layout que tu veux */
-            }
-        }
-
-        .search-page-container {
-            display: flex;
-            flex-direction: row;
-            align-items: flex-start;
-            padding: 20px 40px;
-            gap: 20px;
-            background-color: #f9f9f9;
-        }
-        .filters-sidebar {
-            width: 260px;
-            background-color: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .filter-group {
-            margin-bottom: 20px;
-        }
-
-        .filter-group h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 5px;
-            margin-bottom: 10px;
-        }
-
-        .filter-group label {
-            display: block;
-            margin-bottom: 6px; 
-            font-size: 0.9em; 
-            color: var(--couleur-texte-footer);
-        }
-
-        .filter-group input[type="text"],
-        .filter-group input[type="date"],
-        .filter-group select {
-            border-radius: 10px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            background-color: #f1f1f1;
-            font-size: 14px;
-            transition: border 0.3s;
-        }
-        .filter-group input:focus,
-        .filter-group select:focus {
-            outline: none;
-            border-color: #ff6600;
-            background-color: #fff;
-        }
-        .filter-group input[type="date"],
-        .filter-group select {
-            width: 100%;
-            padding: 10px; 
-            border: 1px solid var(--couleur-bordure);
-            border-radius: 6px; 
-            font-size: 0.9em;
-            box-sizing: border-box;
-        }
-        
-        .input-with-icon {
-            position: relative;
-        }
-
-        .input-with-icon input[type="text"] {
-            padding-right: 30px;
-        }
-
-        .input-with-icon .fa-map-marker-alt,
-        .input-with-icon .fa-calendar-alt {
-            position: absolute;
-            top: 50%;
-            right: 10px;
-            transform: translateY(-50%);
-            color: var(--couleur-texte-footer);
-            pointer-events: none;
-        }
-        
-        .price-input-container {
-            display: flex;
-            align-items: flex-end; 
-            gap: 8px; 
-            margin-top: 5px;
-        }
-        .price-input-field {
-            display: flex;
-            flex-direction: column; 
-            flex-grow: 1;
-        }
-        .price-input-field label {
-            font-size: 0.8em; 
-            margin-bottom: 4px;
-            color: var(--couleur-texte-footer);
-        }
-        .price-input-container input[type="number"] {
-            width: 100%; 
-            padding: 10px; 
-            border: 1px solid var(--couleur-bordure);
-            border-radius: 6px;
-            font-size: 0.9em;
-            box-sizing: border-box;
-            -moz-appearance: textfield; 
-        }
-        .price-input-container input[type="number"]::-webkit-outer-spin-button,
-        .price-input-container input[type="number"]::-webkit-inner-spin-button {
-            -webkit-appearance: none; 
-            margin: 0;
-        }
-        .price-input-separator {
-            font-size: 1em;
-            color: var(--couleur-texte-footer);
-            padding-bottom: 10px; 
-        }
-
-        .star-rating-filter { display: flex; justify-content: flex-start; gap: 5px; font-size: 1.3em; cursor: pointer; } 
-        .star-rating-filter .fa-star { color: #e0e0e0; }
-        .star-rating-filter .fa-star.selected,
-        .star-rating-filter .fa-star:hover { color: var(--couleur-principale); } 
-        .star-rating-filter .fa-star:hover ~ .fa-star:not(.selected){ color: #e0e0e0; }
-        .star-rating-filter:hover .fa-star.selected ~ .fa-star:not(.selected){ color: #e0e0e0; }
-
-        .status-filter label { display: inline-flex; align-items: center; margin-right: 15px; font-size: 0.9em; color: var(--couleur-texte); } 
-        .status-filter input[type="radio"] { margin-right: 5px; accent-color: var(--couleur-principale); }
-
+        body { background-color: #f8f9fa; }
+        .search-page-container { display: flex; gap: 25px; padding-top: 20px; padding-bottom: 20px; }
+        .filters-sidebar { width: 280px; flex-shrink: 0; background-color: var(--couleur-blanche); padding: 20px; height: fit-content; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .filter-group { margin-bottom: 20px; }
+        .filter-group h3 { font-size: 1em; font-weight: var(--font-weight-semibold); color: var(--couleur-texte); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--couleur-bordure); }
+        .filter-group label, .filter-group .label { display: block; margin-bottom: 6px; font-size: 0.9em; color: var(--couleur-texte-footer); }
+        .filter-group input[type="text"], .filter-group input[type="date"], .filter-group select, .filter-group input[type="number"] { width: 100%; padding: 10px; border: 1px solid var(--couleur-bordure); border-radius: 6px; font-size: 0.9em; box-sizing: border-box; }
+        .price-input-container { display: flex; align-items: flex-end; gap: 8px; margin-top: 5px; }
+        .price-input-field { display: flex; flex-direction: column; flex-grow: 1; }
+        .price-input-field label { font-size: 0.8em; margin-bottom: 4px; color: var(--couleur-texte-footer); }
         .results-area { flex-grow: 1; }
-
         .search-and-sort-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
-        
-        .search-bar-results {
-            display: flex;
-            align-items: center;
-            background-color: var(--couleur-blanche);
-            border: 1px solid var(--couleur-bordure);
-            border-radius: 25px; 
-            padding: 0 10px 0 15px; 
-            height: 45px; 
-            flex-grow: 1;
-            min-width: 250px; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-        }
-        .search-bar-results input[type="text"] {
-            flex-grow: 1;
-            padding: 10px; 
-            border: none;
-            outline: none;
-            font-size: 0.95em;
-            background-color: transparent;
-        }
-        .search-bar-results button {
-            background-color: transparent;
-            color: var(--couleur-principale);
-            border: none;
-            padding: 10px; 
-            cursor: pointer;
-            font-size: 1.1em;
-        }
+        .search-bar-results { display: flex; align-items: center; background-color: var(--couleur-blanche); border: 1px solid var(--couleur-bordure); border-radius: 25px; padding: 0 10px 0 15px; height: 45px; flex-grow: 1; min-width: 200px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+        .search-bar-results input[type="text"] { flex-grow: 1; padding: 10px; border: none; outline: none; font-size: 0.95em; background-color: transparent; }
+        .search-bar-results button { background-color: transparent; color: var(--couleur-principale); border: none; padding: 10px; cursor: pointer; font-size: 1.1em; }
+        .sort-options { display: flex; gap: 8px; }
+        .sort-options .sort-button { text-decoration: none; background-color: var(--couleur-blanche); color: var(--couleur-texte); border: 1px solid var(--couleur-bordure); padding: 8px 18px; border-radius: 20px; cursor: pointer; font-size: 0.9em; font-weight: var(--font-weight-medium); transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
+        .sort-options .sort-button:hover { border-color: var(--couleur-principale); color: var(--couleur-principale); }
+        .sort-options .sort-button.active { background-color: var(--couleur-principale); color: var(--couleur-blanche); border-color: var(--couleur-principale); }
+        .reset-filters-btn { width:100%; background-color: transparent; color: var(--couleur-principale); border: 1px solid var(--couleur-principale); padding: 12px 18px; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: var(--font-weight-medium); transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; margin-top: 10px; }
+        .reset-filters-btn:hover { background-color: var(--couleur-secondaire-hover-bg); }
+        .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        .card-bo { background-color: var(--couleur-blanche); border: 1px solid var(--couleur-bordure); border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow: hidden; }
+        .card-bo .card-image-wrapper { position: relative; width: 100%; height: 180px; background-color: #f0f0f0; }
+        .card-bo .card-image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .card-bo .card-content { display: flex; flex-direction: column; padding: 15px; flex-grow: 1; }
+        .card-bo .card-title { font-size: 1.2em; font-weight: var(--font-weight-semibold); color: var(--couleur-texte); margin-bottom: 8px; }
+        .card-bo .card-category { font-size: 0.9em; color: var(--couleur-texte-footer); margin-bottom: 12px; }
+        .card-bo .card-actions-bo { display: flex; gap: 10px; margin-top: auto; padding-top: 15px; border-top: 1px solid var(--couleur-bordure); }
+        .card-bo .btn-action { text-decoration: none; padding: 8px 12px; border-radius: 6px; font-size: 0.85em; font-weight: 500; text-align: center; flex-grow: 1; transition: opacity 0.2s; }
+        .card-bo .btn-action i { margin-right: 6px; }
+        .card-bo .btn-view { background-color: #e9ecef; color: #495057; }
+        .card-bo .btn-edit { background-color: var(--couleur-secondaire); color: var(--couleur-principale); }
+        .card-bo .btn-delete { background-color: #f8d7da; color: #721c24; }
+        .card-bo .btn-action:hover { opacity: 0.8; }
+        .no-results { grid-column: 1 / -1; text-align: center; padding: 40px; color: #6c757d; }
 
-        .sort-options button {
-            background-color: var(--couleur-blanche); 
-            color: var(--couleur-texte);
-            border: 1px solid var(--couleur-bordure);
-            padding: 8px 18px; 
-            border-radius: 20px; 
-            cursor: pointer;
-            font-size: 0.9em; 
-            font-weight: var(--font-weight-medium);
-            margin-left: 8px; 
-            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-        }
-        .sort-options button:hover {
-            border-color: var(--couleur-principale);
-            color: var(--couleur-principale);
-        }
-        .sort-options button.active {
-            background-color: var(--couleur-principale);
-            color: var(--couleur-blanche);
-            border-color: var(--couleur-principale);
-        }
-
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
-            gap: 25px; 
-        }
-
-        .card {
-            background-color: var(--couleur-blanche);
-            border: 1px solid var(--couleur-bordure);
-            border-radius: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            overflow: hidden; 
-        }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        
-        .card .card-image-wrapper {
-            position: relative;
-            width: 100%;
-            height: 160px; 
-        }
-        .card .card-image-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .card .card-content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 15px; 
-        }
-        .card .card-title {
-            font-size: 1.1em; 
-            font-weight: var(--font-weight-semibold);
-            color: var(--couleur-texte);
-            margin-bottom: 8px; 
-        }
-        .card .star-rating {
-            margin-bottom: 10px; 
-            color: var(--couleur-principale); 
-            font-size: 0.9em;
-        }
-        .card .star-rating .far.fa-star { color: var(--couleur-bordure); }
-        
-        .card .card-description {
-            font-size: 0.85em; 
-            color: #555; 
-            line-height: 1.5; 
-            margin-bottom: 12px; 
-            flex-grow: 1;
-            display: -webkit-box;
-            -webkit-line-clamp: 3; 
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            min-height: calc(0.85em * 1.5 * 3); 
-        }
-        .card .card-more {
-            font-size: 0.9em; 
-            color: var(--couleur-principale);
-            text-decoration: none;
-            font-weight: var(--font-weight-medium);
-            align-self: flex-start;
-        }
-        .card .card-more:hover {
-            text-decoration: underline;
-            color: var(--couleur-principale-hover);
-        }
-
-        @media (max-width: 992px) { 
-            .search-page-container {
-            display: flex;
-            flex-direction: row;
-            align-items: flex-start;
-            padding: 20px 40px;
-            gap: 20px;
-            background-color: #f9f9f9;
-        }
-        .filters-sidebar {
-            width: 260px;
-            background-color: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .results-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
-        }
-        @media (max-width: 768px) { 
-            .search-and-sort-controls { flex-direction: column; align-items: stretch; }
-            .search-bar-results { width: 100%; margin-bottom: 10px; }
-            .sort-options { display: flex; justify-content: space-between; width: 100%; gap: 5px; }
-            .sort-options button { margin-left: 0; flex-grow: 1; padding: 8px 10px; }
-            .results-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
-            .filters-sidebar {
-                width: 260px;
-                background-color: white;
-                padding: 20px;
-                border-radius: 12px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-                display: flex;
-                flex-direction: column;
-                gap: 15px;
-            }
-            .price-input-container { flex-direction: column; align-items: stretch; gap: 10px; }
-            .price-input-separator { display: none; }
-            .price-input-field label { font-size: 0.9em; }
-        }
-        @media (max-width: 520px) { 
-            .results-grid { grid-template-columns: 1fr; }
-            .card .card-image-wrapper { height: 180px; } 
-            .card .card-title { font-size: 1.05em; }
-            .card .card-description { -webkit-line-clamp: 3; }
-            .sort-options button { font-size: 0.8em; }
-        }
-       /* --- STYLES POUR LA NOTIFICATION PROFIL --- */
+        @media (max-width: 992px) { .search-page-container { flex-direction: column; } .filters-sidebar { width: 100%; } }
+        @media (max-width: 768px) { .search-and-sort-controls { flex-direction: column; align-items: stretch; } .sort-options { justify-content: space-around; } }
 
     .main-nav ul li.nav-item-with-notification {
         position: relative; /* Contexte pour le positionnement absolu de la bulle */
@@ -389,10 +192,6 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
         font-weight: bold;
         border: 2px solid white;
     }
-
-    .header-right .profile-link-container + .btn-primary {
-        margin-left: 1rem; 
-    }
     </style>
 </head>
 <body>
@@ -424,202 +223,89 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
         </div>
     </div>
     </header>
+    
     <main>
         <div class="container content-area search-page-container">
             <aside class="filters-sidebar">
-
-                <div class="filter-group">
-                    <h3>Catégorie</h3>
-                    <select id="category" name="category">
-                        <option value="">Toutes</option>
-                        <option value="activites">Activités</option>
-                        <option value="visites">Visites</option>
-                        <option value="spectacles">Spectacles</option>
-                        <option value="parcs">Parcs d'attractions</option>
-                        <option value="restauration">Restauration</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <h3>Destination</h3>
-                    <div class="input-with-icon">
-                        <input type="text" id="destination" name="destination" placeholder="Localisation">
-                        <i class="fas fa-map-marker-alt"></i>
+                <form method="GET" action="recherche.php" id="filters-form">
+                    <h3>Filtres</h3>
+                    <div class="filter-group">
+                        <label for="category">Catégorie</label>
+                        <select id="category" name="category">
+                            <option value="">Toutes</option>
+                            <?php foreach ($all_categories as $cat): ?>
+                                <option value="<?php echo htmlspecialchars($cat['id']); ?>" <?php if ($category_id == $cat['id']) echo 'selected'; ?>>
+                                    <?php echo htmlspecialchars(ucfirst($cat['type'])); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
-                </div>
-
-                <div class="filter-group">
-                    <h3>Prix</h3>
-                    <div class="price-input-container">
-                        <div class="price-input-field">
-                            <label for="price-min-input">Min €</label>
-                            <input type="number" id="price-min-input" name="price_min_input" min="0" step="1" placeholder="0">
-                        </div>
-                        <span class="price-input-separator">-</span>
-                        <div class="price-input-field">
-                            <label for="price-max-input">Max €</label>
-                            <input type="number" id="price-max-input" name="price_max_input" min="0" step="1" placeholder="Max">
+                    <div class="filter-group">
+                        <label for="destination">Destination</label>
+                        <input type="text" id="destination" name="destination" placeholder="Lannion, Paris..." value="<?php echo htmlspecialchars($destination); ?>">
+                    </div>
+                    <div class="filter-group">
+                        <label>Prix</label>
+                        <div class="price-input-container">
+                            <div class="price-input-field">
+                                <input type="number" id="price-min-input" name="price_min_input" min="0" step="1" placeholder="Min €" value="<?php echo htmlspecialchars((string)$priceMin); ?>">
+                            </div>
+                            <span class="price-input-separator">-</span>
+                            <div class="price-input-field">
+                                <input type="number" id="price-max-input" name="price_max_input" min="0" step="1" placeholder="Max €" value="<?php echo htmlspecialchars((string)$priceMax); ?>">
+                            </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="filter-group">
-                    <h3>Date</h3>
-                     <div class="input-with-icon">
-                        <input type="date" id="date" name="date" placeholder="jj/mm/aaaa">
-                        </div>
-                </div>
-
-                <div class="filter-group">
-                    <h3>Notes Minimale</h3>
-                    <div class="star-rating-filter" id="min-rating">
-                        <i class="fas fa-star" data-value="1" title="1 étoile et plus"></i>
-                        <i class="fas fa-star" data-value="2" title="2 étoiles et plus"></i>
-                        <i class="fas fa-star" data-value="3" title="3 étoiles et plus"></i>
-                        <i class="fas fa-star" data-value="4" title="4 étoiles et plus"></i>
-                        <i class="fas fa-star" data-value="5" title="5 étoiles"></i>
-                    </div>
-                    <input type="hidden" id="min-rating-value" name="min_rating_value">
-                </div>
-
-                <div class="filter-group"> <h3>Notes Maximale</h3>
-                    <div class="star-rating-filter" id="max-rating">
-                        <i class="fas fa-star" data-value="1" title="1 étoile maximum"></i>
-                        <i class="fas fa-star" data-value="2" title="2 étoiles maximum"></i>
-                        <i class="fas fa-star" data-value="3" title="3 étoiles maximum"></i>
-                        <i class="fas fa-star" data-value="4" title="4 étoiles maximum"></i>
-                        <i class="fas fa-star" data-value="5" title="5 étoiles maximum"></i>
-                    </div>
-                    <input type="hidden" id="max-rating-value" name="max_rating_value">
-                </div>
-
-
-                <div class="filter-group">
-                    <h3>Statut de l'offre</h3>
-                    <div class="status-filter">
-                        <label for="status-open">
-                            <input type="radio" id="status-open" name="status" value="open" checked> Ouvert
-                        </label>
-                        <label for="status-closed">
-                            <input type="radio" id="status-closed" name="status" value="closed"> Fermé
-                        </label>
-                    </div>
-                </div>
+                    <input type="hidden" name="q" value="<?php echo htmlspecialchars($searchTerm); ?>">
+                    <button type="button" id="reset-filters-btn" class="reset-filters-btn">Réinitialiser</button>
+                </form>
             </aside>
 
             <section class="results-area">
                 <div class="search-and-sort-controls">
-                    <div class="search-bar-results">
-                        <input type="text" placeholder="Rechercher">
+                     <form method="GET" action="recherche.php" class="search-bar-results">
+                        <input type="text" name="q" placeholder="Rechercher dans mes offres..." value="<?php echo htmlspecialchars($searchTerm); ?>">
+                        <input type="hidden" name="category" value="<?php echo htmlspecialchars($category_id); ?>">
                         <button type="submit" aria-label="Rechercher"><i class="fas fa-search"></i></button>
-                    </div>
+                    </form>
                     <div class="sort-options">
-                        <button type="button" class="active" data-sort="note">Note</button>
-                        <button type="button" data-sort="price_asc">Prix croissant</button>
-                        <button type="button" data-sort="price_desc">Prix décroissant</button>
+                        <?php
+                            echo getSortLink('note', $sort, $current_filters);
+                            echo getSortLink('price_asc', $sort, $current_filters);
+                            echo getSortLink('price_desc', $sort, $current_filters);
+                        ?>
                     </div>
                 </div>
 
                 <div class="results-grid">
-                    <div class="card">
-                        <div class="card-image-wrapper">
-                            <img src="images/kayak.jpg" alt="Archipel de Bréhat en kayak">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Archipel de Bréhat en kayak</h3>
-                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div>
-                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a ...</p>
-                            <a href="offre.php" class="card-more">Voir plus</a>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-image-wrapper">
-                            <img src="images/louer_velo_famille.jpg" alt="Balade familiale à vélo">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Balade familiale à vélo</h3>
-                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i><i class="far fa-star"></i></div>
-                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a very short story.</p>
-                            <a href="offre.php" class="card-more">Voir plus</a>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-image-wrapper">
-                            <img src="images/centre-ville.jpg" alt="Découverte du centre-ville historique de Lannion">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Découverte du centre-ville historique de Lannion</h3>
-                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i></div>
-                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a ...</p>
-                             <a href="offre.php" class="card-more">Voir plus</a>
-                        </div>
-                    </div>
-                     <div class="card">
-                        <div class="card-image-wrapper">
-                            <img src="images/randonnee.jpg" alt="Randonnée en montagne">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Découverte du centre-ville historique de Lannion</h3>
-                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a ...</p>
-                             <a href="offre.php" class="card-more">Voir plus</a>
-                        </div>
-                    </div>
-                     <div class="card">
-                        <div class="card-image-wrapper">
-                            <img src="images/kayak.jpg" alt="Archipel de Bréhat en kayak">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Archipel de Bréhat en kayak</h3>
-                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
-                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a very short story. This text might be longer.</p>
-                             <a href="offre.php" class="card-more">Voir plus</a>
-                        </div>
-                    </div>
-                     <div class="card">
-                        <div class="card-image-wrapper">
-                            <img src="images/louer_velo_famille.jpg" alt="Balade familiale à vélo">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Balade familiale à vélo</h3>
-                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i></div>
-                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a ...</p>
-                             <a href="offre.php" class="card-more">Voir plus</a>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-image-wrapper">
-                            <img src="images/centre-ville.jpg" alt="Découverte du centre-ville historique de Lannion">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Balade familiale à vélo</h3>
-                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div>
-                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a very short story.</p>
-                             <a href="offre.php" class="card-more">Voir plus</a>
-                        </div>
-                    </div>
-                     <div class="card">
-                        <div class="card-image-wrapper">
-                            <img src="images/randonnee.jpg" alt="Randonnée en montagne">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Découverte du centre-ville historique de Lannion</h3>
-                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i><i class="far fa-star"></i></div>
-                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a ...</p>
-                             <a href="offre.php" class="card-more">Voir plus</a>
-                        </div>
-                    </div>
-                     <div class="card">
-                        <div class="card-image-wrapper">
-                            <img src="images/kayak.jpg" alt="Archipel de Bréhat en kayak">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Archipel de Bréhat en kayak</h3>
-                            <div class="star-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i></div>
-                            <p class="card-description">Body text for whatever you'd like to say. Add main takeaway points, quotes, anecdotes, or even a very short story.</p>
-                             <a href="offre.php" class="card-more">Voir plus</a>
-                        </div>
-                    </div>
+                    <?php if (empty($offers)): ?>
+                        <p class="no-results">Aucune de vos offres ne correspond à ces critères.</p>
+                    <?php else: ?>
+                        <?php foreach ($offers as $offer): ?>
+                            <div class="card-bo">
+                                <div class="card-image-wrapper">
+                                    <img src="../<?php echo htmlspecialchars($offer['main_photo'] ?? 'BO/images/placeholder.png'); ?>" alt="<?php echo htmlspecialchars($offer['title']); ?>">
+                                </div>
+                                <div class="card-content">
+                                    <h3 class="card-title"><?php echo htmlspecialchars($offer['title']); ?></h3>
+                                    <p class="card-category"><?php echo htmlspecialchars(ucfirst($offer['category_type'])); ?></p>
+                                    <div class="card-actions-bo">
+                                        <a href="offre.php?id=<?= $offer['id'] ?>" class="btn-action btn-view"><i class="fas fa-eye"></i> Voir</a>
+                                        <a href="modifier-offre.php?id=<?= $offer['id'] ?>" class="btn-action btn-edit"><i class="fas fa-edit"></i> Modifier</a>
+                                        <?php if ($offer['current_status']): // Si le statut est 1 (Actif) ?>
+                                                <a href="../composants/changer-status-offre.php?id=<?= $offer['id'] ?>&status=0" class="btn-action btn-delete" onclick="return confirm('Êtes-vous sûr de vouloir désactiver cette offre ?');">
+                                                    <i class="fas fa-toggle-off"></i> Rendre Inactif
+                                                </a>
+                                            <?php else: // Si le statut est 0 (Inactif) ?>
+                                                <a href="../composants/changer-status-offre.php?id=<?= $offer['id'] ?>&status=1" class="btn-action btn-view" style="background-color: #d4edda; color: #155724;" onclick="return confirm('Êtes-vous sûr de vouloir réactiver cette offre ?');">
+                                                    <i class="fas fa-toggle-on"></i> Rendre Actif
+                                                </a>
+                                            <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </section>
         </div>
@@ -663,24 +349,17 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
             <p>&copy; 2025 PACT. Tous droits réservés.</p>
         </div>
     </footer>
-    <script src="script.js" defer></script>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const priceMinNumberInput = document.getElementById('price-min-input');
-            const priceMaxNumberInput = document.getElementById('price-max-input');
+    document.addEventListener('DOMContentLoaded', function() {
+        const filtersForm = document.getElementById('filters-form');
+        const resetFiltersBtn = document.getElementById('reset-filters-btn');
 
-            if (priceMinNumberInput && priceMaxNumberInput) {
-                const validateAndHandlePriceInputs = () => {
-                    let minVal = parseFloat(priceMinNumberInput.value);
-                    let maxVal = parseFloat(priceMaxNumberInput.value);
-
-                    if (!isNaN(minVal) && !isNaN(maxVal) && minVal > maxVal) {
-                        console.warn("Le prix minimum (" + minVal + ") ne peut pas être supérieur au prix maximum (" + maxVal + ").");
-                    }
-                };
-
-                priceMinNumberInput.addEventListener('input', validateAndHandlePriceInputs);
-                priceMaxNumberInput.addEventListener('input', validateAndHandlePriceInputs);
+        filtersForm.addEventListener('change', function(event) {
+            // Soumet le formulaire si ce n'est pas un champ de saisie de texte/nombre
+            // pour éviter de recharger à chaque caractère tapé.
+            if(event.target.tagName === 'SELECT') {
+                filtersForm.submit();
             }
             
             const couleurPrincipale = getComputedStyle(document.documentElement).getPropertyValue('--couleur-principale').trim();
@@ -745,16 +424,21 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
 
             setupStarRatingFilter('min-rating', 'min-rating-value', false); // false pour Note Minimale
             setupStarRatingFilter('max-rating', 'max-rating-value', true);  // true pour Note Maximale (même si la logique visuelle JS est la même ici)
-
-
-            const sortButtons = document.querySelectorAll('.sort-options button');
-            sortButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    sortButtons.forEach(btn => btn.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
         });
+        
+        // Soumission pour les champs texte/nombre lors de l'appui sur "Entrée"
+        filtersForm.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter' && (event.target.type === 'text' || event.target.type === 'number')) {
+                event.preventDefault(); // Empêche le comportement par défaut (qui peut être différent)
+                filtersForm.submit();
+            }
+        });
+
+        resetFiltersBtn.addEventListener('click', function() {
+            const url = new URL(window.location);
+            window.location.href = url.pathname; 
+        });
+    });
     </script>
 </body>
 </html>
