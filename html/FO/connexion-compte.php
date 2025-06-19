@@ -9,44 +9,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (!isset($pdo)) {
         $error_message = "Erreur de connexion à la base de données.";
     } else {
+        session_start(); // On démarre la session pour pouvoir stocker l'état A2F
         $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
 
         if (empty($email) || empty($password)) {
             $error_message = "Veuillez saisir votre email et votre mot de passe.";
         } else {
-            // On cherche dans la table `comptes_membre`
-            $stmt = $pdo->prepare("SELECT id, password FROM comptes_membre WHERE email = :email");
+            // On récupère otp_enabled et otp_secret
+            $stmt = $pdo->prepare("SELECT id, password, otp_enabled, otp_secret FROM comptes_membre WHERE email = :email");
             $stmt->execute([':email' => $email]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if ($user && $password === $user['password']) {
-                $token = bin2hex(random_bytes(32));
-                
-                // Supprimer les anciens tokens pour cet email
-                $stmtDelete = $pdo->prepare("DELETE FROM auth_tokens WHERE email = :email");
-                $stmtDelete->execute([':email' => $email]);
-                
-                // Insérer le nouveau token
-                $stmtInsert = $pdo->prepare("INSERT INTO auth_tokens (id, email, token) VALUES (:id, :email, :token)");
-                $stmtInsert->execute([
-                    ':id'      => generate_uuid(),
-                    ':email'   => $email,
-                    ':token'   => $token
-                ]);
-                
-                $cookie_options = [
-                    'expires' => time() + 86400,
-                    'path' => '/',
-                    'httponly' => true,
-                    'samesite' => 'Lax'
-                ];
-                setcookie('auth_token', $token, $cookie_options);
-                setcookie('user_type', 'membre', $cookie_options); // On définit le type 'membre'
+            if ($user && $password === $user['password']) { // Attention: comparaison de mdp en clair, à changer pour password_verify
 
-                // Rediriger vers l'accueil du front-office
-                header("Location: recherche.php"); // Ou profil.php si vous préférez
-                exit();
+                // VÉRIFICATION A2F
+                if ($user['otp_enabled'] && !empty($user['otp_secret'])) {
+                    // A2F activée -> stocker l'info et rediriger vers la page de vérification
+                    $_SESSION['2fa_user_email'] = $user['email'];
+                    header("Location: verifier-login-a2f.php");
+                    exit();
+                } else {
+                    // A2F non activée -> Connexion normale
+                    $token = bin2hex(random_bytes(32));
+                    
+                    $stmtDelete = $pdo->prepare("DELETE FROM auth_tokens WHERE email = :email");
+                    $stmtDelete->execute([':email' => $email]);
+                    
+                    $stmtInsert = $pdo->prepare("INSERT INTO auth_tokens (id, email, token) VALUES (:id, :email, :token)");
+                    $stmtInsert->execute([':id' => generate_uuid(), ':email' => $email, ':token' => $token]);
+                    
+                    $cookie_options = ['expires' => time() + 86400, 'path' => '/', 'httponly' => true, 'samesite' => 'Lax'];
+                    setcookie('auth_token', $token, $cookie_options);
+                    setcookie('user_type', 'membre', $cookie_options);
+
+                    header("Location: recherche.php");
+                    exit();
+                }
+
             } else {
                 $error_message = "Email ou mot de passe incorrect.";
             }
