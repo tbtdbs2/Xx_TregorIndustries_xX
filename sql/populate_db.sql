@@ -297,8 +297,10 @@ INSERT INTO `restaurations` (`categorie_id`, `menu_url`, `price_range`) VALUES
 (@categorie_id_2, 'https://gout-des-calanques.fr/menu', '€€€');
 
 INSERT INTO `visites` (`categorie_id`, `duration`, `minimum_price`, `date`, `start_time`, `is_guided_tour`) VALUES
-(@categorie_id_3, 90, 10.00, '2025-07-15', '10:30:00', 1),
-(@categorie_id_4, 360, 35.00, '2025-08-01', '09:00:00', 1);
+-- Date de visite dans le futur (dans 1 mois)
+(@categorie_id_3, 90, 10.00, DATE_ADD(CURDATE(), INTERVAL 1 MONTH), '10:30:00', 1),
+-- Date de visite dans le futur (dans 45 jours)
+(@categorie_id_4, 360, 35.00, DATE_ADD(CURDATE(), INTERVAL 45 DAY), '09:00:00', 1);
 
 INSERT INTO `activites` (`categorie_id`, `duration`, `minimum_price`, `required_age`) VALUES
 (@categorie_id_5, 1440, 250.00, 18),
@@ -309,8 +311,10 @@ INSERT INTO `parcs_attractions` (`categorie_id`, `minimum_price`, `required_age`
 (@categorie_id_8, 8.00, 0, 5, 'https://mercantour.fr/ecomusee/plan');
 
 INSERT INTO `spectacles` (`categorie_id`, `duration`, `minimum_price`, `date`, `start_time`, `capacity`) VALUES
-(@categorie_id_9, 120, 0.00, '2025-07-20', '21:30:00', 1000),
-(@categorie_id_10, 75, 22.00, '2025-09-15', '21:00:00', 150);
+-- Date de spectacle dans le futur (dans 1 mois)
+(@categorie_id_9, 120, 0.00, DATE_ADD(CURDATE(), INTERVAL 1 MONTH), '21:30:00', 1000),
+-- Date de spectacle dans le futur (dans 3 mois)
+(@categorie_id_10, 75, 22.00, DATE_ADD(CURDATE(), INTERVAL 3 MONTH), '21:00:00', 150);
 
 INSERT INTO `offres_tags` (`offre_id`, `tag_id`) VALUES
 (@offre_id_1, @tag_id_9),
@@ -350,6 +354,23 @@ INSERT INTO `restaurations_repas` (`restauration_id`, `repas_id`) VALUES
 (@categorie_id_1, @repas_id_2),
 (@categorie_id_2, @repas_id_2);
 
+-- -------------------------------------
+-- Souscriptions
+-- -------------------------------------
+-- La logique de la page d'accueil affiche les offres ayant une souscription 'A la une' active.
+INSERT INTO `souscriptions` (`offre_id`, `option_id`, `duration`, `taken_date`, `launch_date`) VALUES
+-- Souscription ACTIVE. Début : il y a 1 mois. Durée : 3 mois. Fin : dans 2 mois. DEVRAIT APPARAITRE.
+(@offre_id_5, @option_id_2, 3, DATE_SUB(CURDATE(), INTERVAL 40 DAY), DATE_SUB(CURDATE(), INTERVAL 1 MONTH)),
+
+-- Souscription ACTIVE. Début : il y a 5 jours. Durée : 6 mois. Fin : dans ~6 mois. DEVRAIT APPARAITRE.
+(@offre_id_2, @option_id_2, 6, DATE_SUB(CURDATE(), INTERVAL 10 DAY), DATE_SUB(CURDATE(), INTERVAL 5 DAY)),
+
+-- Souscription EXPIREE. Début : il y a 6 mois. Durée : 3 mois. Fin : il y a 3 mois. NE DEVRAIT PAS APPARAITRE.
+(@offre_id_6, @option_id_1, 3, DATE_SUB(CURDATE(), INTERVAL 190 DAY), DATE_SUB(CURDATE(), INTERVAL 6 MONTH)),
+
+-- Souscription FUTURE. Début : dans 1 mois. Durée : 2 mois. NE DEVRAIT PAS APPARAITRE.
+(@offre_id_10, @option_id_2, 2, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 1 MONTH));
+
 
 -- =================================================================================
 -- PEUPLEMENT DU CONTENU UTILISATEUR
@@ -362,8 +383,10 @@ SET @avis_id_1 = UUID();
 SET @avis_id_2 = UUID();
 
 INSERT INTO `avis` (`id`, `membre_id`, `offre_id`, `title`, `comment`, `rating`, `visit_date`, `context`, `viewed`, `thumb_up_nb`, `thumb_down_nb`, `published_at`) VALUES
-(@avis_id_1, @compte_membre_id_1, @offre_id_5, 'Expérience géniale !', 'Le stage de voile était parfait. Le moniteur, Fred, est un excellent pédagogue. On apprend en toute sécurité dans un cadre de rêve. Je reviendrai !', 5, '2025-08-10', 'solo', 1, 18, 0, NOW()),
-(@avis_id_2, @compte_membre_id_3, @offre_id_7, 'Original et bien fait', 'On a passé un super après-midi à L''Enigme Absolue. Les décors sont immersifs et les énigmes sont bien pensées. Idéal pour un groupe d''amis.', 4.5, '2025-07-25', 'amis', 1, 11, 0, NOW());
+-- Date de visite dans le passé récent (il y a 1 mois)
+(@avis_id_1, @compte_membre_id_1, @offre_id_5, 'Expérience géniale !', 'Le stage de voile était parfait. Le moniteur, Fred, est un excellent pédagogue. On apprend en toute sécurité dans un cadre de rêve. Je reviendrai !', 5, DATE_SUB(CURDATE(), INTERVAL 1 MONTH), 'solo', 1, 18, 0, NOW()),
+-- Date de visite dans le passé récent (il y a 20 jours)
+(@avis_id_2, @compte_membre_id_3, @offre_id_7, 'Original et bien fait', 'On a passé un super après-midi à L''Enigme Absolue. Les décors sont immersifs et les énigmes sont bien pensées. Idéal pour un groupe d''amis.', 4.5, DATE_SUB(CURDATE(), INTERVAL 20 DAY), 'amis', 1, 11, 0, NOW());
 
 -- -------------------------------------
 -- Réponses des professionnels
