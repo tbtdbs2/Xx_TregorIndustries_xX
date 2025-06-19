@@ -643,7 +643,8 @@ function display_stars($rating)
 
         .modal-body form input[type="text"],
         .modal-body form textarea,
-        .modal-body form select {
+        .modal-body form select,
+        .modal-body form input[type="date"] {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
@@ -693,6 +694,10 @@ function display_stars($rating)
         /* Message d'erreur dans la modale */
         .modal-error-message {
             color: red;
+            background-color: #f8d7da;
+            padding: 10px;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
             font-size: 0.85em;
             margin-top: -10px;
             margin-bottom: 10px;
@@ -726,8 +731,7 @@ function display_stars($rating)
 </head>
 
 <body>
-    <?php require_once 'header.php'; // Assurez-vous que ce fichier existe et est adapté pour les membres 
-    ?>
+    <?php require_once 'header.php'; ?>
     <main class="main-content-offre">
         <div class="container">
             <div class="breadcrumb-bar">
@@ -738,8 +742,8 @@ function display_stars($rating)
                 <div class="offre-gallery-and-purchase">
                     <div class="offre-gallery cards-container-wrapper" id="offreImageCarouselWrapper">
                         <div class="gallery-image-container cards-container">
-                            <?php foreach ($photos_display as $photo): ?>
-                                <img src="../../<?php echo htmlspecialchars($photo['url']); ?>" alt="Photo de <?php echo htmlspecialchars($offer['title']); ?>">
+                            <?php foreach ($photos_display as $photo) : ?>
+                                <img src="/<?php echo htmlspecialchars($photo['url']); ?>" alt="Photo de <?php echo htmlspecialchars($offer['title']); ?>">
                             <?php endforeach; ?>
                         </div>
                         <button class="carousel-arrow prev-arrow" onclick="scrollOffreCarousel('offreImageCarouselWrapper', -1)" aria-label="Précédent"><i class="fas fa-chevron-left"></i></button>
@@ -773,7 +777,7 @@ function display_stars($rating)
                             <span><?php echo htmlspecialchars($offer['street'] . ', ' . $offer['postal_code'] . ' ' . $offer['city']); ?></span>
                         </div>
                         <h3>Contact</h3>
-                        <?php if (!empty($offer['phone'])): ?>
+                        <?php if (!empty($offer['phone'])) : ?>
                             <div class="detail-item">
                                 <i class="fas fa-phone"></i>
                                 <span>Téléphone : <?php echo htmlspecialchars($offer['phone']); ?></span>
@@ -788,10 +792,10 @@ function display_stars($rating)
                 <div class="offre-avis-section">
                     <h2>Avis</h2>
                     <div class="avis-list">
-                        <?php if (empty($reviews)): ?>
+                        <?php if (empty($reviews)) : ?>
                             <p>Aucun avis pour le moment.</p>
-                        <?php else: ?>
-                            <?php foreach ($reviews as $review): ?>
+                        <?php else : ?>
+                            <?php foreach ($reviews as $review) : ?>
                                 <div class="avis-card">
                                     <div class="avis-avatar">
                                         <img src="images/bertrand.jpg" alt="Avatar">
@@ -818,9 +822,7 @@ function display_stars($rating)
                         <?php endif; ?>
                     </div>
                     <div class="avis-footer">
-                        <button class="btn-laisser-avis" id="openAvisModalBtn"
-                            data-offer-id="<?php echo htmlspecialchars($offer_id); ?>"
-                            data-is-logged-in="<?php echo $is_logged_in_member ? 'true' : 'false'; ?>">
+                        <button class="btn-laisser-avis" id="openAvisModalBtn" data-offer-id="<?php echo htmlspecialchars($offer_id); ?>" data-is-logged-in="<?php echo $is_logged_in_member ? 'true' : 'false'; ?>">
                             Laisser un avis
                         </button>
                         <div class="avis-navigation">
@@ -881,414 +883,15 @@ function display_stars($rating)
     </div>
 
     <script src="script.js" defer></script>
-    <script src="script.js" defer></script>
-    <script src="script.js" defer></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const favoriteButton = document.querySelector('.offre-favorite-btn');
-            if (favoriteButton) {
-                favoriteButton.addEventListener('click', function() {
-                    this.classList.toggle('active');
-                });
-            }
-    </script>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const favoriteButton = document.querySelector('.offre-favorite-btn');
-        if (favoriteButton) {
-            favoriteButton.addEventListener('click', function() { this.classList.toggle('active'); });
-        }
-
-        const avisListContainer = document.querySelector('.avis-list');
-        const allAvisCards = avisListContainer ? Array.from(avisListContainer.querySelectorAll('.avis-card')) : [];
-        const prevAvisBtn = document.querySelector('.prev-avis');
-        const nextAvisBtn = document.querySelector('.next-avis');
-
-        let currentAvisPage = 1;
-        const avisPerPage = 3; // Nombre d'avis à afficher par page
-        let totalAvisPages = 0;
-
-        function displayCurrentAvisPage() {
-            if (!avisListContainer || allAvisCards.length === 0) return;
-            const startIndex = (currentAvisPage - 1) * avisPerPage;
-            const endIndex = startIndex + avisPerPage;
-
-            allAvisCards.forEach((card, index) => {
-                if (index >= startIndex && index < endIndex) {
-                    card.style.display = 'flex'; // Ou 'block' selon le style initial des cartes
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
-
-            const avisListContainer = document.querySelector('.avis-list');
-            const allAvisCards = avisListContainer ? Array.from(avisListContainer.querySelectorAll('.avis-card')) : [];
-            const prevAvisBtn = document.querySelector('.prev-avis');
-            const nextAvisBtn = document.querySelector('.next-avis');
-
-            let currentAvisPage = 1;
-            const avisPerPage = 3; // Nombre d'avis à afficher par page
-            let totalAvisPages = 0;
-
-            function displayCurrentAvisPage() {
-                if (!avisListContainer || allAvisCards.length === 0) return;
-                const startIndex = (currentAvisPage - 1) * avisPerPage;
-                const endIndex = startIndex + avisPerPage;
-
-                allAvisCards.forEach((card, index) => {
-                    if (index >= startIndex && index < endIndex) {
-                        card.style.display = 'flex'; // Ou 'block' selon le style initial des cartes
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-            }
-
-            function updateAvisNavigation() {
-                if (!prevAvisBtn || !nextAvisBtn) return;
-                totalAvisPages = Math.ceil(allAvisCards.length / avisPerPage);
-                prevAvisBtn.disabled = currentAvisPage === 1;
-                nextAvisBtn.disabled = currentAvisPage === totalAvisPages || allAvisCards.length === 0;
-
-                if (allAvisCards.length > 0) {
-                    displayCurrentAvisPage();
-                } else { // S'il n'y a aucun avis
-                    if (avisListContainer) avisListContainer.innerHTML = "<p>Aucun avis pour le moment.</p>";
-                }
-        // Modal Logic for "Laisser un avis" button
-        const openAvisModalBtn = document.getElementById('openAvisModalBtn');
-        const avisModal = document.getElementById('avisModal');
-        const closeModalButton = document.querySelector('#avisModal .close-button');
-        const modalBody = document.querySelector('#avisModal .modal-body');
-
-        if (openAvisModalBtn) {
-            openAvisModalBtn.addEventListener('click', function() {
-                const isUserLoggedIn = this.dataset.isLoggedIn === 'true';
-                const offerId = this.dataset.offerId;
-
-                if (isUserLoggedIn) {
-                    console.log('Utilisateur connecté, chargement du formulaire d\'avis...'); // Ajout pour le débogage
-                    // Load the review form into the modal
-                    fetch(`laisser-avis-modal.php?offer_id=${offerId}`)
-                        .then(response => {
-                            if (!response.ok) {
-                                console.error('Erreur HTTP lors du chargement de la modale:', response.status, response.statusText); // Ajout pour le débogage
-                                // If response is not ok (e.g., 401 Unauthorized from laisser-avis-modal.php)
-                                // Try to parse as JSON first, then fall back to text
-                                return response.json().catch(() => response.text());
-                            }
-                            return response.text(); // Expecting HTML normally
-                        })
-                        .then(data => {
-                            if (typeof data === 'object' && data.error) {
-                                // Handle JSON error response, e.g., if not authenticated
-                                alert('Erreur: ' + data.error);
-                                if (data.error === 'Non authentifié.') {
-                                     window.location.href = 'connexion-compte.php?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
-                                }
-                                return; // Stop further processing
-                            }
-                            // Assume HTML content otherwise
-                            modalBody.innerHTML = data;
-                            avisModal.style.display = 'flex'; // Show the modal
-                            initializeModalFormLogic(); // Initialize form-specific JS (e.g., star rating)
-                            console.log('Modale d\'avis chargée et affichée.'); // Ajout pour le débogage
-                        })
-                        .catch(error => {
-                            console.error('Error loading review form:', error); // Ajout pour le débogage
-                            modalBody.innerHTML = '<p>Impossible de charger le formulaire d\'avis. Veuillez réessayer plus tard.</p>';
-                            avisModal.style.display = 'flex';
-                        });
-                } else {
-                    // Redirect to login page if not logged in
-                    console.log('Utilisateur non connecté, redirection vers la page de connexion.'); // Ajout pour le débogage
-                    window.location.href = 'connexion-compte.php?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
-                }
-            }
-
-            if (allAvisCards.length > 0) { // S'il y a des avis, initialiser la pagination
-                if (prevAvisBtn) {
-                    prevAvisBtn.addEventListener('click', () => {
-                        if (currentAvisPage > 1) {
-                            currentAvisPage--;
-                            updateAvisNavigation();
-                        }
-                    });
-                }
-
-                if (nextAvisBtn) {
-                    nextAvisBtn.addEventListener('click', () => {
-                        if (currentAvisPage < totalAvisPages) {
-                            currentAvisPage++;
-                            updateAvisNavigation();
-                        }
-                    });
-             }
-        if (closeModalButton) {
-            closeModalButton.addEventListener('click', function() {
-                avisModal.style.display = 'none';
-                console.log('Modale d\'avis fermée.'); // Ajout pour le débogage
-            });
-        }
-
-        // Close modal when clicking outside of it
-        if (avisModal) {
-            avisModal.addEventListener('click', function(event) {
-                if (event.target === avisModal) {
-                    avisModal.style.display = 'none';
-                    console.log('Modale d\'avis fermée (clic extérieur).'); // Ajout pour le débogage
-                }
-                updateAvisNavigation(); // Appel initial pour afficher la première page et définir l'état des boutons
-            } else if (prevAvisBtn && nextAvisBtn) { // S'il n'y a pas d'avis, désactiver les boutons
-                updateAvisNavigation(); // Appel pour gérer le cas où il n'y a pas d'avis
-            }
-
-            const offreCarouselWrapper = document.getElementById('offreImageCarouselWrapper');
-            if (offreCarouselWrapper) {
-                updateOffreCarouselArrowsVisibility(offreCarouselWrapper);
-                const imageContainer = offreCarouselWrapper.querySelector('.gallery-image-container.cards-container');
-                if (imageContainer) {
-                    let scrollEndTimer;
-                    imageContainer.addEventListener('scroll', () => {
-                        clearTimeout(scrollEndTimer);
-                        scrollEndTimer = setTimeout(() => updateOffreCarouselArrowsVisibility(offreCarouselWrapper), 100);
-                    });
-                }
-            }
-
-            // Modal Logic for "Laisser un avis" button
-            const openAvisModalBtn = document.getElementById('openAvisModalBtn');
-            const avisModal = document.getElementById('avisModal');
-            const closeModalButton = document.querySelector('#avisModal .close-button');
-            const modalBody = document.querySelector('#avisModal .modal-body');
-
-            if (openAvisModalBtn) {
-                openAvisModalBtn.addEventListener('click', function() {
-                    const isUserLoggedIn = this.dataset.isLoggedIn === 'true';
-                    const offerId = this.dataset.offerId;
-
-                    if (isUserLoggedIn) {
-                        // Load the review form into the modal
-                        fetch(`laisser-avis-modal.php?offer_id=${offerId}`)
-                            .then(response => {
-                                if (!response.ok) {
-                                    // If response is not ok (e.g., 401 Unauthorized from laisser-avis-modal.php)
-                                    // Try to parse as JSON first, then fall back to text
-                                    return response.json().catch(() => response.text());
-                                }
-                                return response.text(); // Expecting HTML normally
-                            })
-                            .then(data => {
-                                if (typeof data === 'object' && data.error) {
-                                    // Handle JSON error response, e.g., if not authenticated
-                                    alert('Erreur: ' + data.error);
-                                    if (data.error === 'Non authentifié.') {
-                                        window.location.href = 'connexion-compte.php?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
-                                    }
-                                    return; // Stop further processing
-                                }
-                                // Assume HTML content otherwise
-                                modalBody.innerHTML = data;
-                                avisModal.style.display = 'flex'; // Show the modal
-                                initializeModalFormLogic(); // Initialize form-specific JS (e.g., star rating)
-                            })
-                            .catch(error => {
-                                console.error('Error loading review form:', error);
-                                modalBody.innerHTML = '<p>Impossible de charger le formulaire d\'avis. Veuillez réessayer plus tard.</p>';
-                                avisModal.style.display = 'flex';
-                            });
-                    } else {
-                        // Redirect to login page if not logged in
-                        window.location.href = 'connexion-compte.php?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
-                    }
-                });
-            }
-
-            if (closeModalButton) {
-                closeModalButton.addEventListener('click', function() {
-                    avisModal.style.display = 'none';
-                });
-            }
-
-            // Close modal when clicking outside of it
-            if (avisModal) {
-                avisModal.addEventListener('click', function(event) {
-                    if (event.target === avisModal) {
-                        avisModal.style.display = 'none';
-                    }
-                });
-            }
-            ratingStars.forEach(star => {
-                star.addEventListener('click', function() {
-                    currentRating = parseInt(this.dataset.rating);
-                    if (ratingInput) ratingInput.value = currentRating;
-                    updateStars(currentRating);
-                    console.log('Note sélectionnée:', currentRating); // Ajout pour le débogage
-                });
-            }
-
-            function initializeModalFormLogic() {
-                const ratingStars = document.querySelectorAll('#avisModal .rating-input .fa-star');
-                const ratingInput = document.getElementById('rating_input');
-                // Récupérer la valeur initiale de rating_input pour l'état des étoiles
-                let currentRating = ratingInput ? parseInt(ratingInput.value) || 0 : 0;
-
-                function updateStars(rating) {
-                    ratingStars.forEach((star, index) => {
-                        if (index < rating) {
-                            star.classList.remove('far');
-                            star.classList.add('fas');
-                            star.style.color = 'gold';
-                        });
-                  }
-            // Handle form submission inside the modal via AJAX
-            const avisForm = document.getElementById('avisForm');
-            // Ciblez l'élément d'erreur directement depuis avisForm après son chargement
-            const errorMessageElement = avisForm ? avisForm.querySelector('.modal-error-message') : null;
-
-
-            if (avisForm) { // Vérifiez que le formulaire existe avant d'ajouter l'écouteur
-                avisForm.addEventListener('submit', function(event) {
-                    event.preventDefault(); // Prevent default form submission
-                    console.log('Soumission du formulaire d\'avis interceptée.'); // Ajout pour le débogage
-
-                    const formData = new FormData(avisForm);
-                    
-                    // Récupérer les champs pour la validation avant envoi
-                    const titleInput = document.getElementById('avis_title');
-                    const commentInput = document.getElementById('avis_comment');
-                    const ratingValue = ratingInput ? parseInt(ratingInput.value) : 0;
-                    const visitDateValue = document.getElementById('visit_date').value;
-                    const contextValue = document.getElementById('context').value;
-
-                    let errors = [];
-
-                    if (titleInput.value.trim() === '') errors.push('Veuillez entrer un titre pour votre avis.');
-                    if (commentInput.value.trim() === '') errors.push('Veuillez entrer votre commentaire.');
-                    if (ratingValue < 1 || ratingValue > 5) errors.push('Veuillez donner une note entre 1 et 5 étoiles.');
-                    if (visitDateValue === '') errors.push('Veuillez entrer la date de votre visite.');
-                    if (new Date(visitDateValue) > new Date()) errors.push('La date de visite ne peut pas être future.');
-                    if (contextValue === '') errors.push('Veuillez sélectionner un contexte de visite.');
-
-                    if (errors.length > 0) {
-                        if (errorMessageElement) { // Vérifiez que l'élément d'erreur existe
-                            errorMessageElement.innerHTML = errors.join('<br>');
-                            errorMessageElement.style.display = 'block';
-                            console.log('Erreurs de validation côté client:', errors); // Ajout pour le débogage
-                        } else {
-                            star.classList.remove('fas');
-                            star.classList.add('far');
-                            star.style.color = 'var(--couleur-bordure)';
-                        }
-                    });
-                }
-
-                // Initialiser l'affichage des étoiles basé sur currentRating
-                if (ratingInput) {
-                    updateStars(currentRating);
-                }
-
-                ratingStars.forEach(star => {
-                    star.addEventListener('click', function() {
-                        currentRating = parseInt(this.dataset.rating);
-                        if (ratingInput) ratingInput.value = currentRating;
-                        updateStars(currentRating);
-                    });
-                });
-
-                // Set max attribute for visit_date to today's date
-                const visitDateInput = document.getElementById('visit_date');
-                if (visitDateInput) {
-                    const today = new Date().toISOString().split('T')[0];
-                    visitDateInput.setAttribute('max', today);
-                }
-
-                // Handle form submission inside the modal via AJAX
-                const avisForm = document.getElementById('avisForm');
-                // MODIFICATION ICI: Ciblez l'élément d'erreur directement depuis modalBody ou avisForm
-                const errorMessageElement = avisForm ? avisForm.querySelector('.modal-error-message') : null;
-
-
-                if (avisForm) { // Vérifiez que le formulaire existe avant d'ajouter l'écouteur
-                    avisForm.addEventListener('submit', function(event) {
-                        event.preventDefault(); // Prevent default form submission
-
-                        const formData = new FormData(avisForm);
-
-                        // Récupérer les champs pour la validation avant envoi
-                        const titleInput = document.getElementById('avis_title');
-                        const commentInput = document.getElementById('avis_comment');
-                        const ratingValue = ratingInput ? parseInt(ratingInput.value) : 0;
-                        const visitDateValue = document.getElementById('visit_date').value;
-                        const contextValue = document.getElementById('context').value;
-
-                        let errors = [];
-
-                        if (titleInput.value.trim() === '') errors.push('Veuillez entrer un titre pour votre avis.');
-                        if (commentInput.value.trim() === '') errors.push('Veuillez entrer votre commentaire.');
-                        if (ratingValue < 1 || ratingValue > 5) errors.push('Veuillez donner une note entre 1 et 5 étoiles.');
-                        if (visitDateValue === '') errors.push('Veuillez entrer la date de votre visite.');
-                        if (new Date(visitDateValue) > new Date()) errors.push('La date de visite ne peut pas être future.');
-                        if (contextValue === '') errors.push('Veuillez sélectionner un contexte de visite.');
-
-                        if (errors.length > 0) {
-                            if (errorMessageElement) { // Vérifiez que l'élément d'erreur existe
-                                errorMessageElement.innerHTML = errors.join('<br>');
-                                errorMessageElement.style.display = 'block';
-                                console.log('Erreurs de validation côté serveur:', data.errors); // Ajout pour le débogage
-                            } else {
-                                console.error("Element d'erreur introuvable."); // Log pour le débogage
-                            }
-                            return; // Arrêter l'envoi du formulaire si des erreurs de validation JS existent
-                        }
-
-
-                        if (errorMessageElement) { // Vérifiez que l'élément d'erreur existe avant de cacher
-                            errorMessageElement.style.display = 'none'; // Hide previous errors
-                        }
-
-                        fetch('submit-avis.php', { // This file will process the form
-                                method: 'POST',
-                                body: formData
-                            })
-                            .then(response => response.json()) // Expect JSON response
-                            .then(data => {
-                                if (data.success) {
-                                    alert('Avis soumis avec succès !');
-                                    avisModal.style.display = 'none';
-                                    location.reload(); // Simple reload for now to see the new review
-                                } else {
-                                    // Display errors
-                                    if (errorMessageElement) { // Vérifiez que l'élément d'erreur existe
-                                        errorMessageElement.textContent = Object.values(data.errors).join('\n');
-                                        errorMessageElement.style.display = 'block';
-                                    } else {
-                                        console.error("Element d'erreur introuvable après la soumission AJAX."); // Log pour le débogage
-                                    }
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error submitting review:', error);
-                                if (errorMessageElement) { // Vérifiez que l'élément d'erreur existe
-                                    errorMessageElement.textContent = 'Une erreur est survenue. Veuillez réessayer.';
-                                    errorMessageElement.style.display = 'block';
-                                } else {
-                                    console.error("Element d'erreur introuvable dans le catch AJAX."); // Log pour le débogage
-                                }
-                            });
-                    });
-                }
-            }
-        });
-
+        // Carrousel d'images
         function scrollOffreCarousel(carouselWrapperId, direction) {
             const wrapper = document.getElementById(carouselWrapperId);
             if (!wrapper) return;
             const container = wrapper.querySelector('.gallery-image-container.cards-container');
             if (!container) return;
             container.scrollBy({
-                left: direction * wrapper.clientWidth,
+                left: direction * container.clientWidth, // Correction: scroll par la largeur du conteneur
                 behavior: 'smooth'
             });
         }
@@ -1307,9 +910,171 @@ function display_stars($rating)
             nextArrow.style.display = (atEnd || hasNoScroll) ? 'none' : 'flex';
         }
 
-        window.addEventListener('resize', () => {
+        // --- Logique principale dans DOMContentLoaded ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // Bouton Favoris
+            const favoriteButton = document.querySelector('.offre-favorite-btn');
+            if (favoriteButton) {
+                favoriteButton.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                });
+            }
+
+            // Pagination des avis
+            const avisListContainer = document.querySelector('.avis-list');
+            const allAvisCards = avisListContainer ? Array.from(avisListContainer.querySelectorAll('.avis-card')) : [];
+            const prevAvisBtn = document.querySelector('.prev-avis');
+            const nextAvisBtn = document.querySelector('.next-avis');
+            let currentAvisPage = 1;
+            const avisPerPage = 3;
+            const totalAvisPages = allAvisCards.length > 0 ? Math.ceil(allAvisCards.length / avisPerPage) : 0;
+
+            function displayCurrentAvisPage() {
+                if (!avisListContainer || allAvisCards.length === 0) return;
+                const startIndex = (currentAvisPage - 1) * avisPerPage;
+                const endIndex = startIndex + avisPerPage;
+                allAvisCards.forEach((card, index) => {
+                    card.style.display = (index >= startIndex && index < endIndex) ? 'flex' : 'none';
+                });
+            }
+
+            function updateAvisNavigation() {
+                if (!prevAvisBtn || !nextAvisBtn) return;
+                prevAvisBtn.disabled = currentAvisPage === 1;
+                nextAvisBtn.disabled = currentAvisPage === totalAvisPages || totalAvisPages === 0;
+            }
+            
+            if (allAvisCards.length > 0) {
+                if (prevAvisBtn) {
+                    prevAvisBtn.addEventListener('click', () => {
+                        if (currentAvisPage > 1) {
+                            currentAvisPage--;
+                            displayCurrentAvisPage();
+                            updateAvisNavigation();
+                        }
+                    });
+                }
+                if (nextAvisBtn) {
+                    nextAvisBtn.addEventListener('click', () => {
+                        if (currentAvisPage < totalAvisPages) {
+                            currentAvisPage++;
+                            displayCurrentAvisPage();
+                            updateAvisNavigation();
+                        }
+                    });
+                }
+                displayCurrentAvisPage();
+                updateAvisNavigation();
+            } else {
+                 if(prevAvisBtn) prevAvisBtn.disabled = true;
+                 if(nextAvisBtn) nextAvisBtn.disabled = true;
+            }
+
+
+            // Carrousel d'images
             const offreCarouselWrapper = document.getElementById('offreImageCarouselWrapper');
-            if (offreCarouselWrapper) updateOffreCarouselArrowsVisibility(offreCarouselWrapper);
+            if (offreCarouselWrapper) {
+                updateOffreCarouselArrowsVisibility(offreCarouselWrapper);
+                const imageContainer = offreCarouselWrapper.querySelector('.gallery-image-container.cards-container');
+                if (imageContainer) {
+                    let scrollEndTimer;
+                    imageContainer.addEventListener('scroll', () => {
+                        clearTimeout(scrollEndTimer);
+                        scrollEndTimer = setTimeout(() => updateOffreCarouselArrowsVisibility(offreCarouselWrapper), 100);
+                    });
+                }
+            }
+            window.addEventListener('resize', () => {
+                if (offreCarouselWrapper) updateOffreCarouselArrowsVisibility(offreCarouselWrapper);
+            });
+
+            // Logique de la modale pour laisser un avis
+            const openAvisModalBtn = document.getElementById('openAvisModalBtn');
+            const avisModal = document.getElementById('avisModal');
+            const closeModalButton = document.querySelector('#avisModal .close-button');
+            const modalBody = document.querySelector('#avisModal .modal-body');
+
+            if (openAvisModalBtn) {
+                openAvisModalBtn.addEventListener('click', function() {
+                    const isUserLoggedIn = this.dataset.isLoggedIn === 'true';
+                    const offerId = this.dataset.offerId;
+                    if (isUserLoggedIn) {
+                        fetch(`laisser-avis-modal.php?offer_id=${offerId}`)
+                            .then(response => response.text())
+                            .then(data => {
+                                modalBody.innerHTML = data;
+                                avisModal.style.display = 'flex';
+                                initializeModalFormLogic();
+                            })
+                            .catch(error => console.error('Error loading review form:', error));
+                    } else {
+                        window.location.href = 'connexion-compte.php?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+                    }
+                });
+            }
+
+            if (closeModalButton) {
+                closeModalButton.addEventListener('click', () => avisModal.style.display = 'none');
+            }
+
+            if (avisModal) {
+                avisModal.addEventListener('click', (event) => {
+                    if (event.target === avisModal) {
+                        avisModal.style.display = 'none';
+                    }
+                });
+            }
+
+            function initializeModalFormLogic() {
+                const avisForm = document.getElementById('avisForm');
+                const errorMessageElement = avisForm.querySelector('.modal-error-message');
+
+                // Logique pour les étoiles
+                const ratingStars = avisForm.querySelectorAll('.rating-input .stars i');
+                const ratingInput = avisForm.querySelector('#rating_input');
+                
+                function updateStars(rating) {
+                    ratingStars.forEach((star, index) => {
+                        star.classList.toggle('fas', index < rating);
+                        star.classList.toggle('far', index >= rating);
+                    });
+                }
+
+                ratingStars.forEach(star => {
+                    star.addEventListener('click', function() {
+                        const currentRating = parseInt(this.dataset.rating);
+                        ratingInput.value = currentRating;
+                        updateStars(currentRating);
+                    });
+                });
+                
+                // Logique de soumission du formulaire
+                avisForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const formData = new FormData(avisForm);
+                    
+                    fetch('submit-avis.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Avis soumis avec succès !');
+                            avisModal.style.display = 'none';
+                            location.reload();
+                        } else {
+                            errorMessageElement.innerHTML = Object.values(data.errors).join('<br>');
+                            errorMessageElement.style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error submitting review:', error);
+                        errorMessageElement.textContent = 'Une erreur est survenue. Veuillez réessayer.';
+                        errorMessageElement.style.display = 'block';
+                    });
+                });
+            }
         });
     </script>
 </body>
