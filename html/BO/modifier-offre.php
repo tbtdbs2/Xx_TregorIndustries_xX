@@ -39,19 +39,64 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
     }
 
     // Reprise de la validation complète de publier-une-offre.php
-    function validate_input($data) { $data = trim($data); $data = stripslashes($data); $data = htmlspecialchars($data); return $data; }
+    function validate_input($data)
+    {
+        $data = trim($data);
+        $data = stripslashes($data);
+        $data = htmlspecialchars($data);
+        return $data;
+    }
 
     // --- VALIDATION COMPLÈTE DES CHAMPS ---
-    $titre = validate_input($_POST["titre"] ?? ''); if (empty($titre)) { $erreurs["titre"] = "Veuillez entrer un titre."; }
-    $prix_str = $_POST["prix"] ?? ''; $prix = null; if (empty($prix_str)) { $erreurs["prix"] = "Veuillez entrer un prix."; } elseif (!preg_match("/^\d+(\.\d{1,2})?$/", $prix_str)) { $erreurs["prix"] = "Prix invalide (ex: 10, 10.50)."; } else { $prix = floatval($prix_str); }
-    $coordonnees_telephoniques = null; if (!empty($_POST["coordonnees_telephoniques"])) { if (!preg_match("/^0[1-9]\d{8}$/", $_POST["coordonnees_telephoniques"])) { $erreurs["coordonnees_telephoniques"] = "Numéro de téléphone invalide."; } else { $coordonnees_telephoniques = validate_input($_POST["coordonnees_telephoniques"]); } }
-    $resume = validate_input($_POST["resume"] ?? ''); if (empty($resume)) { $erreurs["resume"] = "Veuillez entrer un résumé."; }
+    $titre = validate_input($_POST["titre"] ?? '');
+    if (empty($titre)) {
+        $erreurs["titre"] = "Veuillez entrer un titre.";
+    }
+    $prix_str = $_POST["prix"] ?? '';
+    $prix = null;
+    if (empty($prix_str)) {
+        $erreurs["prix"] = "Veuillez entrer un prix.";
+    } elseif (!preg_match("/^\d+(\.\d{1,2})?$/", $prix_str)) {
+        $erreurs["prix"] = "Prix invalide (ex: 10, 10.50).";
+    } else {
+        $prix = floatval($prix_str);
+    }
+    $coordonnees_telephoniques = null;
+    if (!empty($_POST["coordonnees_telephoniques"])) {
+        if (!preg_match("/^0[1-9]\d{8}$/", $_POST["coordonnees_telephoniques"])) {
+            $erreurs["coordonnees_telephoniques"] = "Numéro de téléphone invalide.";
+        } else {
+            $coordonnees_telephoniques = validate_input($_POST["coordonnees_telephoniques"]);
+        }
+    }
+    $resume = validate_input($_POST["resume"] ?? '');
+    if (empty($resume)) {
+        $erreurs["resume"] = "Veuillez entrer un résumé.";
+    }
     $description = !empty($_POST["description"]) ? validate_input($_POST["description"]) : null;
-    $conditions_accessibilite = validate_input($_POST["conditions_accessibilite"] ?? ''); if (empty($conditions_accessibilite)) { $erreurs["conditions_accessibilite"] = "Veuillez entrer les conditions d'accessibilité."; }
-    $ligne_adresse = validate_input($_POST["ligne_adresse"] ?? ''); if (empty($ligne_adresse)) $erreurs["ligne_adresse"] = "Veuillez entrer la ligne d'adresse.";
-    $ville = validate_input($_POST["ville"] ?? ''); if (empty($ville)) $erreurs["ville"] = "Veuillez entrer la ville.";
-    $code_postal = validate_input($_POST["code_postal"] ?? ''); if (empty($code_postal)) { $erreurs["code_postal"] = "Veuillez entrer un code postal."; } elseif (!preg_match("/^\d{5}$/", $code_postal)) { $erreurs["code_postal"] = "Code postal invalide (5 chiffres)."; }
-    $site_web = null; if (!empty($_POST["site"])) { $site_input = validate_input($_POST["site"]); if (!filter_var($site_input, FILTER_VALIDATE_URL)) { $erreurs["site"] = "URL de site web invalide."; } else { $site_web = $site_input; } }
+    $conditions_accessibilite = validate_input($_POST["conditions_accessibilite"] ?? '');
+    if (empty($conditions_accessibilite)) {
+        $erreurs["conditions_accessibilite"] = "Veuillez entrer les conditions d'accessibilité.";
+    }
+    $ligne_adresse = validate_input($_POST["ligne_adresse"] ?? '');
+    if (empty($ligne_adresse)) $erreurs["ligne_adresse"] = "Veuillez entrer la ligne d'adresse.";
+    $ville = validate_input($_POST["ville"] ?? '');
+    if (empty($ville)) $erreurs["ville"] = "Veuillez entrer la ville.";
+    $code_postal = validate_input($_POST["code_postal"] ?? '');
+    if (empty($code_postal)) {
+        $erreurs["code_postal"] = "Veuillez entrer un code postal.";
+    } elseif (!preg_match("/^\d{5}$/", $code_postal)) {
+        $erreurs["code_postal"] = "Code postal invalide (5 chiffres).";
+    }
+    $site_web = null;
+    if (!empty($_POST["site"])) {
+        $site_input = validate_input($_POST["site"]);
+        if (!filter_var($site_input, FILTER_VALIDATE_URL)) {
+            $erreurs["site"] = "URL de site web invalide.";
+        } else {
+            $site_web = $site_input;
+        }
+    }
 
     // Définir $categorie_type_enum_for_new_row pour la logique de mise à jour spécifique
     $categorie_type_enum_for_new_row = $_POST['categorie_type_enum'] ?? null;
@@ -67,12 +112,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             if ($date_obj && $date_obj->format('Y-m-d') === $_POST["date"]) {
                 // Si la date est dans le passé et n'est pas aujourd'hui
                 if (new DateTime() > $date_obj && $date_obj->format('Y-m-d') !== (new DateTime())->format('Y-m-d')) {
-                     $erreurs["date_passee"] = "La date de l'offre ne peut pas être une date passée.";
+                    $erreurs["date_passee"] = "La date de l'offre ne peut pas être une date passée.";
                 } else {
                     $date_offre_principale = $_POST["date"];
                 }
             } else {
-                 $erreurs["date"] = "Date de l'offre invalide.";
+                $erreurs["date"] = "Date de l'offre invalide.";
             }
         }
     } elseif (!$isDateHandledByCategory && empty($_POST["date"]) && ($categorie_type_enum_for_new_row == 'visite')) {
@@ -121,7 +166,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             }
         }
         if (!is_writable($target_dir_absolute) && !isset($erreurs["photos_upload_dir"])) {
-             $erreurs["photos_upload_permission"] = "Le dossier de téléchargement n'est pas accessible en écriture sur le serveur.";
+            $erreurs["photos_upload_permission"] = "Le dossier de téléchargement n'est pas accessible en écriture sur le serveur.";
         }
 
         if (!isset($erreurs["photos_upload_dir"]) && !isset($erreurs["photos_upload_permission"])) {
@@ -160,7 +205,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
         }
     }
     // Vérification finale si des erreurs de photos ont été rencontrées
-    if (empty($photo_paths_for_db) && empty($erreurs['photos_missing']) && empty($erreurs['photos_count']) && empty($erreurs['photos_upload_dir']) && empty($erreurs['photos_upload_permission']) && !preg_grep('/^photos_upload_move_/', array_keys($erreurs)) && !preg_grep('/^photos_size_/', array_keys($erreurs)) && !preg_grep('/^photos_type_/', array_keys($erreurs)) && !preg_grep('/^photos_upload_error_/', array_keys($erreurs)) && ($photos_after_delete + $total_photos_uploaded) === 0 ) {
+    if (empty($photo_paths_for_db) && empty($erreurs['photos_missing']) && empty($erreurs['photos_count']) && empty($erreurs['photos_upload_dir']) && empty($erreurs['photos_upload_permission']) && !preg_grep('/^photos_upload_move_/', array_keys($erreurs)) && !preg_grep('/^photos_size_/', array_keys($erreurs)) && !preg_grep('/^photos_type_/', array_keys($erreurs)) && !preg_grep('/^photos_upload_error_/', array_keys($erreurs)) && ($photos_after_delete + $total_photos_uploaded) === 0) {
         $erreurs["photos_final_check"] = "Au moins une photo valide est requise et doit être correctement traitée.";
     }
 
@@ -173,7 +218,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             $stmtCheck = $pdo->prepare("SELECT id, adresse_id, categorie_id FROM offres WHERE id = :id AND pro_id = :pro_id");
             $stmtCheck->execute([':id' => $posted_offre_id, ':pro_id' => $current_pro_id]);
             $existing_offer = $stmtCheck->fetch(PDO::FETCH_ASSOC);
-            if (!$existing_offer) { throw new Exception("Modification non autorisée."); }
+            if (!$existing_offer) {
+                throw new Exception("Modification non autorisée.");
+            }
 
             $pdo->prepare("UPDATE adresses SET street = ?, postal_code = ?, city = ? WHERE id = ?")->execute([$ligne_adresse, $code_postal, $ville, $existing_offer['adresse_id']]);
 
@@ -183,9 +230,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 $stmt_get_urls = $pdo->prepare("SELECT url FROM photos_offres WHERE id IN ($placeholders) AND offre_id = ?");
                 $stmt_get_urls->execute(array_merge($deleted_photos_ids, [$posted_offre_id]));
                 $urls_to_delete = $stmt_get_urls->fetchAll(PDO::FETCH_COLUMN);
-                foreach($urls_to_delete as $url_to_delete) {
+                foreach ($urls_to_delete as $url_to_delete) {
                     $full_path = realpath(__DIR__ . '/../../') . '/' . $url_to_delete;
-                    if (file_exists($full_path)) { @unlink($full_path); } // Supprimer le fichier physique
+                    if (file_exists($full_path)) {
+                        @unlink($full_path);
+                    } // Supprimer le fichier physique
                 }
                 $pdo->prepare("DELETE FROM photos_offres WHERE id IN ($placeholders) AND offre_id = ?")->execute(array_merge($deleted_photos_ids, [$posted_offre_id]));
             }
@@ -226,8 +275,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     $age_req_act_str = $_POST['age_requis_activite'] ?? '';
                     $age_req_act = null;
                     if ($age_req_act_str !== '') {
-                         $age_req_act = filter_var($age_req_act_str, FILTER_VALIDATE_INT, ["options" => ["min_range" => 0]]);
-                         if ($age_req_act === false) $erreurs["age_requis_activite"] = "Âge requis activité invalide.";
+                        $age_req_act = filter_var($age_req_act_str, FILTER_VALIDATE_INT, ["options" => ["min_range" => 0]]);
+                        if ($age_req_act === false) $erreurs["age_requis_activite"] = "Âge requis activité invalide.";
                     }
 
                     if (empty($erreurs["duree_activite"]) && empty($erreurs["prix_minimum_activite"]) && empty($erreurs["age_requis_activite"])) {
@@ -248,14 +297,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                                 $h_date = validate_input($horaire_data['date'] ?? '');
                                 $h_debut = validate_input($horaire_data['heure_debut'] ?? '');
 
-                                if (empty($h_date)) $erreurs["horaire_activite_date_".$key] = "Date requise pour l'horaire d'activité " . ($key+1) . ".";
+                                if (empty($h_date)) $erreurs["horaire_activite_date_" . $key] = "Date requise pour l'horaire d'activité " . ($key + 1) . ".";
                                 elseif (new DateTime() > new DateTime($h_date) && (new DateTime($h_date))->format('Y-m-d') !== (new DateTime())->format('Y-m-d')) {
-                                     $erreurs["horaire_activite_date_passee_".$key] = "La date de l'horaire d'activité ".($key+1)." ne peut pas être passée.";
+                                    $erreurs["horaire_activite_date_passee_" . $key] = "La date de l'horaire d'activité " . ($key + 1) . " ne peut pas être passée.";
                                 }
 
-                                if (empty($h_debut)) $erreurs["horaire_activite_debut_".$key] = "Heure de début requise pour l'horaire d'activité " . ($key+1) . ".";
+                                if (empty($h_debut)) $erreurs["horaire_activite_debut_" . $key] = "Heure de début requise pour l'horaire d'activité " . ($key + 1) . ".";
 
-                                if (!empty($h_date) && !empty($h_debut) && !isset($erreurs["horaire_activite_date_passee_".$key])) {
+                                if (!empty($h_date) && !empty($h_debut) && !isset($erreurs["horaire_activite_date_passee_" . $key])) {
                                     $horaire_act_id_uuid = generate_uuid();
                                     $stmtHoraireAct->execute([
                                         ':id' => $horaire_act_id_uuid,
@@ -300,7 +349,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                                         $stmtActPrestaNonInclus->execute([':act_id' => $categorie_id_for_joins, ':presta_id' => $prestation_id_uuid]);
                                     }
                                 } else if (isset($service_data['nom_service'])) {
-                                     $erreurs["service_activite_nom_manquant"] = "Le nom du service ne peut pas être vide.";
+                                    $erreurs["service_activite_nom_manquant"] = "Le nom du service ne peut pas être vide.";
                                 }
                             }
                         }
@@ -313,7 +362,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
                     $prix_min_vis_str = $_POST['prix_minimum_visite'] ?? '';
                     $prix_min_vis = null;
-                     if ($prix_min_vis_str !== '') {
+                    if ($prix_min_vis_str !== '') {
                         $prix_min_vis = filter_var($prix_min_vis_str, FILTER_VALIDATE_FLOAT, ["options" => ["min_range" => 0]]);
                         if ($prix_min_vis === false) $erreurs["prix_minimum_visite"] = "Prix minimum visite invalide.";
                     }
@@ -351,7 +400,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                                     if ($lang_row) {
                                         $stmtVisLangInsert->execute([':vis_id' => $categorie_id_for_joins, ':lang_id' => $lang_row['id']]);
                                     } else {
-                                        $erreurs["langue_inconnue_".$lang_code_valide] = "La langue '".$lang_code_valide."' n'est pas configurée.";
+                                        $erreurs["langue_inconnue_" . $lang_code_valide] = "La langue '" . $lang_code_valide . "' n'est pas configurée.";
                                     }
                                 }
                             }
@@ -372,17 +421,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     $date_spectacle_str = validate_input($_POST["date_spectacle"] ?? '');
                     $date_spectacle = null;
                     if (empty($date_spectacle_str) || !preg_match("/^\d{4}-\d{2}-\d{2}$/", $date_spectacle_str)) {
-                         $erreurs["date_spectacle"] = "Date spectacle requise (YYYY-MM-DD).";
+                        $erreurs["date_spectacle"] = "Date spectacle requise (YYYY-MM-DD).";
                     } else {
                         $date_obj = DateTime::createFromFormat('Y-m-d', $date_spectacle_str);
                         if ($date_obj && $date_obj->format('Y-m-d') === $date_spectacle_str) {
-                             if (new DateTime() > $date_obj && $date_obj->format('Y-m-d') !== (new DateTime())->format('Y-m-d') ) {
+                            if (new DateTime() > $date_obj && $date_obj->format('Y-m-d') !== (new DateTime())->format('Y-m-d')) {
                                 $erreurs["date_spectacle_passee"] = "La date du spectacle ne peut pas être une date passée.";
                             } else {
                                 $date_spectacle = $date_spectacle_str;
                             }
                         } else {
-                             $erreurs["date_spectacle_validite"] = "Date spectacle invalide.";
+                            $erreurs["date_spectacle_validite"] = "Date spectacle invalide.";
                         }
                     }
 
@@ -423,7 +472,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     $nb_attr_parc = null;
                     if ($nb_attr_parc_str !== '') {
                         $nb_attr_parc = filter_var($nb_attr_parc_str, FILTER_VALIDATE_INT, ["options" => ["min_range" => 0]]);
-                         if ($nb_attr_parc === false) $erreurs["nombre_total_attractions_parc"] = "Nombre d'attractions invalide.";
+                        if ($nb_attr_parc === false) $erreurs["nombre_total_attractions_parc"] = "Nombre d'attractions invalide.";
                     }
 
                     $maps_url_parc = null;
@@ -466,7 +515,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                             foreach ($_POST['attractions'] as $attr_key => $attr_data) {
                                 $attr_nom = validate_input($attr_data['nom_attraction'] ?? '');
                                 if (empty($attr_nom)) {
-                                    $erreurs["attraction_nom_".$attr_key] = "Nom requis pour l'attraction " . ($attr_key+1) . ".";
+                                    $erreurs["attraction_nom_" . $attr_key] = "Nom requis pour l'attraction " . ($attr_key + 1) . ".";
                                     continue;
                                 }
                                 $attraction_id_uuid = generate_uuid();
@@ -483,28 +532,42 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                                         $h_fin = validate_input($h_data['heure_fin'] ?? '');
                                         $day_of_week_for_db = null;
 
-                                        if (empty($h_date_str)) $erreurs["attraction_".$attr_key."_horaire_date_".$h_key] = "Date requise pour l'horaire de ".$attr_nom.".";
+                                        if (empty($h_date_str)) $erreurs["attraction_" . $attr_key . "_horaire_date_" . $h_key] = "Date requise pour l'horaire de " . $attr_nom . ".";
                                         elseif (new DateTime() > new DateTime($h_date_str) && (new DateTime($h_date_str))->format('Y-m-d') !== (new DateTime())->format('Y-m-d')) {
-                                            $erreurs["attraction_".$attr_key."_horaire_date_passee_".$h_key] = "La date de l'horaire de l'attraction ".$attr_nom." ne peut pas être passée.";
+                                            $erreurs["attraction_" . $attr_key . "_horaire_date_passee_" . $h_key] = "La date de l'horaire de l'attraction " . $attr_nom . " ne peut pas être passée.";
                                         }
 
-                                        if (empty($h_debut)) $erreurs["attraction_".$attr_key."_horaire_debut_".$h_key] = "Début requis pour l'horaire de ".$attr_nom.".";
-                                        if (empty($h_fin)) $erreurs["attraction_".$attr_key."_horaire_fin_".$h_key] = "Fin requise pour l'horaire de ".$attr_nom.".";
+                                        if (empty($h_debut)) $erreurs["attraction_" . $attr_key . "_horaire_debut_" . $h_key] = "Début requis pour l'horaire de " . $attr_nom . ".";
+                                        if (empty($h_fin)) $erreurs["attraction_" . $attr_key . "_horaire_fin_" . $h_key] = "Fin requise pour l'horaire de " . $attr_nom . ".";
 
-                                        if (!empty($h_date_str) && !empty($h_debut) && !empty($h_fin) && !isset($erreurs["attraction_".$attr_key."_horaire_date_passee_".$h_key])) {
+                                        if (!empty($h_date_str) && !empty($h_debut) && !empty($h_fin) && !isset($erreurs["attraction_" . $attr_key . "_horaire_date_passee_" . $h_key])) {
                                             try {
                                                 $date_obj_attr = new DateTime($h_date_str);
                                                 $day_of_week_php = $date_obj_attr->format('l');
                                                 switch (strtolower($day_of_week_php)) {
-                                                    case 'monday': $day_of_week_for_db = 'lundi'; break;
-                                                    case 'tuesday': $day_of_week_for_db = 'mardi'; break;
-                                                    case 'wednesday': $day_of_week_for_db = 'mercredi'; break;
-                                                    case 'thursday': $day_of_week_for_db = 'jeudi'; break;
-                                                    case 'friday': $day_of_week_for_db = 'vendredi'; break;
-                                                    case 'saturday': $day_of_week_for_db = 'samedi'; break;
-                                                    case 'sunday': $day_of_week_for_db = 'dimanche'; break;
+                                                    case 'monday':
+                                                        $day_of_week_for_db = 'lundi';
+                                                        break;
+                                                    case 'tuesday':
+                                                        $day_of_week_for_db = 'mardi';
+                                                        break;
+                                                    case 'wednesday':
+                                                        $day_of_week_for_db = 'mercredi';
+                                                        break;
+                                                    case 'thursday':
+                                                        $day_of_week_for_db = 'jeudi';
+                                                        break;
+                                                    case 'friday':
+                                                        $day_of_week_for_db = 'vendredi';
+                                                        break;
+                                                    case 'saturday':
+                                                        $day_of_week_for_db = 'samedi';
+                                                        break;
+                                                    case 'sunday':
+                                                        $day_of_week_for_db = 'dimanche';
+                                                        break;
                                                     default:
-                                                        $erreurs["attraction_".$attr_key."_horaire_day_invalid_".$h_key] = "Jour de la semaine invalide pour l'horaire de ".$attr_nom.".";
+                                                        $erreurs["attraction_" . $attr_key . "_horaire_day_invalid_" . $h_key] = "Jour de la semaine invalide pour l'horaire de " . $attr_nom . ".";
                                                 }
 
                                                 if ($day_of_week_for_db) {
@@ -518,16 +581,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                                                     ]);
                                                 }
                                             } catch (Exception $ex) {
-                                                $erreurs["attraction_".$attr_key."_horaire_date_parse_".$h_key] = "Format de date invalide pour l'horaire de ".$attr_nom.".";
+                                                $erreurs["attraction_" . $attr_key . "_horaire_date_parse_" . $h_key] = "Format de date invalide pour l'horaire de " . $attr_nom . ".";
                                             }
                                         }
                                     }
                                 } else {
-                                     $erreurs["attraction_".$attr_key."_horaires_manquants"] = "Au moins un horaire complet est requis pour l'attraction " . $attr_nom . ".";
+                                    $erreurs["attraction_" . $attr_key . "_horaires_manquants"] = "Au moins un horaire complet est requis pour l'attraction " . $attr_nom . ".";
                                 }
                             }
                         } else {
-                             $erreurs["attractions_parc_manquantes"] = "Au moins une attraction spécifique avec ses horaires doit être ajoutée pour un parc.";
+                            $erreurs["attractions_parc_manquantes"] = "Au moins une attraction spécifique avec ses horaires doit être ajoutée pour un parc.";
                         }
                     }
                     break;
@@ -548,14 +611,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     if ($prix_moyen_resto_str !== '') {
                         $prix_moyen_val = filter_var($prix_moyen_resto_str, FILTER_VALIDATE_FLOAT, ["options" => ["min_range" => 0]]);
                         if ($prix_moyen_val === false) {
-                             $erreurs["prix_moyen_restaurant"] = "Prix moyen invalide pour le restaurant.";
+                            $erreurs["prix_moyen_restaurant"] = "Prix moyen invalide pour le restaurant.";
                         } else {
                             if ($prix_moyen_val <= 15) $prix_range_enum = '€';
                             elseif ($prix_moyen_val <= 35) $prix_range_enum = '€€';
                             else $prix_range_enum = '€€€';
                         }
                     } else {
-                         $erreurs["prix_moyen_restaurant_required"] = "Le prix moyen du restaurant est requis.";
+                        $erreurs["prix_moyen_restaurant_required"] = "Le prix moyen du restaurant est requis.";
                     }
 
                     if (empty($erreurs["lien_menu_restaurant"]) && empty($erreurs["lien_menu_restaurant_required"]) && empty($erreurs["prix_moyen_restaurant"]) && empty($erreurs["prix_moyen_restaurant_required"])) {
@@ -569,7 +632,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                         // Plats : supprimer tout et réinsérer
                         $pdo->prepare("DELETE FROM restaurations_repas WHERE restauration_id = ?")->execute([$categorie_id_for_joins]);
                         if (isset($_POST['plats']) && is_array($_POST['plats'])) {
-                             if (count($_POST['plats']) > 0 && !empty(array_filter($_POST['plats']))) {
+                            if (count($_POST['plats']) > 0 && !empty(array_filter($_POST['plats']))) {
                                 $stmtRepasSearch = $pdo->prepare("SELECT id FROM repas WHERE name = :name LIMIT 1");
                                 $stmtRepasInsert = $pdo->prepare("INSERT INTO repas (id, name) VALUES (:id, :name)");
                                 $stmtRestoRepasInsert = $pdo->prepare("INSERT INTO restaurations_repas (restauration_id, repas_id) VALUES (:resto_id, :repas_id)");
@@ -577,8 +640,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                                 foreach ($_POST['plats'] as $idx => $plat_nom_input) {
                                     $plat_nom = validate_input($plat_nom_input);
                                     if (empty($plat_nom)) {
-                                        if (count($_POST['plats']) > 1 || !empty(array_filter(array_slice($_POST['plats'], $idx+1)))) {
-                                           $erreurs["plat_restaurant_nom_".$idx] = "Le nom du plat " . ($idx+1) . " est requis s'il est ajouté.";
+                                        if (count($_POST['plats']) > 1 || !empty(array_filter(array_slice($_POST['plats'], $idx + 1)))) {
+                                            $erreurs["plat_restaurant_nom_" . $idx] = "Le nom du plat " . ($idx + 1) . " est requis s'il est ajouté.";
                                         }
                                         continue;
                                     }
@@ -611,12 +674,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 header("Location: offre.php?id=" . $offre_id . "&update=success");
                 exit();
             }
-
         } catch (Exception $e) {
-            if ($pdo && $pdo->inTransaction()) { $pdo->rollBack(); }
+            if ($pdo && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
             error_log("Database Update Error: " . $e->getMessage() . " - Data: " . json_encode($_POST));
             if ($e->getCode() == '23000') {
-                 $erreurs["db_general"] = "Une erreur de contrainte de base de données est survenue (ex: duplicata). Détail: " . $e->getMessage();
+                $erreurs["db_general"] = "Une erreur de contrainte de base de données est survenue (ex: duplicata). Détail: " . $e->getMessage();
             } else {
                 $erreurs["db_general"] = "Une erreur est survenue lors de la mise à jour de votre offre : " . $e->getMessage() . ". Veuillez réessayer. ";
             }
@@ -631,12 +695,15 @@ if ($edit_mode && empty($_POST)) { // Si c'est un chargement initial (pas après
         $stmt->execute([':offre_id' => $offre_id, ':current_pro_id' => $current_pro_id]);
         $offre_data_from_db['main'] = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$offre_data_from_db['main']) { header('Location: recherche.php?error=not_found'); exit(); }
+        if (!$offre_data_from_db['main']) {
+            header('Location: recherche.php?error=not_found');
+            exit();
+        }
 
         $categorie_id = $offre_data_from_db['main']['categorie_id_for_joins'];
         $type = $offre_data_from_db['main']['categorie_type_enum'];
 
-        $specific_table_map = [ 'activite' => 'activites', 'visite' => 'visites', 'spectacle' => 'spectacles', 'parc_attractions' => 'parcs_attractions', 'restauration' => 'restaurations' ];
+        $specific_table_map = ['activite' => 'activites', 'visite' => 'visites', 'spectacle' => 'spectacles', 'parc_attractions' => 'parcs_attractions', 'restauration' => 'restaurations'];
         if (array_key_exists($type, $specific_table_map)) {
             $stmt_specific = $pdo->prepare("SELECT * FROM `{$specific_table_map[$type]}` WHERE categorie_id = :cat_id");
             $stmt_specific->execute([':cat_id' => $categorie_id]);
@@ -664,8 +731,12 @@ if ($edit_mode && empty($_POST)) { // Si c'est un chargement initial (pas après
                 $services_non_inclus = $stmt_s_non_inclus->fetchAll(PDO::FETCH_ASSOC);
 
                 $offre_data_from_db['specific']['services'] = [];
-                foreach($services_inclus as $s) { $offre_data_from_db['specific']['services'][] = ['nom_service' => $s['nom_service'], 'inclusion' => 'on']; }
-                foreach($services_non_inclus as $s) { $offre_data_from_db['specific']['services'][] = ['nom_service' => $s['nom_service'], 'inclusion' => null]; }
+                foreach ($services_inclus as $s) {
+                    $offre_data_from_db['specific']['services'][] = ['nom_service' => $s['nom_service'], 'inclusion' => 'on'];
+                }
+                foreach ($services_non_inclus as $s) {
+                    $offre_data_from_db['specific']['services'][] = ['nom_service' => $s['nom_service'], 'inclusion' => null];
+                }
                 break;
             case 'visite':
                 $stmt_l = $pdo->prepare("SELECT l.language FROM visites_langues vl JOIN langues l ON vl.langue_id = l.id WHERE vl.visite_id = ?");
@@ -673,15 +744,15 @@ if ($edit_mode && empty($_POST)) { // Si c'est un chargement initial (pas après
                 $offre_data_from_db['specific']['langues'] = $stmt_l->fetchAll(PDO::FETCH_COLUMN, 0);
                 break;
             case 'parc_attractions':
-                 $stmt_a = $pdo->prepare("SELECT id, name as nom_attraction FROM attractions WHERE parc_attractions_id = ?");
-                 $stmt_a->execute([$categorie_id]);
-                 $attractions = $stmt_a->fetchAll(PDO::FETCH_ASSOC);
-                 $stmt_h_a = $pdo->prepare("SELECT day, start_time as heure_debut, end_time as heure_fin FROM horaires_attractions WHERE attraction_id = ?");
-                 foreach($attractions as $key => $attraction) {
+                $stmt_a = $pdo->prepare("SELECT id, name as nom_attraction FROM attractions WHERE parc_attractions_id = ?");
+                $stmt_a->execute([$categorie_id]);
+                $attractions = $stmt_a->fetchAll(PDO::FETCH_ASSOC);
+                $stmt_h_a = $pdo->prepare("SELECT day, start_time as heure_debut, end_time as heure_fin FROM horaires_attractions WHERE attraction_id = ?");
+                foreach ($attractions as $key => $attraction) {
                     $stmt_h_a->execute([$attraction['id']]);
                     $attractions[$key]['horaires'] = $stmt_h_a->fetchAll(PDO::FETCH_ASSOC);
-                 }
-                 $offre_data_from_db['specific']['attractions'] = $attractions;
+                }
+                $offre_data_from_db['specific']['attractions'] = $attractions;
                 break;
             case 'restauration':
                 $stmt_p = $pdo->prepare("SELECT rep.name FROM restaurations_repas rr JOIN repas rep ON rr.repas_id = rep.id WHERE rr.restauration_id = ?");
@@ -689,8 +760,9 @@ if ($edit_mode && empty($_POST)) { // Si c'est un chargement initial (pas après
                 $offre_data_from_db['specific']['plats'] = $stmt_p->fetchAll(PDO::FETCH_COLUMN, 0);
                 break;
         }
-
-    } catch (Exception $e) { die("Erreur critique lors de la récupération des données : " . $e->getMessage()); }
+    } catch (Exception $e) {
+        die("Erreur critique lors de la récupération des données : " . $e->getMessage());
+    }
 }
 
 // 6. PRÉPARATION FINALE DES DONNÉES POUR JAVASCRIPT
@@ -699,9 +771,16 @@ if ($edit_mode && empty($_POST)) { // Si c'est la première fois qu'on charge la
     $main = $offre_data_from_db['main'] ?? [];
     $specific = $offre_data_from_db['specific'] ?? [];
     $js_data = [
-        'titre' => $main['title'] ?? '', 'prix' => $main['price'] ?? '', 'coordonnees_telephoniques' => $main['phone'] ?? '',
-        'resume' => $main['summary'] ?? '', 'description' => $main['description'] ?? '', 'conditions_accessibilite' => $main['accessibility'] ?? '',
-        'site' => $main['website'] ?? '', 'ligne_adresse' => $main['street'] ?? '', 'ville' => $main['city'] ?? '', 'code_postal' => $main['postal_code'] ?? '',
+        'titre' => $main['title'] ?? '',
+        'prix' => $main['price'] ?? '',
+        'coordonnees_telephoniques' => $main['phone'] ?? '',
+        'resume' => $main['summary'] ?? '',
+        'description' => $main['description'] ?? '',
+        'conditions_accessibilite' => $main['accessibility'] ?? '',
+        'site' => $main['website'] ?? '',
+        'ligne_adresse' => $main['street'] ?? '',
+        'ville' => $main['city'] ?? '',
+        'code_postal' => $main['postal_code'] ?? '',
         'categorie_type_enum' => $main['categorie_type_enum'] ?? '', // Cette valeur est cruciale pour le JS
         'date' => $main['categorie_type_enum'] === 'visite' ? ($specific['date'] ?? null) : null, // Seule la visite utilise la date principale de l'offre
 
@@ -759,6 +838,7 @@ if ($edit_mode && empty($_POST)) { // Si c'est la première fois qu'on charge la
 ?>
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -770,109 +850,302 @@ if ($edit_mode && empty($_POST)) { // Si c'est la première fois qu'on charge la
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
-        .form-section { padding: var(--espacement-double); border-bottom: var(--bordure-standard-interface); }
-        .form-section:last-of-type { border-bottom: none; }
-        label { display: block; margin-bottom: var(--espacement-standard); font-weight: var(--font-weight-medium); }
-        input[type="text"], input[type="date"], input[type="time"], input[type="number"], input[type="url"], textarea, select, input[type="file"] { width: 100%; padding: var(--espacement-standard); border: var(--bordure-standard-interface); border-radius: var(--border-radius-bouton); font-size: 1em; font-family: var(--police-principale); margin-bottom: var(--espacement-double); background-color: var(--couleur-blanche); box-sizing: border-box; height: auto; }
-        textarea { resize: vertical; min-height: 100px; }
-        .form-group { margin-bottom: var(--espacement-double); }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: var(--espacement-standard); margin-bottom: var(--espacement-double); border-radius: var(--border-radius-bouton); }
-        .error ul { margin: 0; padding-left: 20px; }
-        form#offer-form { max-width: 660px; margin: var(--espacement-double) auto; background-color: #fff; padding: var(--espacement-double); border: 1px solid #ddd; border-radius: var(--border-radius-standard); box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
-        .error-message { color: red; font-size: 0.9em; margin-top: -10px; margin-bottom: 10px; display: none; }
-        form#offer-form button[type="submit"] { background-color: var(--couleur-principale); color: var(--couleur-blanche); width: 80%; padding: var(--espacement-moyen); margin: var(--espacement-double) auto; display: block; border: none; border-radius: var(--border-radius-bouton); font-size: 1.1em; cursor: pointer; transition: background-color 0.3s ease; }
-        form#offer-form button[type="submit"]:hover { background-color: var(--couleur-principale-hover); }
-        #image-preview-container, #existing-image-preview-container { display: flex; flex-wrap: wrap; gap: var(--espacement-standard); margin-top: var(--espacement-standard); margin-bottom: var(--espacement-double); }
-        .preview-item { position: relative; width: 120px; height: 120px; border: 1px solid var(--couleur-bordure); border-radius: var(--border-radius-petit); overflow: hidden; display: flex; justify-content: center; align-items: center; background-color: #f9f9f9; }
-        .preview-item img { max-width: 100%; max-height: 100%; display: block; }
-        .delete-image-btn { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; background-color: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 13px; font-weight: bold; cursor: pointer; line-height: 22px; text-align: center; transition: background-color 0.2s ease; }
-        .delete-image-btn:hover { background-color: rgba(220, 53, 69, 0.9); }
-        #categorie-specific-fields .dynamic-section-subtitle{margin-top:var(--espacement-moyen);margin-bottom:var(--espacement-standard);color:var(--couleur-texte);font-size:1.1em;font-weight:var(--font-weight-semibold);padding-bottom:var(--espacement-petit)}
-        #categorie-specific-fields .item-group{position:relative;border:1px solid var(--couleur-bordure);padding:var(--espacement-moyen);padding-top:calc(var(--espacement-moyen) + 20px);margin-bottom:var(--espacement-moyen);border-radius:var(--border-radius-standard);background-color:#f9f9f9}
-        .text-add-link{background:none!important;border:none!important;padding:var(--espacement-standard) 0!important;color:var(--couleur-principale);cursor:pointer;text-decoration:none;font-size:.9em;font-weight:var(--font-weight-medium);margin-top:var(--espacement-moyen);display:inline-block}
-        .remove-icon-cross{position:absolute;top:8px;right:8px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:1.4em;color:#888;cursor:pointer;border-radius:50%;line-height:1;transition:color .2s ease,background-color .2s ease}
-        #categorie-specific-fields .horaire-group-inputs{display:flex;flex-wrap:wrap;gap:var(--espacement-standard);align-items:flex-end;margin-bottom:var(--espacement-petit)}
-        #categorie-specific-fields .horaire-group-inputs>div{display:flex;flex-direction:column;flex-grow:1;min-width:120px}
+        .form-section {
+            padding: var(--espacement-double);
+            border-bottom: var(--bordure-standard-interface);
+        }
+
+        .form-section:last-of-type {
+            border-bottom: none;
+        }
+
+        label {
+            display: block;
+            margin-bottom: var(--espacement-standard);
+            font-weight: var(--font-weight-medium);
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        input[type="number"],
+        input[type="url"],
+        textarea,
+        select,
+        input[type="file"] {
+            width: 100%;
+            padding: var(--espacement-standard);
+            border: var(--bordure-standard-interface);
+            border-radius: var(--border-radius-bouton);
+            font-size: 1em;
+            font-family: var(--police-principale);
+            margin-bottom: var(--espacement-double);
+            background-color: var(--couleur-blanche);
+            box-sizing: border-box;
+            height: auto;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group {
+            margin-bottom: var(--espacement-double);
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: var(--espacement-standard);
+            margin-bottom: var(--espacement-double);
+            border-radius: var(--border-radius-bouton);
+        }
+
+        .error ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        form#offer-form {
+            max-width: 660px;
+            margin: var(--espacement-double) auto;
+            background-color: #fff;
+            padding: var(--espacement-double);
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius-standard);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .error-message {
+            color: red;
+            font-size: 0.9em;
+            margin-top: -10px;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        form#offer-form button[type="submit"] {
+            background-color: var(--couleur-principale);
+            color: var(--couleur-blanche);
+            width: 80%;
+            padding: var(--espacement-moyen);
+            margin: var(--espacement-double) auto;
+            display: block;
+            border: none;
+            border-radius: var(--border-radius-bouton);
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        form#offer-form button[type="submit"]:hover {
+            background-color: var(--couleur-principale-hover);
+        }
+
+        #image-preview-container,
+        #existing-image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--espacement-standard);
+            margin-top: var(--espacement-standard);
+            margin-bottom: var(--espacement-double);
+        }
+
+        .preview-item {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border: 1px solid var(--couleur-bordure);
+            border-radius: var(--border-radius-petit);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f9f9f9;
+        }
+
+        .preview-item img {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+
+        .delete-image-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 22px;
+            height: 22px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 22px;
+            text-align: center;
+            transition: background-color 0.2s ease;
+        }
+
+        .delete-image-btn:hover {
+            background-color: rgba(220, 53, 69, 0.9);
+        }
+
+        #categorie-specific-fields .dynamic-section-subtitle {
+            margin-top: var(--espacement-moyen);
+            margin-bottom: var(--espacement-standard);
+            color: var(--couleur-texte);
+            font-size: 1.1em;
+            font-weight: var(--font-weight-semibold);
+            padding-bottom: var(--espacement-petit)
+        }
+
+        #categorie-specific-fields .item-group {
+            position: relative;
+            border: 1px solid var(--couleur-bordure);
+            padding: var(--espacement-moyen);
+            padding-top: calc(var(--espacement-moyen) + 20px);
+            margin-bottom: var(--espacement-moyen);
+            border-radius: var(--border-radius-standard);
+            background-color: #f9f9f9
+        }
+
+        .text-add-link {
+            background: none !important;
+            border: none !important;
+            padding: var(--espacement-standard) 0 !important;
+            color: var(--couleur-principale);
+            cursor: pointer;
+            text-decoration: none;
+            font-size: .9em;
+            font-weight: var(--font-weight-medium);
+            margin-top: var(--espacement-moyen);
+            display: inline-block
+        }
+
+        .remove-icon-cross {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4em;
+            color: #888;
+            cursor: pointer;
+            border-radius: 50%;
+            line-height: 1;
+            transition: color .2s ease, background-color .2s ease
+        }
+
+        #categorie-specific-fields .horaire-group-inputs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--espacement-standard);
+            align-items: flex-end;
+            margin-bottom: var(--espacement-petit)
+        }
+
+        #categorie-specific-fields .horaire-group-inputs>div {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            min-width: 120px
+        }
+
         /* --- STYLES POUR LA NOTIFICATION PROFIL --- */
 
-    .main-nav ul li.nav-item-with-notification {
-        position: relative; /* Contexte pour le positionnement absolu de la bulle */
-    }
+        .main-nav ul li.nav-item-with-notification {
+            position: relative;
+            /* Contexte pour le positionnement absolu de la bulle */
+        }
 
-    .profile-link-container {
-        position: relative;
-        display: flex;
-        align-items: center;
-    }
+        .profile-link-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
 
-    .notification-bubble {
-        position: absolute;
-        top: -16px;
-        right: 80px;
-        width: 20px;
-        height: 20px;
-        background-color: #dc3545;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.8em;
-        font-weight: bold;
-        border: 2px solid white;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    }
+        .notification-bubble {
+            position: absolute;
+            top: -16px;
+            right: 80px;
+            width: 20px;
+            height: 20px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
 
-    .header-right .profile-link-container + .btn-primary {
-        margin-left: 1rem; 
-    }
+        .header-right .profile-link-container+.btn-primary {
+            margin-left: 1rem;
+        }
 
-    .nav-item-with-notification .notification-bubble {
-        position: absolute;
-        top: -15px; /* Ajustez pour la position verticale */
-        right: 80px; /* Ajustez pour la position horizontale */
-        width: 20px;
-        height: 20px;
-        background-color: #dc3545;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.75em; /* Police un peu plus petite pour la nav */
-        font-weight: bold;
-        border: 2px solid white;
-    }
+        .nav-item-with-notification .notification-bubble {
+            position: absolute;
+            top: -15px;
+            /* Ajustez pour la position verticale */
+            right: 80px;
+            /* Ajustez pour la position horizontale */
+            width: 20px;
+            height: 20px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75em;
+            /* Police un peu plus petite pour la nav */
+            font-weight: bold;
+            border: 2px solid white;
+        }
     </style>
 </head>
+
 <body>
     <header>
-    <div class="container header-container">
-        <div class="header-left">
-            <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
-            <span class="pro-text">Professionnel</span>
-        </div>
-
-        <nav class="main-nav">
-            <ul>
-                <li><a href="index.php" class="active">Accueil</a></li>
-                <li class="nav-item-with-notification">
-                    <a href="recherche.php">Mes Offres</a>
-                    <?php if (isset($unanswered_reviews_count) && $unanswered_reviews_count > 0): ?>
-                        <span class="notification-bubble"><?php echo $unanswered_reviews_count; ?></span>
-                    <?php endif; ?>
-                </li>
-                <li><a href="publier-une-offre.php">Publier une offre</a></li>
-            </ul>
-        </nav>
-
-        <div class="header-right">
-            <div class="profile-link-container">
-                <a href="profil.php" class="btn btn-secondary">Mon profil</a>
+        <div class="container header-container">
+            <div class="header-left">
+                <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
+                <span class="pro-text">Professionnel</span>
             </div>
-            <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
+
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="index.php" class="active">Accueil</a></li>
+                    <li class="nav-item-with-notification">
+                        <a href="recherche.php">Mes Offres</a>
+                        <?php if (isset($unanswered_reviews_count) && $unanswered_reviews_count > 0): ?>
+                            <span class="notification-bubble"><?php echo $unanswered_reviews_count; ?></span>
+                        <?php endif; ?>
+                    </li>
+                    <li><a href="publier-une-offre.php">Publier une offre</a></li>
+                </ul>
+            </nav>
+
+            <div class="header-right">
+                <div class="profile-link-container">
+                    <a href="profil.php" class="btn btn-secondary">Mon profil</a>
+                </div>
+                <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
+            </div>
         </div>
-    </div>
     </header>
 
     <main>
@@ -881,11 +1154,14 @@ if ($edit_mode && empty($_POST)) { // Si c'est la première fois qu'on charge la
                 <h1 style="text-align: center; padding: 2rem 1rem 0;">Modifier votre offre</h1>
 
                 <?php if (!empty($erreurs)): ?>
-                    <div class='error form-section'><strong>Veuillez corriger les erreurs suivantes :</strong><ul>
-                        <?php foreach ($erreurs as $erreur_key => $erreur_msg): // Afficher les clés d'erreur pour le débogage ?>
-                            <li><?php echo htmlspecialchars($erreur_msg); ?> (Champ/Info: <?php echo htmlspecialchars($erreur_key); ?>)</li>
-                        <?php endforeach; ?>
-                    </ul></div>
+                    <div class='error form-section'><strong>Veuillez corriger les erreurs suivantes :</strong>
+                        <ul>
+                            <?php foreach ($erreurs as $erreur_key => $erreur_msg): // Afficher les clés d'erreur pour le débogage 
+                            ?>
+                                <li><?php echo htmlspecialchars($erreur_msg); ?> (Champ/Info: <?php echo htmlspecialchars($erreur_key); ?>)</li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
                 <?php endif; ?>
 
                 <input type="hidden" name="offre_id" value="<?php echo htmlspecialchars($offre_id); ?>">
@@ -920,9 +1196,9 @@ if ($edit_mode && empty($_POST)) { // Si c'est la première fois qu'on charge la
                     <label for="categorie">Catégorie (non modifiable)</label>
                     <select id="categorie" name="categorie" disabled>
                         <?php
-                            $categories_map = ['activite' => '1', 'visite' => '2', 'spectacle' => '3', 'parc_attractions' => '4', 'restauration' => '5'];
-                            $selected_cat_type = $offre_data_from_db['main']['categorie_type_enum'] ?? ($js_data['categorie_type_enum'] ?? null);
-                            $selected_cat_value = $selected_cat_type ? $categories_map[$selected_cat_type] : '';
+                        $categories_map = ['activite' => '1', 'visite' => '2', 'spectacle' => '3', 'parc_attractions' => '4', 'restauration' => '5'];
+                        $selected_cat_type = $offre_data_from_db['main']['categorie_type_enum'] ?? ($js_data['categorie_type_enum'] ?? null);
+                        $selected_cat_value = $selected_cat_type ? $categories_map[$selected_cat_type] : '';
                         ?>
                         <option value="1" <?php echo ($selected_cat_value == '1') ? 'selected' : ''; ?>>Activité</option>
                         <option value="2" <?php echo ($selected_cat_value == '2') ? 'selected' : ''; ?>>Visite</option>
@@ -959,7 +1235,7 @@ if ($edit_mode && empty($_POST)) { // Si c'est la première fois qu'on charge la
 
                 <div class="form-section">
                     <?php
-                        $display_main_date_input = (isset($js_data['categorie_type_enum']) && in_array($js_data['categorie_type_enum'], ['activite','spectacle','parc_attractions'])) ? 'none' : 'block';
+                    $display_main_date_input = (isset($js_data['categorie_type_enum']) && in_array($js_data['categorie_type_enum'], ['activite', 'spectacle', 'parc_attractions'])) ? 'none' : 'block';
                     ?>
                     <div id="main-date-input-container" style="display: <?php echo $display_main_date_input; ?>;">
                         <label for="date">Date de l'offre/visite *</label>
@@ -1020,7 +1296,7 @@ if ($edit_mode && empty($_POST)) { // Si c'est la première fois qu'on charge la
             <div class="footer-section links">
                 <h3>Visiteur</h3>
                 <ul>
-                    <li><a href="../index.html">Accueil</a></li>
+                    <li><a href="../index.php">Accueil</a></li>
                     <li><a href="../FO/recherche.php">Recherche d'offres</a></li>
                     <li><a href="../FO/connexion-compte.php">Je me connecte en tant que membre</a></li>
                 </ul>
@@ -1046,51 +1322,53 @@ if ($edit_mode && empty($_POST)) { // Si c'est la première fois qu'on charge la
         </div>
     </footer>
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const categorieSelect = document.getElementById('categorie');
-        const categorieSpecificFields = document.getElementById('categorie-specific-fields');
-        const serverData = <?php echo json_encode($js_data); ?>;
-        const offerForm = document.getElementById('offer-form');
-        const today = new Date().toISOString().split('T')[0];
+        document.addEventListener('DOMContentLoaded', function() {
+            const categorieSelect = document.getElementById('categorie');
+            const categorieSpecificFields = document.getElementById('categorie-specific-fields');
+            const serverData = <?php echo json_encode($js_data); ?>;
+            const offerForm = document.getElementById('offer-form');
+            const today = new Date().toISOString().split('T')[0];
 
-        const visiteGuideeSection = document.getElementById('visite-guidee-section');
-        const languesGuideesDiv = document.getElementById('langues-guidees');
-        const languesSelect = document.getElementById('langues');
-        const mainDateInputContainer = document.getElementById('main-date-input-container');
-        const mainDateInput = document.getElementById('date');
+            const visiteGuideeSection = document.getElementById('visite-guidee-section');
+            const languesGuideesDiv = document.getElementById('langues-guidees');
+            const languesSelect = document.getElementById('langues');
+            const mainDateInputContainer = document.getElementById('main-date-input-container');
+            const mainDateInput = document.getElementById('date');
 
-        const photosInput = document.getElementById('photos');
-        const imagePreviewContainer = document.getElementById('image-preview-container');
-        const existingImagePreviewContainer = document.getElementById('existing-image-preview-container'); // Nouveau
-        const deletedPhotosInput = document.getElementById('deleted_photos_input'); // Nouveau
-        let currentSelectedFiles = []; // Pour les nouvelles photos
-        let existingPhotoElements = []; // Pour suivre les photos existantes dans le DOM
+            const photosInput = document.getElementById('photos');
+            const imagePreviewContainer = document.getElementById('image-preview-container');
+            const existingImagePreviewContainer = document.getElementById('existing-image-preview-container'); // Nouveau
+            const deletedPhotosInput = document.getElementById('deleted_photos_input'); // Nouveau
+            let currentSelectedFiles = []; // Pour les nouvelles photos
+            let existingPhotoElements = []; // Pour suivre les photos existantes dans le DOM
 
-        // Récupérer les photos existantes si présentes au chargement de la page
-        <?php if (!empty($offre_data_from_db['photos'])): ?>
-            existingPhotoElements = <?php echo json_encode($offre_data_from_db['photos']); ?>;
-        <?php endif; ?>
+            // Récupérer les photos existantes si présentes au chargement de la page
+            <?php if (!empty($offre_data_from_db['photos'])): ?>
+                existingPhotoElements = <?php echo json_encode($offre_data_from_db['photos']); ?>;
+            <?php endif; ?>
 
-        function setMinDateForInput(inputElement) {
-            if (inputElement) { inputElement.setAttribute('min', today); }
-        }
-
-        // Genere et affiche dynamiquement les champs de formulaire spécifiques à la catégorie sélectionnée (activité, visite, etc.)
-        function fetchCategorieFields(categorieTypeEnum, data) {
-            let htmlContent = '';
-            const isDateHandledByCategoryOrNotApplicable = (categorieTypeEnum === 'activite' || categorieTypeEnum === 'spectacle' || categorieTypeEnum === 'parc_attractions');
-
-            if(mainDateInputContainer) mainDateInputContainer.style.display = isDateHandledByCategoryOrNotApplicable ? 'none' : 'block';
-            if(mainDateInput) {
-                 mainDateInput.required = !isDateHandledByCategoryOrNotApplicable;
-                 if (categorieTypeEnum === 'visite') mainDateInput.required = true;
-                 else if (categorieTypeEnum === 'restauration') mainDateInput.required = false; // Restauration n'a pas de date principale
-                 setMinDateForInput(mainDateInput); // Set min date for main date input
+            function setMinDateForInput(inputElement) {
+                if (inputElement) {
+                    inputElement.setAttribute('min', today);
+                }
             }
 
-            switch (categorieTypeEnum) {
-                case 'activite':
-                    htmlContent = `
+            // Genere et affiche dynamiquement les champs de formulaire spécifiques à la catégorie sélectionnée (activité, visite, etc.)
+            function fetchCategorieFields(categorieTypeEnum, data) {
+                let htmlContent = '';
+                const isDateHandledByCategoryOrNotApplicable = (categorieTypeEnum === 'activite' || categorieTypeEnum === 'spectacle' || categorieTypeEnum === 'parc_attractions');
+
+                if (mainDateInputContainer) mainDateInputContainer.style.display = isDateHandledByCategoryOrNotApplicable ? 'none' : 'block';
+                if (mainDateInput) {
+                    mainDateInput.required = !isDateHandledByCategoryOrNotApplicable;
+                    if (categorieTypeEnum === 'visite') mainDateInput.required = true;
+                    else if (categorieTypeEnum === 'restauration') mainDateInput.required = false; // Restauration n'a pas de date principale
+                    setMinDateForInput(mainDateInput); // Set min date for main date input
+                }
+
+                switch (categorieTypeEnum) {
+                    case 'activite':
+                        htmlContent = `
                         <label for="duree_activite">Durée de l'activité (en minutes) *</label>
                         <input type="number" id="duree_activite" name="duree" required min="1" value="${data.duree || ''}">
                         <div class="error-message">Veuillez entrer la durée de l'activité.</div>
@@ -1109,9 +1387,9 @@ if ($edit_mode && empty($_POST)) { // Si c'est la première fois qu'on charge la
                         </div>
                         <a href="#" role="button" id="add-service-activite" class="text-add-link">+ Ajouter un service/prestation</a>
                     `;
-                    break;
-                case 'visite':
-                    htmlContent = `
+                        break;
+                    case 'visite':
+                        htmlContent = `
                         <label for="duree_visite">Durée de la visite (en heures, ex: 1.5 pour 1h30) *</label>
                         <input type="number" id="duree_visite" name="duree" required step="0.1" min="0.1" value="${data.duree_visite || ''}">
                         <div class="error-message">Veuillez entrer la durée de la visite.</div>
@@ -1124,10 +1402,10 @@ if ($edit_mode && empty($_POST)) { // Si c'est la première fois qu'on charge la
                         <input type="time" id="heure_debut_visite" name="heure_debut_visite" required value="${data.heure_debut_visite || ''}">
                         <div class="error-message">Veuillez entrer une heure de début.</div>
                     `;
-                    break;
-                case 'spectacle':
-                    const dateSpectVal = data.date_spectacle || ''; // Date for spectacle
-                    htmlContent = `
+                        break;
+                    case 'spectacle':
+                        const dateSpectVal = data.date_spectacle || ''; // Date for spectacle
+                        htmlContent = `
                         <label for="duree_spectacle">Durée du spectacle (en minutes) *</label>
                         <input type="number" id="duree_spectacle" name="duree_spectacle" required min="1" value="${data.duree_spectacle || ''}">
                         <div class="error-message">Veuillez entrer la durée du spectacle.</div>
@@ -1148,9 +1426,9 @@ if ($edit_mode && empty($_POST)) { // Si c'est la première fois qu'on charge la
                         <input type="number" id="capacite_spectacle" name="capacite_spectacle" required min="1" value="${data.capacite_spectacle || ''}">
                         <div class="error-message">Veuillez entrer la capacité du spectacle.</div>
                     `;
-                    break;
-                case 'parc_attractions':
-                    htmlContent = `
+                        break;
+                    case 'parc_attractions':
+                        htmlContent = `
                         <label for="prix_minimum_parc">Prix minimum d'entrée (optionnel, si différent du prix principal)</label>
                         <input type="number" id="prix_minimum_parc" name="prix_minimum_parc" step="0.01" min="0" placeholder="Ex: 20.00" value="${data.prix_minimum_parc || ''}">
                         <div class="error-message">Veuillez entrer un prix valide.</div>
@@ -1171,9 +1449,9 @@ if ($edit_mode && empty($_POST)) { // Si c'est la première fois qu'on charge la
                         </div>
                         <a href="#" role="button" id="add-attraction-parc" class="text-add-link">+ Ajouter une attraction spécifique</a>
                     `;
-                    break;
-                case 'restauration':
-                    htmlContent = `
+                        break;
+                    case 'restauration':
+                        htmlContent = `
                         <label for="lien_menu_restaurant">Lien vers le menu (URL) *</label>
                         <input type="url" id="lien_menu_restaurant" name="lien_menu_restaurant" required placeholder="https://example.com/menu" value="${data.lien_menu_restaurant || ''}">
                         <div class="error-message">Veuillez entrer une URL valide pour le menu.</div>
@@ -1187,451 +1465,576 @@ if ($edit_mode && empty($_POST)) { // Si c'est la première fois qu'on charge la
                         </div>
                         <a href="#" role="button" id="add-plat-restaurant" class="text-add-link">+ Ajouter un plat</a>
                     `;
-                    break;
-            }
-            categorieSpecificFields.innerHTML = htmlContent;
-
-            // Set min date for category-specific date inputs
-            setMinDateForInput(document.getElementById('date_spectacle'));
-
-            // Repopulate dynamic fields based on fetched data
-            if (categorieTypeEnum === 'activite') {
-                if (data.activites && data.activites[0] && data.activites[0].horaires && Array.isArray(data.activites[0].horaires)) {
-                    data.activites[0].horaires.forEach(h => addHoraireActivite(null, h.date, h.heure_debut));
-                } else {
-                     addHoraireActivite(); // Ensure at least one is present for required validation
+                        break;
                 }
-                if (data.activites && data.activites[0] && data.activites[0].services && Array.isArray(data.activites[0].services)) {
-                    data.activites[0].services.forEach(s => addServiceActivite(null, s.nom_service, s.inclusion === 'on'));
-                }
-            } else if (categorieTypeEnum === 'parc_attractions') {
-                 if (data.attractions && Array.isArray(data.attractions)) {
-                    data.attractions.forEach(attr => {
-                        addAttractionParc(null, attr.nom_attraction, attr.horaires || []);
-                    });
-                } else {
-                     addAttractionParc(); // Ensure at least one is present for required validation
-                }
-            } else if (categorieTypeEnum === 'restauration') {
-                 if (data.plats && Array.isArray(data.plats)) {
-                     data.plats.forEach(platName => addPlatRestaurant(null, platName));
-                 }
-            }
+                categorieSpecificFields.innerHTML = htmlContent;
 
-            // Visite guidée section visibility
-            if (categorieTypeEnum === 'visite') {
-                visiteGuideeSection.style.display = 'block';
-                const visiteGuideeCheckbox = document.getElementById('visite_guidee');
-                if(visiteGuideeCheckbox) {
-                    const isChecked = data.visite_guidee === 'on';
-                    visiteGuideeCheckbox.checked = isChecked;
-                    languesGuideesDiv.style.display = isChecked ? 'block' : 'none';
-                    languesSelect.required = isChecked;
-                    if (isChecked && Array.isArray(data.langues)) {
-                        Array.from(languesSelect.options).forEach(option => {
-                            option.selected = data.langues.includes(option.value);
+                // Set min date for category-specific date inputs
+                setMinDateForInput(document.getElementById('date_spectacle'));
+
+                // Repopulate dynamic fields based on fetched data
+                if (categorieTypeEnum === 'activite') {
+                    if (data.activites && data.activites[0] && data.activites[0].horaires && Array.isArray(data.activites[0].horaires)) {
+                        data.activites[0].horaires.forEach(h => addHoraireActivite(null, h.date, h.heure_debut));
+                    } else {
+                        addHoraireActivite(); // Ensure at least one is present for required validation
+                    }
+                    if (data.activites && data.activites[0] && data.activites[0].services && Array.isArray(data.activites[0].services)) {
+                        data.activites[0].services.forEach(s => addServiceActivite(null, s.nom_service, s.inclusion === 'on'));
+                    }
+                } else if (categorieTypeEnum === 'parc_attractions') {
+                    if (data.attractions && Array.isArray(data.attractions)) {
+                        data.attractions.forEach(attr => {
+                            addAttractionParc(null, attr.nom_attraction, attr.horaires || []);
                         });
+                    } else {
+                        addAttractionParc(); // Ensure at least one is present for required validation
+                    }
+                } else if (categorieTypeEnum === 'restauration') {
+                    if (data.plats && Array.isArray(data.plats)) {
+                        data.plats.forEach(platName => addPlatRestaurant(null, platName));
                     }
                 }
-            } else {
-                visiteGuideeSection.style.display = 'none';
-                if(languesSelect) languesSelect.required = false;
-            }
 
-            attachDynamicEventListeners();
-            // Validate fields immediately if there were server-side errors on POST
-            if (offerForm.dataset.submitted === 'true') {
-                validateAllFields(categorieSpecificFields);
-            }
-        }
-
-        function attachDynamicEventListeners() {
-            const visiteGuideeCheckbox = document.getElementById('visite_guidee');
-            if (visiteGuideeCheckbox) {
-                visiteGuideeCheckbox.addEventListener('change', (e) => {
-                    languesGuideesDiv.style.display = e.target.checked ? 'block' : 'none';
-                    languesSelect.required = e.target.checked;
-                    if (!e.target.checked) {
-                        languesSelect.classList.remove('invalid');
-                        const errorMsgContainer = languesSelect.closest('.form-group');
-                        if (errorMsgContainer){
-                             const errorMsg = errorMsgContainer.querySelector('.error-message');
-                             if(errorMsg) errorMsg.style.display = 'none';
+                // Visite guidée section visibility
+                if (categorieTypeEnum === 'visite') {
+                    visiteGuideeSection.style.display = 'block';
+                    const visiteGuideeCheckbox = document.getElementById('visite_guidee');
+                    if (visiteGuideeCheckbox) {
+                        const isChecked = data.visite_guidee === 'on';
+                        visiteGuideeCheckbox.checked = isChecked;
+                        languesGuideesDiv.style.display = isChecked ? 'block' : 'none';
+                        languesSelect.required = isChecked;
+                        if (isChecked && Array.isArray(data.langues)) {
+                            Array.from(languesSelect.options).forEach(option => {
+                                option.selected = data.langues.includes(option.value);
+                            });
                         }
-                    } else if (e.target.checked && offerForm.dataset.submitted === 'true') {
-                        validateField(languesSelect);
                     }
+                } else {
+                    visiteGuideeSection.style.display = 'none';
+                    if (languesSelect) languesSelect.required = false;
+                }
+
+                attachDynamicEventListeners();
+                // Validate fields immediately if there were server-side errors on POST
+                if (offerForm.dataset.submitted === 'true') {
+                    validateAllFields(categorieSpecificFields);
+                }
+            }
+
+            function attachDynamicEventListeners() {
+                const visiteGuideeCheckbox = document.getElementById('visite_guidee');
+                if (visiteGuideeCheckbox) {
+                    visiteGuideeCheckbox.addEventListener('change', (e) => {
+                        languesGuideesDiv.style.display = e.target.checked ? 'block' : 'none';
+                        languesSelect.required = e.target.checked;
+                        if (!e.target.checked) {
+                            languesSelect.classList.remove('invalid');
+                            const errorMsgContainer = languesSelect.closest('.form-group');
+                            if (errorMsgContainer) {
+                                const errorMsg = errorMsgContainer.querySelector('.error-message');
+                                if (errorMsg) errorMsg.style.display = 'none';
+                            }
+                        } else if (e.target.checked && offerForm.dataset.submitted === 'true') {
+                            validateField(languesSelect);
+                        }
+                    });
+                }
+
+                categorieSpecificFields.addEventListener('click', function(event) {
+                    if (event.target.matches('.add-horaire-activite')) {
+                        addHoraireActivite(event);
+                    } else if (event.target.matches('#add-service-activite')) {
+                        addServiceActivite(event);
+                    } else if (event.target.matches('#add-attraction-parc')) {
+                        addAttractionParc(event);
+                    } else if (event.target.matches('.add-horaire-parc-attraction')) {
+                        addHoraireToAttraction(event);
+                    } else if (event.target.matches('#add-plat-restaurant')) {
+                        addPlatRestaurant(event);
+                    } else if (event.target.matches('.remove-element')) {
+                        handleRemoveElement(event);
+                    }
+                });
+                // Re-apply cross logic to dynamically added groups if any
+                categorieSpecificFields.querySelectorAll('.item-group').forEach(group => addRemoveCrossIfNeeded(group));
+            }
+
+            // --- Fonctions de création de champs (copiées de publier-une-offre.php) ---
+            function createRemoveCross() {
+                const cross = document.createElement('span');
+                cross.className = 'remove-icon-cross remove-element';
+                cross.innerHTML = '&times;';
+                cross.setAttribute('role', 'button');
+                cross.setAttribute('aria-label', 'Supprimer cet élément');
+                return cross
+            }
+
+            function addRemoveCrossIfNeeded(groupElement) {
+                if (!groupElement.querySelector('.remove-icon-cross')) {
+                    const cross = createRemoveCross();
+                    groupElement.insertBefore(cross, groupElement.firstChild)
+                }
+                const parentContainer = groupElement.parentNode;
+                if (parentContainer.id === 'horaires-container-activite') updateRemoveCrossVisibility(parentContainer, '.horaire-group');
+                else if (parentContainer.id === 'services-container-activite') updateRemoveCrossVisibility(parentContainer, '.service-group');
+                else if (parentContainer.id === 'attractions-container') updateRemoveCrossVisibility(parentContainer, '.attraction-group');
+                else if (parentContainer.classList.contains('horaires-container-attraction')) updateRemoveCrossVisibility(parentContainer, '.horaire-group');
+                else if (parentContainer.id === 'plats-container-restaurant') updateRemoveCrossVisibility(parentContainer, '.plat-group')
+            }
+
+            function updateRemoveCrossVisibility(container, itemSelector) {
+                const items = typeof container === 'string' ? document.querySelectorAll(container + " " + itemSelector) : container.querySelectorAll(itemSelector);
+                const minItems = (itemSelector === '.service-group' || itemSelector === '.plat-group') ? 0 : 1;
+                items.forEach((item, index) => {
+                    const cross = item.querySelector('.remove-icon-cross');
+                    if (cross) {
+                        if (items.length > minItems) {
+                            cross.style.display = 'flex'
+                        } else {
+                            cross.style.display = 'none'
+                        }
+                    }
+                })
+            }
+
+            function addHoraireActivite(event, dateVal = '', debutVal = '') {
+                if (event) event.preventDefault();
+                const container = document.getElementById('horaires-container-activite');
+                const count = container.querySelectorAll('.horaire-group').length;
+                const newGroup = document.createElement('div');
+                newGroup.className = 'item-group horaire-group';
+                const idPrefix = `activites_0_horaires_${count}`;
+                newGroup.innerHTML = `<div class="horaire-group-inputs"><div><label for="${idPrefix}_date">Date *</label><input type="date" id="${idPrefix}_date" name="activites[0][horaires][${count}][date]" required value="${dateVal}"><div class="error-message">Date requise.</div></div><div><label for="${idPrefix}_heure_debut">Début *</label><input type="time" id="${idPrefix}_heure_debut" name="activites[0][horaires][${count}][heure_debut]" required value="${debutVal}"><div class="error-message">Heure de début requise.</div></div></div>`;
+                container.appendChild(newGroup);
+                setMinDateForInput(newGroup.querySelector('input[type="date"]'));
+                addRemoveCrossIfNeeded(newGroup);
+                if (offerForm.dataset.submitted === 'true') validateAllFields(newGroup);
+            }
+
+            function addServiceActivite(event, nomVal = '', inclusVal = false) {
+                if (event) event.preventDefault();
+                const container = document.getElementById('services-container-activite');
+                const count = container.querySelectorAll('.service-group').length;
+                const newGroup = document.createElement('div');
+                newGroup.className = 'item-group service-group';
+                const checkedAttr = inclusVal ? 'checked' : '';
+                newGroup.innerHTML = `<label for="service_nom_${count}">Nom du service/prestation *</label><input type="text" id="service_nom_${count}" name="activites[0][services][${count}][nom_service]" placeholder="Ex: Wifi gratuit" value="${nomVal}" required><div class="error-message">Le nom du service est requis.</div><label style="display:inline-flex;align-items:center;margin-top:var(--espacement-petit);margin-bottom:var(--espacement-standard);"><input type="checkbox" name="activites[0][services][${count}][inclusion]" style="width:auto;margin-right:var(--espacement-petit);"${checkedAttr}> Inclus dans le prix</label>`;
+                container.appendChild(newGroup);
+                addRemoveCrossIfNeeded(newGroup);
+                if (offerForm.dataset.submitted === 'true') validateAllFields(newGroup);
+            }
+
+            function addAttractionParc(event, nomVal = '', horairesData = []) {
+                if (event) event.preventDefault();
+                const container = document.getElementById('attractions-container');
+                const count = container.querySelectorAll('.attraction-group').length;
+                const newGroup = document.createElement('div');
+                newGroup.className = 'item-group attraction-group';
+                const idPrefix = `attractions_${count}`;
+                newGroup.innerHTML = `<h3>Attraction ${count+1}</h3><label for="${idPrefix}_nom_attraction">Nom de l'attraction *</label><input type="text" id="${idPrefix}_nom_attraction" name="attractions[${count}][nom_attraction]" required value="${nomVal}"><div class="error-message">Veuillez entrer le nom de l'attraction.</div><div class="horaires-container-attraction form-group"><h4 class="dynamic-section-subtitle">Horaires de cette attraction (au moins un requis) :</h4></div><a href="#" role="button" class="text-add-link add-horaire-parc-attraction">+ Ajouter horaire à cette attraction</a>`;
+                container.appendChild(newGroup);
+                addRemoveCrossIfNeeded(newGroup);
+                const attractionHorairesContainer = newGroup.querySelector('.horaires-container-attraction');
+                if (horairesData && horairesData.length > 0) {
+                    horairesData.forEach(h => addHoraireToAttraction(null, attractionHorairesContainer, h.date, h.heure_debut, h.heure_fin))
+                } else {
+                    addHoraireToAttraction(null, attractionHorairesContainer);
+                }
+                if (offerForm.dataset.submitted === 'true') validateAllFields(newGroup);
+            }
+
+            function addHoraireToAttraction(event, containerElement = null, dateVal = '', debutVal = '', finVal = '') {
+                if (event) event.preventDefault();
+                const attractionGroup = containerElement ? containerElement.closest('.attraction-group') : event.target.closest('.attraction-group');
+                if (!attractionGroup) return;
+                const horairesContainer = containerElement || attractionGroup.querySelector('.horaires-container-attraction');
+                const attractionIndexInput = attractionGroup.querySelector('[name*="[nom_attraction]"]');
+                const nameAttr = attractionIndexInput ? attractionIndexInput.name : `attractions[${document.querySelectorAll('.attraction-group').length-1}]`;
+                const attractionIndexMatch = nameAttr.match(/attractions\[(\d+)\]/);
+                const attractionIndex = attractionIndexMatch ? attractionIndexMatch[1] : document.querySelectorAll('.attraction-group').length - 1;
+                const horaireCount = horairesContainer.querySelectorAll('.horaire-group').length;
+                const newGroup = document.createElement('div');
+                newGroup.className = 'item-group horaire-group';
+                const idPrefix = `attractions_${attractionIndex}_horaires_${horaireCount}`;
+                newGroup.innerHTML = `<div class="horaire-group-inputs"><div><label for="${idPrefix}_date">Date *</label><input type="date" id="${idPrefix}_date" name="attractions[${attractionIndex}][horaires][${horaireCount}][date]" required value="${dateVal}"><div class="error-message">Date requise.</div></div><div><label for="${idPrefix}_heure_debut">Début *</label><input type="time" id="${idPrefix}_heure_debut" name="attractions[${attractionIndex}][horaires][${horaireCount}][heure_debut]" required value="${debutVal}"><div class="error-message">Heure de début requise.</div></div><div><label for="${idPrefix}_heure_fin">Fin *</label><input type="time" id="${idPrefix}_heure_fin" name="attractions[${attractionIndex}][horaires][${horaire_count}][heure_fin]" required value="${finVal}"><div class="error-message">Heure de fin requise.</div></div></div>`;
+                horairesContainer.appendChild(newGroup);
+                setMinDateForInput(newGroup.querySelector('input[type="date"]'));
+                addRemoveCrossIfNeeded(newGroup);
+                if (offerForm.dataset.submitted === 'true') validateAllFields(newGroup);
+            }
+
+            function addPlatRestaurant(event, nomVal = '') {
+                if (event) event.preventDefault();
+                const container = document.getElementById('plats-container-restaurant');
+                const platGroups = container.querySelectorAll('.plat-group');
+                if (platGroups.length >= 5) {
+                    const addPlatButton = document.getElementById('add-plat-restaurant');
+                    if (addPlatButton) addPlatButton.style.display = 'none';
+                    return
+                }
+                const newGroup = document.createElement('div');
+                newGroup.className = 'item-group plat-group';
+                newGroup.innerHTML = `<label for="plat_nom_${platGroups.length}">Nom du plat ${platGroups.length+1}</label><input type="text" id="plat_nom_${platGroups.length}" name="plats[]" placeholder="Ex: Pizza Margherita" value="${nomVal}"><div class="error-message">Le nom du plat est requis si vous ajoutez une entrée pour celui-ci.</div>`;
+                container.appendChild(newGroup);
+                addRemoveCrossIfNeeded(newGroup);
+                if (container.querySelectorAll('.plat-group').length >= 5) {
+                    const addPlatButton = document.getElementById('add-plat-restaurant');
+                    if (addPlatButton) addPlatButton.style.display = 'none'
+                }
+                if (offerForm.dataset.submitted === 'true') validateAllFields(newGroup);
+            }
+
+            function handleRemoveElement(event) {
+                event.preventDefault();
+                const groupElement = event.target.closest('.item-group');
+                if (groupElement) {
+                    const parentContainer = groupElement.parentNode;
+                    groupElement.remove();
+
+                    if (parentContainer.id === 'plats-container-restaurant') {
+                        updateRemoveCrossVisibility(parentContainer, '.plat-group');
+                        const addPlatButton = document.getElementById('add-plat-restaurant');
+                        if (parentContainer.querySelectorAll('.plat-group').length < 5 && addPlatButton) {
+                            addPlatButton.style.display = 'inline-block';
+                        }
+                    } else if (parentContainer.id === 'attractions-container') {
+                        updateRemoveCrossVisibility(parentContainer, '.attraction-group');
+                    } else if (parentContainer.id === 'horaires-container-activite') {
+                        updateRemoveCrossVisibility(parentContainer, '.horaire-group');
+                    } else if (parentContainer.id === 'services-container-activite') {
+                        updateRemoveCrossVisibility(parentContainer, '.service-group');
+                    } else if (parentContainer.classList.contains('horaires-container-attraction')) {
+                        updateRemoveCrossVisibility(parentContainer, '.horaire-group');
+                    }
+                    // Ré-exécuter la validation des photos si nécessaire après suppression d'une image existante
+                    validatePhotosField();
+                }
+            }
+
+            // Tente de trouver et de retourner l'élément HTML destiné à afficher un message d'erreur pour un champ de formulaire donné
+            function getErrorMessageElementForField(field) {
+                let directSibling = field.nextElementSibling;
+                if (directSibling && directSibling.classList.contains('error-message')) return directSibling;
+                let parentDiv = field.closest('div');
+                if (parentDiv) {
+                    let children = Array.from(parentDiv.children);
+                    let fieldIndex = children.indexOf(field);
+                    if (fieldIndex !== -1 && children[fieldIndex + 1] && children[fieldIndex + 1].classList.contains('error-message')) {
+                        return children[fieldIndex + 1];
+                    }
+                    let parentSibling = parentDiv.nextElementSibling;
+                    if (parentSibling && parentSibling.classList.contains('error-message')) return parentSibling;
+                }
+                const label = document.querySelector(`label[for="${field.id}"]`);
+                if (label) {
+                    let nextAfterLabel = label.nextElementSibling;
+                    if (nextAfterLabel && nextAfterLabel.id === field.id && nextAfterLabel.nextElementSibling && nextAfterLabel.nextElementSibling.classList.contains('error-message')) {
+                        return nextAfterLabel.nextElementSibling;
+                    }
+                    if (nextAfterLabel && nextAfterLabel.classList.contains('error-message')) return nextAfterLabel;
+                }
+                if (field.tagName.toLowerCase() === 'select' && field.nextElementSibling && field.nextElementSibling.classList.contains('error-message')) {
+                    return field.nextElementSibling;
+                }
+                return null;
+            }
+
+            // vérifie la validité d'un champ de formulaire
+            function validateField(field) {
+                const errorMessageElement = getErrorMessageElementForField(field);
+                let isValidField = true;
+                const isVisible = field.offsetWidth > 0 || field.offsetHeight > 0 || field.getClientRects().length > 0 || field.type === 'hidden';
+
+                if (isVisible || field.required) {
+                    isValidField = field.checkValidity();
+                    // Photos field has special validation
+                    if (field.id === 'photos') return validatePhotosField();
+                    // Multi-select required check
+                    if (field.multiple && field.required && field.selectedOptions.length === 0) isValidField = false;
+
+                    // Check date field min attribute
+                    if (field.type === 'date' && field.min && field.value && field.value < field.min) {
+                        isValidField = false;
+                        if (errorMessageElement) errorMessageElement.textContent = "La date ne peut pas être antérieure à aujourd'hui.";
+                    }
+
+                }
+
+                if (isValidField) {
+                    field.classList.remove('invalid');
+                    if (errorMessageElement) errorMessageElement.style.display = 'none';
+                } else {
+                    if (isVisible || field.required) {
+                        field.classList.add('invalid');
+                        if (errorMessageElement) {
+                            // Custom messages for specific validation failures
+                            if (field.type === 'date' && field.min && field.value && field.value < field.min) {
+                                // message already set above
+                            } else if (field.pattern && !field.value.match(new RegExp(field.pattern))) {
+                                // Default message for pattern mismatch if specific not set
+                                if (field.id === 'prix') errorMessageElement.textContent = "Veuillez entrer un prix valide (ex: 10, 10.50).";
+                                else if (field.id === 'coordonnees_telephoniques') errorMessageElement.textContent = "Veuillez entrer un numéro de téléphone à 10 chiffres commençant par 0.";
+                                else if (field.id === 'code_postal') errorMessageElement.textContent = "Veuillez entrer un code postal à 5 chiffres.";
+                                else errorMessageElement.textContent = field.validationMessage || "Format invalide.";
+                            } else {
+                                errorMessageElement.textContent = field.validationMessage; // Use browser's default message if custom not provided
+                            }
+                            errorMessageElement.style.display = 'block';
+                        }
+                    } else {
+                        field.classList.remove('invalid');
+                        if (errorMessageElement) errorMessageElement.style.display = 'none';
+                    }
+                }
+                return isValidField;
+            }
+
+            // appelle validateField pour chacun afin de valider l'ensemble.
+            function validateAllFields(containerOrForm) {
+                let allValid = true;
+                containerOrForm.querySelectorAll('input:not([type="button"]):not([type="submit"]):not([disabled]), textarea, select:not([disabled])').forEach(field => {
+                    const isVisible = field.offsetWidth > 0 || field.offsetHeight > 0 || field.getClientRects().length > 0 || field.type === 'hidden';
+                    if (isVisible || field.required) {
+                        if (field.id === 'photos') { // Special handling for photos field
+                            if (!validatePhotosField()) allValid = false;
+                        } else {
+                            if (!validateField(field)) allValid = false;
+                        }
+                    } else {
+                        field.classList.remove('invalid');
+                        const errorMessageElement = getErrorMessageElementForField(field);
+                        if (errorMessageElement) errorMessageElement.style.display = 'none';
+                    }
+                });
+                return allValid;
+            }
+
+            // Gère la sélection de fichiers dans le champ de téléchargement de photos, met à jour la liste des fichiers sélectionnés, et déclenche l'affichage des prévisualisations et la validation
+            function handlePhotoSelection(event) {
+                const files = Array.from(event.target.files);
+                const newFilesToAdd = [];
+                const currentTotalPhotos = currentSelectedFiles.length + existingPhotoElements.filter(p => p.visible).length; // Nouvelle logique de comptage
+
+                files.forEach(file => {
+                    // Vérifier si le fichier est une image et si le nombre total de photos (existantes + nouvelles) ne dépasse pas 6
+                    if (file.type.startsWith('image/') && (currentTotalPhotos + newFilesToAdd.length) < 6) {
+                        // Vérifier si le fichier n'est pas déjà dans la liste des nouvelles photos sélectionnées
+                        if (!currentSelectedFiles.some(existingFile => existingFile.name === file.name && existingFile.size === file.size)) {
+                            newFilesToAdd.push(file);
+                        }
+                    }
+                });
+                currentSelectedFiles.push(...newFilesToAdd);
+                renderPhotoPreviews();
+                // Pas besoin d'appeler updateFileInput() ici car les photos nouvelles sont gérées via `currentSelectedFiles`
+                // et le champ `photosInput` est juste pour la sélection, pas pour l'état des fichiers
+                validatePhotosField();
+            }
+
+            // Supprime image
+            function removeImage(fileNameToRemove) {
+                currentSelectedFiles = currentSelectedFiles.filter(file => file.name !== fileNameToRemove);
+                renderPhotoPreviews();
+                validatePhotosField();
+            }
+
+            // Affiche les prévisualisations des images actuellement sélectionnées.
+            function renderPhotoPreviews() {
+                imagePreviewContainer.innerHTML = ''; // Clear only the new previews container
+                currentSelectedFiles.forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const previewItem = document.createElement('div');
+                        previewItem.className = 'preview-item';
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'preview-image';
+                        img.alt = file.name;
+                        // Pas de modal pour modifier-offre, on supprime l'événement click pour agrandir
+                        const deleteBtn = document.createElement('span');
+                        deleteBtn.className = 'delete-image-btn';
+                        deleteBtn.innerHTML = '&times;';
+                        deleteBtn.title = 'Supprimer cette image';
+                        deleteBtn.dataset.fileName = file.name;
+                        deleteBtn.addEventListener('click', (event) => {
+                            event.stopPropagation();
+                            removeImage(file.name);
+                        });
+                        previewItem.appendChild(img);
+                        previewItem.appendChild(deleteBtn);
+                        imagePreviewContainer.appendChild(previewItem);
+                    }
+                    reader.readAsDataURL(file);
                 });
             }
 
-            categorieSpecificFields.addEventListener('click', function(event) {
-                if (event.target.matches('.add-horaire-activite')) {
-                    addHoraireActivite(event);
-                } else if (event.target.matches('#add-service-activite')) {
-                    addServiceActivite(event);
-                } else if (event.target.matches('#add-attraction-parc')) {
-                    addAttractionParc(event);
-                } else if (event.target.matches('.add-horaire-parc-attraction')) {
-                     addHoraireToAttraction(event);
-                } else if (event.target.matches('#add-plat-restaurant')) {
-                    addPlatRestaurant(event);
-                } else if (event.target.matches('.remove-element')) {
-                    handleRemoveElement(event);
+            // Valide le champ de photos (nombre minimum/maximum de photos).
+            function validatePhotosField() {
+                const photosErrorMessage = document.getElementById('photos-error-message');
+                // Compter les photos visibles (existantes non supprimées + nouvelles)
+                const visibleExistingPhotosCount = existingPhotoElements.filter(p => p.visible).length;
+                const totalCurrentPhotos = visibleExistingPhotosCount + currentSelectedFiles.length;
+
+                let isValid = true;
+                if (photosInput.required && totalCurrentPhotos === 0) {
+                    photosErrorMessage.textContent = "Veuillez ajouter au moins une photo.";
+                    photosErrorMessage.style.display = 'block';
+                    photosInput.classList.add('invalid');
+                    isValid = false;
+                } else if (totalCurrentPhotos > 6) {
+                    photosErrorMessage.textContent = `Vous avez ${totalCurrentPhotos} photos. Vous ne pouvez avoir que 6 photos maximum au total.`;
+                    photosErrorMessage.style.display = 'block';
+                    photosInput.classList.add('invalid');
+                    isValid = false;
+                } else {
+                    photosErrorMessage.style.display = 'none';
+                    photosInput.classList.remove('invalid');
+                }
+                return isValid;
+            }
+
+
+            if (photosInput) photosInput.addEventListener('change', handlePhotoSelection);
+
+            // Initialisation des données pour les photos existantes au chargement de la page
+            // Marquer toutes les photos existantes comme visibles par défaut
+            existingPhotoElements.forEach(photo => photo.visible = true);
+            // Attacher les écouteurs pour les boutons de suppression des photos existantes
+            document.querySelectorAll('#existing-image-preview-container .delete-image-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const photoId = this.dataset.photoId;
+                    this.closest('.preview-item').style.display = 'none';
+                    // Mettre à jour l'état de visibilité de la photo dans existingPhotoElements
+                    const photoIndex = existingPhotoElements.findIndex(p => p.id == photoId);
+                    if (photoIndex !== -1) {
+                        existingPhotoElements[photoIndex].visible = false;
+                    }
+
+                    let currentDeleted = deletedPhotosInput.value ? deletedPhotosInput.value.split(',') : [];
+                    if (!currentDeleted.includes(photoId)) {
+                        currentDeleted.push(photoId);
+                        deletedPhotosInput.value = currentDeleted.join(',');
+                    }
+                    validatePhotosField(); // Re-validate after deleting an existing photo
+                });
+            });
+
+            // Catégorie select est disabled dans modifier-offre.php, mais nous utilisons sa valeur initiale
+            // pour charger les champs spécifiques.
+            if (serverData.categorie_type_enum) {
+                fetchCategorieFields(serverData.categorie_type_enum, serverData);
+            } else {
+                // Si pas de catégorie dans serverData (ex: page chargée pour la première fois sans offre spécifique),
+                // afficher le champ de date principal par défaut.
+                if (mainDateInputContainer) mainDateInputContainer.style.display = 'block';
+                if (mainDateInput) mainDateInput.required = true;
+            }
+
+            // Validation au submit
+            offerForm.addEventListener('submit', (event) => {
+                offerForm.dataset.submitted = 'true';
+                if (!validateAllFields(offerForm)) {
+                    event.preventDefault();
+                    const firstInvalidField = offerForm.querySelector('.invalid');
+                    if (firstInvalidField) {
+                        firstInvalidField.focus();
+                        firstInvalidField.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                    }
                 }
             });
-            // Re-apply cross logic to dynamically added groups if any
-            categorieSpecificFields.querySelectorAll('.item-group').forEach(group => addRemoveCrossIfNeeded(group));
-        }
 
-        // --- Fonctions de création de champs (copiées de publier-une-offre.php) ---
-        function createRemoveCross(){const cross=document.createElement('span');cross.className='remove-icon-cross remove-element';cross.innerHTML='&times;';cross.setAttribute('role','button');cross.setAttribute('aria-label','Supprimer cet élément');return cross}
-        function addRemoveCrossIfNeeded(groupElement){if(!groupElement.querySelector('.remove-icon-cross')){const cross=createRemoveCross();groupElement.insertBefore(cross,groupElement.firstChild)}const parentContainer=groupElement.parentNode;if(parentContainer.id==='horaires-container-activite')updateRemoveCrossVisibility(parentContainer,'.horaire-group');else if(parentContainer.id==='services-container-activite')updateRemoveCrossVisibility(parentContainer,'.service-group');else if(parentContainer.id==='attractions-container')updateRemoveCrossVisibility(parentContainer,'.attraction-group');else if(parentContainer.classList.contains('horaires-container-attraction'))updateRemoveCrossVisibility(parentContainer,'.horaire-group');else if(parentContainer.id==='plats-container-restaurant')updateRemoveCrossVisibility(parentContainer,'.plat-group')}
-        function updateRemoveCrossVisibility(container,itemSelector){const items=typeof container==='string'?document.querySelectorAll(container+" "+itemSelector):container.querySelectorAll(itemSelector);const minItems=(itemSelector === '.service-group' || itemSelector === '.plat-group') ? 0 : 1;items.forEach((item,index)=>{const cross=item.querySelector('.remove-icon-cross');if(cross){if(items.length>minItems){cross.style.display='flex'}else{cross.style.display='none'}}})}
-        function addHoraireActivite(event,dateVal='',debutVal=''){if(event)event.preventDefault();const container=document.getElementById('horaires-container-activite');const count=container.querySelectorAll('.horaire-group').length;const newGroup=document.createElement('div');newGroup.className='item-group horaire-group';const idPrefix=`activites_0_horaires_${count}`;newGroup.innerHTML=`<div class="horaire-group-inputs"><div><label for="${idPrefix}_date">Date *</label><input type="date" id="${idPrefix}_date" name="activites[0][horaires][${count}][date]" required value="${dateVal}"><div class="error-message">Date requise.</div></div><div><label for="${idPrefix}_heure_debut">Début *</label><input type="time" id="${idPrefix}_heure_debut" name="activites[0][horaires][${count}][heure_debut]" required value="${debutVal}"><div class="error-message">Heure de début requise.</div></div></div>`;container.appendChild(newGroup);setMinDateForInput(newGroup.querySelector('input[type="date"]'));addRemoveCrossIfNeeded(newGroup); if (offerForm.dataset.submitted === 'true') validateAllFields(newGroup);}
-        function addServiceActivite(event,nomVal='',inclusVal=false){if(event)event.preventDefault();const container=document.getElementById('services-container-activite');const count=container.querySelectorAll('.service-group').length;const newGroup=document.createElement('div');newGroup.className='item-group service-group';const checkedAttr=inclusVal?'checked':'';newGroup.innerHTML=`<label for="service_nom_${count}">Nom du service/prestation *</label><input type="text" id="service_nom_${count}" name="activites[0][services][${count}][nom_service]" placeholder="Ex: Wifi gratuit" value="${nomVal}" required><div class="error-message">Le nom du service est requis.</div><label style="display:inline-flex;align-items:center;margin-top:var(--espacement-petit);margin-bottom:var(--espacement-standard);"><input type="checkbox" name="activites[0][services][${count}][inclusion]" style="width:auto;margin-right:var(--espacement-petit);"${checkedAttr}> Inclus dans le prix</label>`;container.appendChild(newGroup);addRemoveCrossIfNeeded(newGroup);if (offerForm.dataset.submitted === 'true') validateAllFields(newGroup);}
-        function addAttractionParc(event,nomVal='',horairesData=[]){if(event)event.preventDefault();const container=document.getElementById('attractions-container');const count=container.querySelectorAll('.attraction-group').length;const newGroup=document.createElement('div');newGroup.className='item-group attraction-group';const idPrefix=`attractions_${count}`;newGroup.innerHTML=`<h3>Attraction ${count+1}</h3><label for="${idPrefix}_nom_attraction">Nom de l'attraction *</label><input type="text" id="${idPrefix}_nom_attraction" name="attractions[${count}][nom_attraction]" required value="${nomVal}"><div class="error-message">Veuillez entrer le nom de l'attraction.</div><div class="horaires-container-attraction form-group"><h4 class="dynamic-section-subtitle">Horaires de cette attraction (au moins un requis) :</h4></div><a href="#" role="button" class="text-add-link add-horaire-parc-attraction">+ Ajouter horaire à cette attraction</a>`;container.appendChild(newGroup);addRemoveCrossIfNeeded(newGroup);const attractionHorairesContainer=newGroup.querySelector('.horaires-container-attraction');if(horairesData&&horairesData.length>0){horairesData.forEach(h=>addHoraireToAttraction(null,attractionHorairesContainer,h.date,h.heure_debut,h.heure_fin))}else{addHoraireToAttraction(null,attractionHorairesContainer);}if (offerForm.dataset.submitted === 'true') validateAllFields(newGroup);}
-        function addHoraireToAttraction(event,containerElement=null,dateVal='',debutVal='',finVal=''){if(event)event.preventDefault();const attractionGroup=containerElement?containerElement.closest('.attraction-group'):event.target.closest('.attraction-group');if(!attractionGroup)return;const horairesContainer=containerElement||attractionGroup.querySelector('.horaires-container-attraction');const attractionIndexInput=attractionGroup.querySelector('[name*="[nom_attraction]"]');const nameAttr=attractionIndexInput?attractionIndexInput.name:`attractions[${document.querySelectorAll('.attraction-group').length-1}]`;const attractionIndexMatch=nameAttr.match(/attractions\[(\d+)\]/);const attractionIndex=attractionIndexMatch?attractionIndexMatch[1]:document.querySelectorAll('.attraction-group').length-1;const horaireCount=horairesContainer.querySelectorAll('.horaire-group').length;const newGroup=document.createElement('div');newGroup.className='item-group horaire-group';const idPrefix=`attractions_${attractionIndex}_horaires_${horaireCount}`;newGroup.innerHTML=`<div class="horaire-group-inputs"><div><label for="${idPrefix}_date">Date *</label><input type="date" id="${idPrefix}_date" name="attractions[${attractionIndex}][horaires][${horaireCount}][date]" required value="${dateVal}"><div class="error-message">Date requise.</div></div><div><label for="${idPrefix}_heure_debut">Début *</label><input type="time" id="${idPrefix}_heure_debut" name="attractions[${attractionIndex}][horaires][${horaireCount}][heure_debut]" required value="${debutVal}"><div class="error-message">Heure de début requise.</div></div><div><label for="${idPrefix}_heure_fin">Fin *</label><input type="time" id="${idPrefix}_heure_fin" name="attractions[${attractionIndex}][horaires][${horaire_count}][heure_fin]" required value="${finVal}"><div class="error-message">Heure de fin requise.</div></div></div>`;horairesContainer.appendChild(newGroup);setMinDateForInput(newGroup.querySelector('input[type="date"]'));addRemoveCrossIfNeeded(newGroup);if (offerForm.dataset.submitted === 'true') validateAllFields(newGroup);}
-        function addPlatRestaurant(event,nomVal=''){if(event)event.preventDefault();const container=document.getElementById('plats-container-restaurant');const platGroups=container.querySelectorAll('.plat-group');if(platGroups.length>=5){const addPlatButton=document.getElementById('add-plat-restaurant');if(addPlatButton)addPlatButton.style.display='none';return}const newGroup=document.createElement('div');newGroup.className='item-group plat-group';newGroup.innerHTML=`<label for="plat_nom_${platGroups.length}">Nom du plat ${platGroups.length+1}</label><input type="text" id="plat_nom_${platGroups.length}" name="plats[]" placeholder="Ex: Pizza Margherita" value="${nomVal}"><div class="error-message">Le nom du plat est requis si vous ajoutez une entrée pour celui-ci.</div>`;container.appendChild(newGroup);addRemoveCrossIfNeeded(newGroup);if(container.querySelectorAll('.plat-group').length>=5){const addPlatButton=document.getElementById('add-plat-restaurant');if(addPlatButton)addPlatButton.style.display='none'}if (offerForm.dataset.submitted === 'true') validateAllFields(newGroup);}
+            // Valider tous les champs au chargement si le formulaire a été soumis et qu'il y a des erreurs PHP
+            <?php if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($erreurs)): ?>
+                offerForm.dataset.submitted = 'true';
+                const phpErrors = <?php echo json_encode(array_keys($erreurs)); ?>;
+                let firstInvalidFieldForFocus = null;
 
-        function handleRemoveElement(event) {
-            event.preventDefault();
-            const groupElement = event.target.closest('.item-group');
-            if (groupElement) {
-                const parentContainer = groupElement.parentNode;
-                groupElement.remove();
+                phpErrors.forEach(fieldName => {
+                    let field = document.getElementById(fieldName) ||
+                        document.querySelector(`[name="${fieldName}"]`) ||
+                        document.querySelector(`[name^="${fieldName}["]`); // Pour gérer les tableaux d'inputs
 
-                if (parentContainer.id === 'plats-container-restaurant') {
-                    updateRemoveCrossVisibility(parentContainer, '.plat-group');
-                    const addPlatButton = document.getElementById('add-plat-restaurant');
-                    if (parentContainer.querySelectorAll('.plat-group').length < 5 && addPlatButton) {
-                        addPlatButton.style.display = 'inline-block';
-                    }
-                } else if (parentContainer.id === 'attractions-container') {
-                    updateRemoveCrossVisibility(parentContainer, '.attraction-group');
-                } else if (parentContainer.id === 'horaires-container-activite') {
-                     updateRemoveCrossVisibility(parentContainer, '.horaire-group');
-                } else if (parentContainer.id === 'services-container-activite') {
-                     updateRemoveCrossVisibility(parentContainer, '.service-group');
-                } else if (parentContainer.classList.contains('horaires-container-attraction')) {
-                     updateRemoveCrossVisibility(parentContainer, '.horaire-group');
-                }
-                // Ré-exécuter la validation des photos si nécessaire après suppression d'une image existante
-                validatePhotosField();
-            }
-        }
-
-        // Tente de trouver et de retourner l'élément HTML destiné à afficher un message d'erreur pour un champ de formulaire donné
-        function getErrorMessageElementForField(field) {
-            let directSibling = field.nextElementSibling;
-            if (directSibling && directSibling.classList.contains('error-message')) return directSibling;
-            let parentDiv = field.closest('div');
-            if(parentDiv) {
-                let children = Array.from(parentDiv.children);
-                let fieldIndex = children.indexOf(field);
-                if (fieldIndex !== -1 && children[fieldIndex + 1] && children[fieldIndex + 1].classList.contains('error-message')) {
-                    return children[fieldIndex + 1];
-                }
-                let parentSibling = parentDiv.nextElementSibling;
-                if (parentSibling && parentSibling.classList.contains('error-message')) return parentSibling;
-            }
-            const label = document.querySelector(`label[for="${field.id}"]`);
-            if(label) {
-                let nextAfterLabel = label.nextElementSibling;
-                if (nextAfterLabel && nextAfterLabel.id === field.id && nextAfterLabel.nextElementSibling && nextAfterLabel.nextElementSibling.classList.contains('error-message')) {
-                    return nextAfterLabel.nextElementSibling;
-                }
-                 if (nextAfterLabel && nextAfterLabel.classList.contains('error-message')) return nextAfterLabel;
-            }
-            if (field.tagName.toLowerCase() === 'select' && field.nextElementSibling && field.nextElementSibling.classList.contains('error-message')) {
-                return field.nextElementSibling;
-            }
-            return null;
-        }
-
-        // vérifie la validité d'un champ de formulaire
-        function validateField(field) {
-            const errorMessageElement = getErrorMessageElementForField(field);
-            let isValidField = true;
-            const isVisible = field.offsetWidth > 0 || field.offsetHeight > 0 || field.getClientRects().length > 0 || field.type === 'hidden';
-
-            if (isVisible || field.required) {
-                 isValidField = field.checkValidity();
-                // Photos field has special validation
-                if (field.id === 'photos') return validatePhotosField();
-                // Multi-select required check
-                if (field.multiple && field.required && field.selectedOptions.length === 0) isValidField = false;
-
-                // Check date field min attribute
-                if (field.type === 'date' && field.min && field.value && field.value < field.min) {
-                    isValidField = false;
-                    if(errorMessageElement) errorMessageElement.textContent = "La date ne peut pas être antérieure à aujourd'hui.";
-                }
-
-            }
-
-            if (isValidField) {
-                field.classList.remove('invalid');
-                if (errorMessageElement) errorMessageElement.style.display = 'none';
-            } else {
-                if (isVisible || field.required) {
-                    field.classList.add('invalid');
-                    if (errorMessageElement) {
-                        // Custom messages for specific validation failures
-                        if (field.type === 'date' && field.min && field.value && field.value < field.min) {
-                            // message already set above
-                        } else if (field.pattern && !field.value.match(new RegExp(field.pattern))) {
-                            // Default message for pattern mismatch if specific not set
-                            if(field.id === 'prix') errorMessageElement.textContent = "Veuillez entrer un prix valide (ex: 10, 10.50).";
-                            else if(field.id === 'coordonnees_telephoniques') errorMessageElement.textContent = "Veuillez entrer un numéro de téléphone à 10 chiffres commençant par 0.";
-                            else if(field.id === 'code_postal') errorMessageElement.textContent = "Veuillez entrer un code postal à 5 chiffres.";
-                            else errorMessageElement.textContent = field.validationMessage || "Format invalide.";
-                        } else {
-                            errorMessageElement.textContent = field.validationMessage; // Use browser's default message if custom not provided
+                    if (field && !field.classList.contains('invalid')) { // Éviter de traiter deux fois
+                        field.classList.add('invalid');
+                        const errorMessageElement = getErrorMessageElementForField(field);
+                        if (errorMessageElement) {
+                            errorMessageElement.style.display = 'block';
+                            // Afficher le message spécifique si l'erreur PHP correspond à ce champ
+                            <?php foreach ($erreurs as $err_key => $err_msg): ?>
+                                if (fieldName === '<?php echo $err_key; ?>') {
+                                    errorMessageElement.textContent = '<?php echo addslashes($err_msg); ?>';
+                                }
+                            <?php endforeach; ?>
                         }
-                        errorMessageElement.style.display = 'block';
-                    }
-                } else {
-                    field.classList.remove('invalid');
-                    if (errorMessageElement) errorMessageElement.style.display = 'none';
-                }
-            }
-            return isValidField;
-        }
-
-        // appelle validateField pour chacun afin de valider l'ensemble.
-        function validateAllFields(containerOrForm) {
-            let allValid = true;
-            containerOrForm.querySelectorAll('input:not([type="button"]):not([type="submit"]):not([disabled]), textarea, select:not([disabled])').forEach(field => {
-                const isVisible = field.offsetWidth > 0 || field.offsetHeight > 0 || field.getClientRects().length > 0 || field.type === 'hidden';
-                if ( isVisible || field.required ) {
-                    if (field.id === 'photos') { // Special handling for photos field
-                        if (!validatePhotosField()) allValid = false;
-                    } else {
-                        if (!validateField(field)) allValid = false;
-                    }
-                } else {
-                    field.classList.remove('invalid');
-                    const errorMessageElement = getErrorMessageElementForField(field);
-                    if (errorMessageElement) errorMessageElement.style.display = 'none';
-                }
-            });
-            return allValid;
-        }
-
-        // Gère la sélection de fichiers dans le champ de téléchargement de photos, met à jour la liste des fichiers sélectionnés, et déclenche l'affichage des prévisualisations et la validation
-        function handlePhotoSelection(event) {
-            const files = Array.from(event.target.files);
-            const newFilesToAdd = [];
-            const currentTotalPhotos = currentSelectedFiles.length + existingPhotoElements.filter(p => p.visible).length; // Nouvelle logique de comptage
-
-            files.forEach(file => {
-                // Vérifier si le fichier est une image et si le nombre total de photos (existantes + nouvelles) ne dépasse pas 6
-                if (file.type.startsWith('image/') && (currentTotalPhotos + newFilesToAdd.length) < 6) {
-                    // Vérifier si le fichier n'est pas déjà dans la liste des nouvelles photos sélectionnées
-                    if (!currentSelectedFiles.some(existingFile => existingFile.name === file.name && existingFile.size === file.size)) {
-                         newFilesToAdd.push(file);
-                    }
-                }
-            });
-            currentSelectedFiles.push(...newFilesToAdd);
-            renderPhotoPreviews();
-            // Pas besoin d'appeler updateFileInput() ici car les photos nouvelles sont gérées via `currentSelectedFiles`
-            // et le champ `photosInput` est juste pour la sélection, pas pour l'état des fichiers
-            validatePhotosField();
-        }
-
-        // Supprime image
-        function removeImage(fileNameToRemove) {
-            currentSelectedFiles = currentSelectedFiles.filter(file => file.name !== fileNameToRemove);
-            renderPhotoPreviews();
-            validatePhotosField();
-        }
-
-        // Affiche les prévisualisations des images actuellement sélectionnées.
-        function renderPhotoPreviews() {
-            imagePreviewContainer.innerHTML = ''; // Clear only the new previews container
-            currentSelectedFiles.forEach(file => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const previewItem = document.createElement('div');
-                    previewItem.className = 'preview-item';
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.className = 'preview-image';
-                    img.alt = file.name;
-                    // Pas de modal pour modifier-offre, on supprime l'événement click pour agrandir
-                    const deleteBtn = document.createElement('span');
-                    deleteBtn.className = 'delete-image-btn';
-                    deleteBtn.innerHTML = '&times;';
-                    deleteBtn.title = 'Supprimer cette image';
-                    deleteBtn.dataset.fileName = file.name;
-                    deleteBtn.addEventListener('click', (event) => {
-                        event.stopPropagation();
-                        removeImage(file.name);
-                    });
-                    previewItem.appendChild(img);
-                    previewItem.appendChild(deleteBtn);
-                    imagePreviewContainer.appendChild(previewItem);
-                }
-                reader.readAsDataURL(file);
-            });
-        }
-
-        // Valide le champ de photos (nombre minimum/maximum de photos).
-        function validatePhotosField() {
-            const photosErrorMessage = document.getElementById('photos-error-message');
-            // Compter les photos visibles (existantes non supprimées + nouvelles)
-            const visibleExistingPhotosCount = existingPhotoElements.filter(p => p.visible).length;
-            const totalCurrentPhotos = visibleExistingPhotosCount + currentSelectedFiles.length;
-
-            let isValid = true;
-            if (photosInput.required && totalCurrentPhotos === 0) {
-                photosErrorMessage.textContent = "Veuillez ajouter au moins une photo.";
-                photosErrorMessage.style.display = 'block';
-                photosInput.classList.add('invalid');
-                isValid = false;
-            } else if (totalCurrentPhotos > 6) {
-                photosErrorMessage.textContent = `Vous avez ${totalCurrentPhotos} photos. Vous ne pouvez avoir que 6 photos maximum au total.`;
-                photosErrorMessage.style.display = 'block';
-                photosInput.classList.add('invalid');
-                isValid = false;
-            } else {
-                photosErrorMessage.style.display = 'none';
-                photosInput.classList.remove('invalid');
-            }
-            return isValid;
-        }
-
-
-        if(photosInput) photosInput.addEventListener('change', handlePhotoSelection);
-
-        // Initialisation des données pour les photos existantes au chargement de la page
-        // Marquer toutes les photos existantes comme visibles par défaut
-        existingPhotoElements.forEach(photo => photo.visible = true);
-        // Attacher les écouteurs pour les boutons de suppression des photos existantes
-        document.querySelectorAll('#existing-image-preview-container .delete-image-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const photoId = this.dataset.photoId;
-                this.closest('.preview-item').style.display = 'none';
-                // Mettre à jour l'état de visibilité de la photo dans existingPhotoElements
-                const photoIndex = existingPhotoElements.findIndex(p => p.id == photoId);
-                if (photoIndex !== -1) {
-                    existingPhotoElements[photoIndex].visible = false;
-                }
-
-                let currentDeleted = deletedPhotosInput.value ? deletedPhotosInput.value.split(',') : [];
-                if (!currentDeleted.includes(photoId)) {
-                    currentDeleted.push(photoId);
-                    deletedPhotosInput.value = currentDeleted.join(',');
-                }
-                validatePhotosField(); // Re-validate after deleting an existing photo
-            });
-        });
-
-        // Catégorie select est disabled dans modifier-offre.php, mais nous utilisons sa valeur initiale
-        // pour charger les champs spécifiques.
-        if (serverData.categorie_type_enum) {
-            fetchCategorieFields(serverData.categorie_type_enum, serverData);
-        } else {
-             // Si pas de catégorie dans serverData (ex: page chargée pour la première fois sans offre spécifique),
-             // afficher le champ de date principal par défaut.
-             if(mainDateInputContainer) mainDateInputContainer.style.display = 'block';
-             if(mainDateInput) mainDateInput.required = true;
-        }
-
-        // Validation au submit
-        offerForm.addEventListener('submit', (event) => {
-            offerForm.dataset.submitted = 'true';
-            if (!validateAllFields(offerForm)) {
-                event.preventDefault();
-                const firstInvalidField = offerForm.querySelector('.invalid');
-                if (firstInvalidField) {
-                    firstInvalidField.focus();
-                    firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }
-        });
-
-        // Valider tous les champs au chargement si le formulaire a été soumis et qu'il y a des erreurs PHP
-        <?php if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($erreurs)): ?>
-            offerForm.dataset.submitted = 'true';
-            const phpErrors = <?php echo json_encode(array_keys($erreurs)); ?>;
-            let firstInvalidFieldForFocus = null;
-
-            phpErrors.forEach(fieldName => {
-                let field = document.getElementById(fieldName) ||
-                            document.querySelector(`[name="${fieldName}"]`) ||
-                            document.querySelector(`[name^="${fieldName}["]`); // Pour gérer les tableaux d'inputs
-
-                if (field && !field.classList.contains('invalid')) { // Éviter de traiter deux fois
-                    field.classList.add('invalid');
-                    const errorMessageElement = getErrorMessageElementForField(field);
-                    if (errorMessageElement) {
-                         errorMessageElement.style.display = 'block';
-                         // Afficher le message spécifique si l'erreur PHP correspond à ce champ
-                         <?php foreach ($erreurs as $err_key => $err_msg): ?>
-                            if (fieldName === '<?php echo $err_key; ?>') {
-                                errorMessageElement.textContent = '<?php echo addslashes($err_msg); ?>';
+                        if (!firstInvalidFieldForFocus) firstInvalidFieldForFocus = field;
+                    } else if (fieldName.startsWith('photos_') || fieldName === 'photos' || fieldName === 'photos_missing' || fieldName === 'photos_count' || fieldName === 'photos_upload_dir' || fieldName === 'photos_upload_permission' || fieldName === 'photos_final_check') {
+                        // Gestion spécifique des erreurs de photos
+                        const photosErrorMsgEl = document.getElementById('photos-error-message');
+                        if (photosErrorMsgEl) {
+                            // Utiliser le message d'erreur PHP directement si disponible
+                            photosErrorMsgEl.textContent = "<?php
+                                                            if (isset($erreurs['photos_final_check'])) echo addslashes($erreurs['photos_final_check']);
+                                                            elseif (isset($erreurs['photos_missing'])) echo addslashes($erreurs['photos_missing']);
+                                                            elseif (isset($erreurs['photos_count'])) echo addslashes($erreurs['photos_count']);
+                                                            elseif (isset($erreurs['photos_upload_dir'])) echo addslashes($erreurs['photos_upload_dir']);
+                                                            elseif (isset($erreurs['photos_upload_permission'])) echo addslashes($erreurs['photos_upload_permission']);
+                                                            elseif (preg_grep('/^photos_upload_move_/', array_keys($erreurs))) echo addslashes("Erreur lors du déplacement d'un fichier photo.");
+                                                            elseif (preg_grep('/^photos_size_/', array_keys($erreurs))) echo addslashes("Un fichier photo est trop volumineux.");
+                                                            elseif (preg_grep('/^photos_type_/', array_keys($erreurs))) echo addslashes("Type de fichier photo non autorisé.");
+                                                            elseif (preg_grep('/^photos_upload_error_/', array_keys($erreurs))) echo addslashes("Une erreur de téléchargement est survenue pour une photo.");
+                                                            else echo 'Erreur avec le téléchargement des photos.';
+                                                            ?>";
+                            photosErrorMsgEl.style.display = 'block';
+                        }
+                        if (photosInput) {
+                            photosInput.classList.add('invalid');
+                            if (!firstInvalidFieldForFocus) firstInvalidFieldForFocus = photosInput;
+                        }
+                    } else if (fieldName.includes('horaire_activite_date_')) {
+                        // Logic for dynamic fields like horaires_activites dates
+                        const match = fieldName.match(/horaire_activite_date_(\d+)/);
+                        if (match) {
+                            const index = match[1];
+                            const dateField = document.querySelector(`[name="activites[0][horaires][${index}][date]"]`);
+                            if (dateField) {
+                                dateField.classList.add('invalid');
+                                const errorEl = getErrorMessageElementForField(dateField);
+                                if (errorEl) errorEl.style.display = 'block';
+                                if (!firstInvalidFieldForFocus) firstInvalidFieldForFocus = dateField;
                             }
-                         <?php endforeach; ?>
-                    }
-                    if (!firstInvalidFieldForFocus) firstInvalidFieldForFocus = field;
-                } else if (fieldName.startsWith('photos_') || fieldName === 'photos' || fieldName === 'photos_missing' || fieldName === 'photos_count' || fieldName === 'photos_upload_dir' || fieldName === 'photos_upload_permission' || fieldName === 'photos_final_check') {
-                    // Gestion spécifique des erreurs de photos
-                    const photosErrorMsgEl = document.getElementById('photos-error-message');
-                    if (photosErrorMsgEl) {
-                        // Utiliser le message d'erreur PHP directement si disponible
-                        photosErrorMsgEl.textContent = "<?php
-                            if(isset($erreurs['photos_final_check'])) echo addslashes($erreurs['photos_final_check']);
-                            elseif(isset($erreurs['photos_missing'])) echo addslashes($erreurs['photos_missing']);
-                            elseif(isset($erreurs['photos_count'])) echo addslashes($erreurs['photos_count']);
-                            elseif(isset($erreurs['photos_upload_dir'])) echo addslashes($erreurs['photos_upload_dir']);
-                            elseif(isset($erreurs['photos_upload_permission'])) echo addslashes($erreurs['photos_upload_permission']);
-                            elseif(preg_grep('/^photos_upload_move_/', array_keys($erreurs))) echo addslashes("Erreur lors du déplacement d'un fichier photo.");
-                            elseif(preg_grep('/^photos_size_/', array_keys($erreurs))) echo addslashes("Un fichier photo est trop volumineux.");
-                            elseif(preg_grep('/^photos_type_/', array_keys($erreurs))) echo addslashes("Type de fichier photo non autorisé.");
-                            elseif(preg_grep('/^photos_upload_error_/', array_keys($erreurs))) echo addslashes("Une erreur de téléchargement est survenue pour une photo.");
-                            else echo 'Erreur avec le téléchargement des photos.';
-                        ?>";
-                        photosErrorMsgEl.style.display = 'block';
-                    }
-                    if(photosInput) {
-                        photosInput.classList.add('invalid');
-                        if (!firstInvalidFieldForFocus) firstInvalidFieldForFocus = photosInput;
-                    }
-                } else if (fieldName.includes('horaire_activite_date_')) {
-                    // Logic for dynamic fields like horaires_activites dates
-                    const match = fieldName.match(/horaire_activite_date_(\d+)/);
-                    if (match) {
-                        const index = match[1];
-                        const dateField = document.querySelector(`[name="activites[0][horaires][${index}][date]"]`);
-                        if (dateField) {
-                            dateField.classList.add('invalid');
-                            const errorEl = getErrorMessageElementForField(dateField);
-                            if(errorEl) errorEl.style.display = 'block';
-                            if (!firstInvalidFieldForFocus) firstInvalidFieldForFocus = dateField;
                         }
                     }
+                    // Ajouter d'autres cas pour les champs dynamiques comme attractions, services, etc. si nécessaire
+                    // pour s'assurer qu'ils sont marqués 'invalid' si les erreurs PHP les concernent.
+                });
+
+                if (firstInvalidFieldForFocus) {
+                    firstInvalidFieldForFocus.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                } else {
+                    const generalErrorDisplay = document.querySelector('.error.form-section');
+                    if (generalErrorDisplay) {
+                        generalErrorDisplay.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                    }
                 }
-                // Ajouter d'autres cas pour les champs dynamiques comme attractions, services, etc. si nécessaire
-                // pour s'assurer qu'ils sont marqués 'invalid' si les erreurs PHP les concernent.
-            });
+            <?php endif; ?>
 
-             if (firstInvalidFieldForFocus) {
-                 firstInvalidFieldForFocus.scrollIntoView({ behavior: 'smooth', block: 'center' });
-             } else {
-                 const generalErrorDisplay = document.querySelector('.error.form-section');
-                 if (generalErrorDisplay) {
-                     generalErrorDisplay.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                 }
-             }
-        <?php endif; ?>
-
-        // Appliquer la validation au chargement si le formulaire a été soumis
-        if (offerForm.dataset.submitted === 'true') {
-            validateAllFields(offerForm);
-        }
-    });
+            // Appliquer la validation au chargement si le formulaire a été soumis
+            if (offerForm.dataset.submitted === 'true') {
+                validateAllFields(offerForm);
+            }
+        });
     </script>
 </body>
+
 </html>

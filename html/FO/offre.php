@@ -69,7 +69,7 @@ try {
     $main_photo_found = false;
 
     // S'assurer que la main_photo est toujours la première si elle existe
-    foreach($all_photos_raw as $p) {
+    foreach ($all_photos_raw as $p) {
         if ($p['url'] === $offer['main_photo']) {
             array_unshift($photos_display, $p);
             $main_photo_found = true;
@@ -96,13 +96,13 @@ try {
     $reviews_stmt = $pdo->prepare($reviews_sql);
     $reviews_stmt->execute(['offer_id' => $offer_id]);
     $reviews = $reviews_stmt->fetchAll(PDO::FETCH_ASSOC);
-
 } catch (PDOException $e) {
     die("Erreur de base de données : " . $e->getMessage());
 }
 
 // Fonction pour afficher les étoiles de notation
-function display_stars($rating) {
+function display_stars($rating)
+{
     $html = '';
     $full_stars = floor($rating);
     $half_star = ceil($rating) - $full_stars;
@@ -122,6 +122,7 @@ function display_stars($rating) {
 ?>
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -157,6 +158,7 @@ function display_stars($rating) {
             display: flex;
             align-items: center;
         }
+
         .breadcrumb-bar a:hover {
             color: var(--couleur-principale);
         }
@@ -200,26 +202,34 @@ function display_stars($rating) {
         }
 
         .offre-favorite-btn {
-            position: absolute; /* MODIFIED */
-            top: 20px;          /* ADDED */
-            right: 20px;         /* ADDED */
+            position: absolute;
+            /* MODIFIED */
+            top: 20px;
+            /* ADDED */
+            right: 20px;
+            /* ADDED */
             background: none;
             border: none;
             color: var(--couleur-principale);
             font-size: 2em;
             cursor: pointer;
             padding: 0;
-            z-index: 5; /* Optional: Added to ensure visibility */
+            z-index: 5;
+            /* Optional: Added to ensure visibility */
         }
-         .offre-favorite-btn:hover {
+
+        .offre-favorite-btn:hover {
             color: var(--couleur-principale-hover);
         }
+
         .offre-favorite-btn .fas.fa-heart {
             display: none;
         }
+
         .offre-favorite-btn.active .far.fa-heart {
             display: none;
         }
+
         .offre-favorite-btn.active .fas.fa-heart {
             display: inline-block;
         }
@@ -250,7 +260,8 @@ function display_stars($rating) {
         }
 
         .offre-purchase-details {
-            position: relative; /* ADDED */
+            position: relative;
+            /* ADDED */
             flex: 0 0 calc(40% - 30px);
             background-color: var(--couleur-blanche);
             padding: 20px;
@@ -258,7 +269,7 @@ function display_stars($rating) {
             display: flex;
             flex-direction: column;
             border: 1px solid var(--couleur-bordure);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
 
         .offre-purchase-details .price {
@@ -274,6 +285,7 @@ function display_stars($rating) {
             color: var(--couleur-texte);
             margin-bottom: 8px;
         }
+
         .offre-purchase-details .summary-text {
             font-size: 0.9em;
             color: var(--couleur-texte-footer);
@@ -294,6 +306,7 @@ function display_stars($rating) {
             display: block;
             margin-top: auto;
         }
+
         .btn-acces-site:hover {
             background-color: var(--couleur-principale-hover);
         }
@@ -307,12 +320,14 @@ function display_stars($rating) {
         .offre-description-text {
             flex: 0 0 60%;
         }
-         .offre-description-text h2 {
+
+        .offre-description-text h2 {
             font-size: 1.3em;
             font-weight: var(--font-weight-semibold);
             color: var(--couleur-texte);
             margin-bottom: 10px;
         }
+
         .offre-description-text p {
             font-size: 0.95em;
             color: var(--couleur-texte-footer);
@@ -326,14 +341,16 @@ function display_stars($rating) {
             padding: 20px;
             border-radius: 8px;
             border: 1px solid var(--couleur-bordure);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
-         .offre-additional-details h3 {
+
+        .offre-additional-details h3 {
             font-size: 1em;
             font-weight: var(--font-weight-semibold);
             color: var(--couleur-texte);
             margin-bottom: 12px;
-         }
+        }
+
         .detail-item {
             display: flex;
             align-items: flex-start;
@@ -341,6 +358,7 @@ function display_stars($rating) {
             font-size: 0.9em;
             color: var(--couleur-texte-footer);
         }
+
         .detail-item i {
             color: var(--couleur-texte);
             margin-right: 10px;
@@ -349,6 +367,7 @@ function display_stars($rating) {
             text-align: center;
             margin-top: 1px;
         }
+
         .map-placeholder {
             width: 100%;
             height: 200px;
@@ -361,7 +380,8 @@ function display_stars($rating) {
             margin-top: 15px;
             overflow: hidden;
         }
-         .map-placeholder img {
+
+        .map-placeholder img {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -373,7 +393,8 @@ function display_stars($rating) {
             border-top: 1px solid var(--couleur-bordure);
             padding-top: 30px;
         }
-        .offre-avis-section > h2 {
+
+        .offre-avis-section>h2 {
             font-size: 1.3em;
             font-weight: var(--font-weight-semibold);
             color: var(--couleur-texte);
@@ -388,8 +409,9 @@ function display_stars($rating) {
             border: 1px solid var(--couleur-bordure);
             display: flex;
             gap: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
+
         .avis-avatar img {
             width: 40px;
             height: 40px;
@@ -397,7 +419,10 @@ function display_stars($rating) {
             object-fit: cover;
             margin-top: 3px;
         }
-        .avis-content { flex-grow: 1; }
+
+        .avis-content {
+            flex-grow: 1;
+        }
 
         .avis-header {
             display: flex;
@@ -405,15 +430,17 @@ function display_stars($rating) {
             align-items: center;
             margin-bottom: 8px;
         }
+
         .avis-user-info .name {
             font-weight: var(--font-weight-semibold);
             color: var(--couleur-texte);
             font-size: 1em;
         }
+
         .avis-user-info .username-date {
-             font-size: 0.85em;
-             color: #6c757d;
-             margin-top: 3px;
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-top: 3px;
         }
 
         .avis-rating {
@@ -421,11 +448,13 @@ function display_stars($rating) {
             align-items: center;
             font-size: 0.9em;
         }
+
         .avis-rating .fas.fa-star,
         .avis-rating .fas.fa-star-half-alt {
             color: var(--couleur-principale);
             margin-left: 2px;
         }
+
         .avis-rating .far.fa-star {
             color: var(--couleur-bordure);
             margin-left: 2px;
@@ -437,6 +466,7 @@ function display_stars($rating) {
             line-height: 1.6;
             margin-bottom: 12px;
         }
+
         .avis-footer {
             display: flex;
             flex-direction: column;
@@ -457,6 +487,7 @@ function display_stars($rating) {
             margin-bottom: 25px;
             border: none;
         }
+
         .btn-laisser-avis:hover {
             background-color: var(--couleur-principale-hover);
         }
@@ -468,6 +499,7 @@ function display_stars($rating) {
             width: 100px;
             margin: 0 auto;
         }
+
         .avis-navigation button {
             background: none;
             border: none;
@@ -476,8 +508,12 @@ function display_stars($rating) {
             cursor: pointer;
             padding: 5px;
         }
-        .avis-navigation button:disabled { color: #ccc; cursor: not-allowed; }
-        
+
+        .avis-navigation button:disabled {
+            color: #ccc;
+            cursor: not-allowed;
+        }
+
         .gallery-image-container.cards-container {
             display: flex;
             height: 450px;
@@ -488,9 +524,11 @@ function display_stars($rating) {
             border-radius: inherit;
             scroll-snap-type: x mandatory;
         }
+
         .gallery-image-container.cards-container::-webkit-scrollbar {
             display: none;
         }
+
         .gallery-image-container.cards-container img {
             flex: 0 0 100%;
             width: 100%;
@@ -498,6 +536,7 @@ function display_stars($rating) {
             object-fit: cover;
             scroll-snap-align: start;
         }
+
         .carousel-arrow {
             position: absolute;
             top: 50%;
@@ -514,12 +553,18 @@ function display_stars($rating) {
             font-size: 1.5em;
             cursor: pointer;
             z-index: 10;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             transition: background-color 0.2s ease, color 0.2s ease, opacity 0.3s ease, visibility 0.3s ease;
         }
-        .carousel-arrow.prev-arrow { left: 15px; }
-        .carousel-arrow.next-arrow { right: 15px; }
-        
+
+        .carousel-arrow.prev-arrow {
+            left: 15px;
+        }
+
+        .carousel-arrow.next-arrow {
+            right: 15px;
+        }
+
         /* Modal Styles */
         .modal {
             display: none;
@@ -530,7 +575,7 @@ function display_stars($rating) {
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgba(0,0,0,0.4);
+            background-color: rgba(0, 0, 0, 0.4);
             justify-content: center;
             align-items: center;
             padding: 20px;
@@ -544,13 +589,20 @@ function display_stars($rating) {
             max-width: 500px;
             width: 90%;
             position: relative;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             animation: fadeIn 0.3s ease-out;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .close-button {
@@ -611,12 +663,15 @@ function display_stars($rating) {
             color: var(--couleur-bordure);
             margin-bottom: 15px;
         }
+
         .modal-body .rating-input .stars i {
             cursor: pointer;
             transition: color 0.2s;
         }
+
         .modal-body .rating-input .stars i.fas {
-            color: gold; /* Couleur des étoiles remplies */
+            color: gold;
+            /* Couleur des étoiles remplies */
         }
 
         .modal-body form button {
@@ -641,17 +696,26 @@ function display_stars($rating) {
             font-size: 0.85em;
             margin-top: -10px;
             margin-bottom: 10px;
-            display: none; /* Hidden by default */
+            display: none;
+            /* Hidden by default */
         }
 
 
         @media (max-width: 992px) {
-            .offre-gallery-and-purchase, .offre-detailed-info { flex-direction: column; }
-            .offre-gallery, .offre-purchase-details,
-            .offre-description-text, .offre-additional-details {
+
+            .offre-gallery-and-purchase,
+            .offre-detailed-info {
+                flex-direction: column;
+            }
+
+            .offre-gallery,
+            .offre-purchase-details,
+            .offre-description-text,
+            .offre-additional-details {
                 flex-basis: auto;
             }
         }
+
         @media (max-width: 768px) {
             .avis-card {
                 flex-direction: column;
@@ -660,8 +724,10 @@ function display_stars($rating) {
         }
     </style>
 </head>
+
 <body>
-    <?php require_once 'header.php'; // Assurez-vous que ce fichier existe et est adapté pour les membres ?>
+    <?php require_once 'header.php'; // Assurez-vous que ce fichier existe et est adapté pour les membres 
+    ?>
     <main class="main-content-offre">
         <div class="container">
             <div class="breadcrumb-bar">
@@ -708,10 +774,10 @@ function display_stars($rating) {
                         </div>
                         <h3>Contact</h3>
                         <?php if (!empty($offer['phone'])): ?>
-                        <div class="detail-item">
-                            <i class="fas fa-phone"></i>
-                            <span>Téléphone : <?php echo htmlspecialchars($offer['phone']); ?></span>
-                        </div>
+                            <div class="detail-item">
+                                <i class="fas fa-phone"></i>
+                                <span>Téléphone : <?php echo htmlspecialchars($offer['phone']); ?></span>
+                            </div>
                         <?php endif; ?>
                         <div class="map-placeholder">
                             <img src="images/map.png" alt="Carte de localisation">
@@ -753,8 +819,8 @@ function display_stars($rating) {
                     </div>
                     <div class="avis-footer">
                         <button class="btn-laisser-avis" id="openAvisModalBtn"
-                                data-offer-id="<?php echo htmlspecialchars($offer_id); ?>"
-                                data-is-logged-in="<?php echo $is_logged_in_member ? 'true' : 'false'; ?>">
+                            data-offer-id="<?php echo htmlspecialchars($offer_id); ?>"
+                            data-is-logged-in="<?php echo $is_logged_in_member ? 'true' : 'false'; ?>">
                             Laisser un avis
                         </button>
                         <div class="avis-navigation">
@@ -763,14 +829,14 @@ function display_stars($rating) {
                         </div>
                     </div>
                 </div>
-                 </div>
+            </div>
         </div>
     </main>
 
     <footer>
         <div class="container footer-content">
             <div class="footer-section social-media">
-                <a href="../index.html"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="footer-logo"></a>
+                <a href="../index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="footer-logo"></a>
                 <div class="social-icons">
                     <a href="#" aria-label="Twitter PACT"><i class="fab fa-x-twitter"></i></a>
                     <a href="#" aria-label="Instagram PACT"><i class="fab fa-instagram"></i></a>
@@ -789,7 +855,7 @@ function display_stars($rating) {
             <div class="footer-section links">
                 <h3>Découvrir</h3>
                 <ul>
-                    <li><a href="../index.html">Accueil</a></li>
+                    <li><a href="../index.php">Accueil</a></li>
                     <li><a href="recherche.php">Recherche</a></li>
                 </ul>
             </div>
@@ -810,10 +876,22 @@ function display_stars($rating) {
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <div class="modal-body">
-                </div>
+            </div>
         </div>
     </div>
 
+    <script src="script.js" defer></script>
+    <script src="script.js" defer></script>
+    <script src="script.js" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const favoriteButton = document.querySelector('.offre-favorite-btn');
+            if (favoriteButton) {
+                favoriteButton.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                });
+            }
+    </script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const favoriteButton = document.querySelector('.offre-favorite-btn');
@@ -844,55 +922,40 @@ function display_stars($rating) {
             });
         }
 
-        function updateAvisNavigation() {
-            if (!prevAvisBtn || !nextAvisBtn) return;
-            totalAvisPages = Math.ceil(allAvisCards.length / avisPerPage);
-            prevAvisBtn.disabled = currentAvisPage === 1;
-            nextAvisBtn.disabled = currentAvisPage === totalAvisPages || allAvisCards.length === 0;
+            const avisListContainer = document.querySelector('.avis-list');
+            const allAvisCards = avisListContainer ? Array.from(avisListContainer.querySelectorAll('.avis-card')) : [];
+            const prevAvisBtn = document.querySelector('.prev-avis');
+            const nextAvisBtn = document.querySelector('.next-avis');
 
-            if (allAvisCards.length > 0) {
-                displayCurrentAvisPage();
-            } else { // S'il n'y a aucun avis
-                if(avisListContainer) avisListContainer.innerHTML = "<p>Aucun avis pour le moment.</p>";
-            }
-        }
+            let currentAvisPage = 1;
+            const avisPerPage = 3; // Nombre d'avis à afficher par page
+            let totalAvisPages = 0;
 
-        if (allAvisCards.length > 0) { // S'il y a des avis, initialiser la pagination
-            if (prevAvisBtn) {
-                prevAvisBtn.addEventListener('click', () => {
-                    if (currentAvisPage > 1) {
-                        currentAvisPage--;
-                        updateAvisNavigation();
+            function displayCurrentAvisPage() {
+                if (!avisListContainer || allAvisCards.length === 0) return;
+                const startIndex = (currentAvisPage - 1) * avisPerPage;
+                const endIndex = startIndex + avisPerPage;
+
+                allAvisCards.forEach((card, index) => {
+                    if (index >= startIndex && index < endIndex) {
+                        card.style.display = 'flex'; // Ou 'block' selon le style initial des cartes
+                    } else {
+                        card.style.display = 'none';
                     }
                 });
             }
 
-            if (nextAvisBtn) {
-                nextAvisBtn.addEventListener('click', () => {
-                    if (currentAvisPage < totalAvisPages) {
-                        currentAvisPage++;
-                        updateAvisNavigation();
-                    }
-                });
-            }
-            updateAvisNavigation(); // Appel initial pour afficher la première page et définir l'état des boutons
-        } else if (prevAvisBtn && nextAvisBtn) { // S'il n'y a pas d'avis, désactiver les boutons
-             updateAvisNavigation(); // Appel pour gérer le cas où il n'y a pas d'avis
-        }
+            function updateAvisNavigation() {
+                if (!prevAvisBtn || !nextAvisBtn) return;
+                totalAvisPages = Math.ceil(allAvisCards.length / avisPerPage);
+                prevAvisBtn.disabled = currentAvisPage === 1;
+                nextAvisBtn.disabled = currentAvisPage === totalAvisPages || allAvisCards.length === 0;
 
-        const offreCarouselWrapper = document.getElementById('offreImageCarouselWrapper');
-        if (offreCarouselWrapper) {
-            updateOffreCarouselArrowsVisibility(offreCarouselWrapper);
-            const imageContainer = offreCarouselWrapper.querySelector('.gallery-image-container.cards-container');
-            if (imageContainer) {
-                let scrollEndTimer;
-                imageContainer.addEventListener('scroll', () => {
-                    clearTimeout(scrollEndTimer);
-                    scrollEndTimer = setTimeout(() => updateOffreCarouselArrowsVisibility(offreCarouselWrapper), 100);
-                });
-            }
-        }
-
+                if (allAvisCards.length > 0) {
+                    displayCurrentAvisPage();
+                } else { // S'il n'y a aucun avis
+                    if (avisListContainer) avisListContainer.innerHTML = "<p>Aucun avis pour le moment.</p>";
+                }
         // Modal Logic for "Laisser un avis" button
         const openAvisModalBtn = document.getElementById('openAvisModalBtn');
         const avisModal = document.getElementById('avisModal');
@@ -942,9 +1005,26 @@ function display_stars($rating) {
                     console.log('Utilisateur non connecté, redirection vers la page de connexion.'); // Ajout pour le débogage
                     window.location.href = 'connexion-compte.php?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
                 }
-            });
-        }
+            }
 
+            if (allAvisCards.length > 0) { // S'il y a des avis, initialiser la pagination
+                if (prevAvisBtn) {
+                    prevAvisBtn.addEventListener('click', () => {
+                        if (currentAvisPage > 1) {
+                            currentAvisPage--;
+                            updateAvisNavigation();
+                        }
+                    });
+                }
+
+                if (nextAvisBtn) {
+                    nextAvisBtn.addEventListener('click', () => {
+                        if (currentAvisPage < totalAvisPages) {
+                            currentAvisPage++;
+                            updateAvisNavigation();
+                        }
+                    });
+             }
         if (closeModalButton) {
             closeModalButton.addEventListener('click', function() {
                 avisModal.style.display = 'none';
@@ -959,34 +1039,86 @@ function display_stars($rating) {
                     avisModal.style.display = 'none';
                     console.log('Modale d\'avis fermée (clic extérieur).'); // Ajout pour le débogage
                 }
-            });
-        }
+                updateAvisNavigation(); // Appel initial pour afficher la première page et définir l'état des boutons
+            } else if (prevAvisBtn && nextAvisBtn) { // S'il n'y a pas d'avis, désactiver les boutons
+                updateAvisNavigation(); // Appel pour gérer le cas où il n'y a pas d'avis
+            }
 
-        function initializeModalFormLogic() {
-            const ratingStars = document.querySelectorAll('#avisModal .rating-input .fa-star');
-            const ratingInput = document.getElementById('rating_input');
-            // Récupérer la valeur initiale de rating_input pour l'état des étoiles
-            let currentRating = ratingInput ? parseInt(ratingInput.value) || 0 : 0;
+            const offreCarouselWrapper = document.getElementById('offreImageCarouselWrapper');
+            if (offreCarouselWrapper) {
+                updateOffreCarouselArrowsVisibility(offreCarouselWrapper);
+                const imageContainer = offreCarouselWrapper.querySelector('.gallery-image-container.cards-container');
+                if (imageContainer) {
+                    let scrollEndTimer;
+                    imageContainer.addEventListener('scroll', () => {
+                        clearTimeout(scrollEndTimer);
+                        scrollEndTimer = setTimeout(() => updateOffreCarouselArrowsVisibility(offreCarouselWrapper), 100);
+                    });
+                }
+            }
 
-            function updateStars(rating) {
-                ratingStars.forEach((star, index) => {
-                    if (index < rating) {
-                        star.classList.remove('far');
-                        star.classList.add('fas');
-                        star.style.color = 'gold';
+            // Modal Logic for "Laisser un avis" button
+            const openAvisModalBtn = document.getElementById('openAvisModalBtn');
+            const avisModal = document.getElementById('avisModal');
+            const closeModalButton = document.querySelector('#avisModal .close-button');
+            const modalBody = document.querySelector('#avisModal .modal-body');
+
+            if (openAvisModalBtn) {
+                openAvisModalBtn.addEventListener('click', function() {
+                    const isUserLoggedIn = this.dataset.isLoggedIn === 'true';
+                    const offerId = this.dataset.offerId;
+
+                    if (isUserLoggedIn) {
+                        // Load the review form into the modal
+                        fetch(`laisser-avis-modal.php?offer_id=${offerId}`)
+                            .then(response => {
+                                if (!response.ok) {
+                                    // If response is not ok (e.g., 401 Unauthorized from laisser-avis-modal.php)
+                                    // Try to parse as JSON first, then fall back to text
+                                    return response.json().catch(() => response.text());
+                                }
+                                return response.text(); // Expecting HTML normally
+                            })
+                            .then(data => {
+                                if (typeof data === 'object' && data.error) {
+                                    // Handle JSON error response, e.g., if not authenticated
+                                    alert('Erreur: ' + data.error);
+                                    if (data.error === 'Non authentifié.') {
+                                        window.location.href = 'connexion-compte.php?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+                                    }
+                                    return; // Stop further processing
+                                }
+                                // Assume HTML content otherwise
+                                modalBody.innerHTML = data;
+                                avisModal.style.display = 'flex'; // Show the modal
+                                initializeModalFormLogic(); // Initialize form-specific JS (e.g., star rating)
+                            })
+                            .catch(error => {
+                                console.error('Error loading review form:', error);
+                                modalBody.innerHTML = '<p>Impossible de charger le formulaire d\'avis. Veuillez réessayer plus tard.</p>';
+                                avisModal.style.display = 'flex';
+                            });
                     } else {
-                        star.classList.remove('fas');
-                        star.classList.add('far');
-                        star.style.color = 'var(--couleur-bordure)';
+                        // Redirect to login page if not logged in
+                        window.location.href = 'connexion-compte.php?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
                     }
                 });
             }
 
-            // Initialiser l'affichage des étoiles basé sur currentRating
-            if (ratingInput) {
-                updateStars(currentRating);
+            if (closeModalButton) {
+                closeModalButton.addEventListener('click', function() {
+                    avisModal.style.display = 'none';
+                });
             }
 
+            // Close modal when clicking outside of it
+            if (avisModal) {
+                avisModal.addEventListener('click', function(event) {
+                    if (event.target === avisModal) {
+                        avisModal.style.display = 'none';
+                    }
+                });
+            }
             ratingStars.forEach(star => {
                 star.addEventListener('click', function() {
                     currentRating = parseInt(this.dataset.rating);
@@ -994,15 +1126,22 @@ function display_stars($rating) {
                     updateStars(currentRating);
                     console.log('Note sélectionnée:', currentRating); // Ajout pour le débogage
                 });
-            });
-
-            // Set max attribute for visit_date to today's date
-            const visitDateInput = document.getElementById('visit_date');
-            if (visitDateInput) {
-                const today = new Date().toISOString().split('T')[0];
-                visitDateInput.setAttribute('max', today);
             }
 
+            function initializeModalFormLogic() {
+                const ratingStars = document.querySelectorAll('#avisModal .rating-input .fa-star');
+                const ratingInput = document.getElementById('rating_input');
+                // Récupérer la valeur initiale de rating_input pour l'état des étoiles
+                let currentRating = ratingInput ? parseInt(ratingInput.value) || 0 : 0;
+
+                function updateStars(rating) {
+                    ratingStars.forEach((star, index) => {
+                        if (index < rating) {
+                            star.classList.remove('far');
+                            star.classList.add('fas');
+                            star.style.color = 'gold';
+                        });
+                  }
             // Handle form submission inside the modal via AJAX
             const avisForm = document.getElementById('avisForm');
             // Ciblez l'élément d'erreur directement depuis avisForm après son chargement
@@ -1038,88 +1177,141 @@ function display_stars($rating) {
                             errorMessageElement.style.display = 'block';
                             console.log('Erreurs de validation côté client:', errors); // Ajout pour le débogage
                         } else {
-                            console.error("Element d'erreur introuvable."); // Log pour le débogage
+                            star.classList.remove('fas');
+                            star.classList.add('far');
+                            star.style.color = 'var(--couleur-bordure)';
                         }
-                        return; // Arrêter l'envoi du formulaire si des erreurs de validation JS existent
-                    }
+                    });
+                }
+
+                // Initialiser l'affichage des étoiles basé sur currentRating
+                if (ratingInput) {
+                    updateStars(currentRating);
+                }
+
+                ratingStars.forEach(star => {
+                    star.addEventListener('click', function() {
+                        currentRating = parseInt(this.dataset.rating);
+                        if (ratingInput) ratingInput.value = currentRating;
+                        updateStars(currentRating);
+                    });
+                });
+
+                // Set max attribute for visit_date to today's date
+                const visitDateInput = document.getElementById('visit_date');
+                if (visitDateInput) {
+                    const today = new Date().toISOString().split('T')[0];
+                    visitDateInput.setAttribute('max', today);
+                }
+
+                // Handle form submission inside the modal via AJAX
+                const avisForm = document.getElementById('avisForm');
+                // MODIFICATION ICI: Ciblez l'élément d'erreur directement depuis modalBody ou avisForm
+                const errorMessageElement = avisForm ? avisForm.querySelector('.modal-error-message') : null;
 
 
-                    if (errorMessageElement) { // Vérifiez que l'élément d'erreur existe avant de cacher
-                        errorMessageElement.style.display = 'none'; // Hide previous errors
-                    }
-                    console.log('Validation client réussie, envoi de la requête AJAX...'); // Ajout pour le débogage
-                    fetch('submit-avis.php', { // This file will process the form
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => {
-                        console.log('Réponse reçue du serveur:', response); // Ajout pour le débogage
-                        // Vérifier si la réponse est JSON
-                        const contentType = response.headers.get("content-type");
-                        if (contentType && contentType.indexOf("application/json") !== -1) {
-                            return response.json();
-                        } else {
-                            // Si ce n'est pas du JSON, c'est probablement une erreur PHP qui a renvoyé du texte/HTML
-                            return response.text().then(text => { throw new Error('Server response was not JSON: ' + text) });
-                        }
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            alert('Avis soumis avec succès !');
-                            avisModal.style.display = 'none';
-                            location.reload(); // Simple reload for now to see the new review
-                            console.log('Avis soumis avec succès, rechargement de la page.'); // Ajout pour le débogage
-                        } else {
-                            // Display errors
+                if (avisForm) { // Vérifiez que le formulaire existe avant d'ajouter l'écouteur
+                    avisForm.addEventListener('submit', function(event) {
+                        event.preventDefault(); // Prevent default form submission
+
+                        const formData = new FormData(avisForm);
+
+                        // Récupérer les champs pour la validation avant envoi
+                        const titleInput = document.getElementById('avis_title');
+                        const commentInput = document.getElementById('avis_comment');
+                        const ratingValue = ratingInput ? parseInt(ratingInput.value) : 0;
+                        const visitDateValue = document.getElementById('visit_date').value;
+                        const contextValue = document.getElementById('context').value;
+
+                        let errors = [];
+
+                        if (titleInput.value.trim() === '') errors.push('Veuillez entrer un titre pour votre avis.');
+                        if (commentInput.value.trim() === '') errors.push('Veuillez entrer votre commentaire.');
+                        if (ratingValue < 1 || ratingValue > 5) errors.push('Veuillez donner une note entre 1 et 5 étoiles.');
+                        if (visitDateValue === '') errors.push('Veuillez entrer la date de votre visite.');
+                        if (new Date(visitDateValue) > new Date()) errors.push('La date de visite ne peut pas être future.');
+                        if (contextValue === '') errors.push('Veuillez sélectionner un contexte de visite.');
+
+                        if (errors.length > 0) {
                             if (errorMessageElement) { // Vérifiez que l'élément d'erreur existe
-                                errorMessageElement.textContent = Object.values(data.errors).join('\n');
+                                errorMessageElement.innerHTML = errors.join('<br>');
                                 errorMessageElement.style.display = 'block';
                                 console.log('Erreurs de validation côté serveur:', data.errors); // Ajout pour le débogage
                             } else {
-                                console.error("Element d'erreur introuvable après la soumission AJAX."); // Log pour le débogage
+                                console.error("Element d'erreur introuvable."); // Log pour le débogage
                             }
+                            return; // Arrêter l'envoi du formulaire si des erreurs de validation JS existent
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error submitting review:', error);
-                        if (errorMessageElement) { // Vérifiez que l'élément d'erreur existe
-                            errorMessageElement.textContent = 'Une erreur est survenue. Veuillez réessayer.';
-                            errorMessageElement.style.display = 'block';
-                        } else {
-                             console.error("Element d'erreur introuvable dans le catch AJAX."); // Log pour le débogage
+
+
+                        if (errorMessageElement) { // Vérifiez que l'élément d'erreur existe avant de cacher
+                            errorMessageElement.style.display = 'none'; // Hide previous errors
                         }
+
+                        fetch('submit-avis.php', { // This file will process the form
+                                method: 'POST',
+                                body: formData
+                            })
+                            .then(response => response.json()) // Expect JSON response
+                            .then(data => {
+                                if (data.success) {
+                                    alert('Avis soumis avec succès !');
+                                    avisModal.style.display = 'none';
+                                    location.reload(); // Simple reload for now to see the new review
+                                } else {
+                                    // Display errors
+                                    if (errorMessageElement) { // Vérifiez que l'élément d'erreur existe
+                                        errorMessageElement.textContent = Object.values(data.errors).join('\n');
+                                        errorMessageElement.style.display = 'block';
+                                    } else {
+                                        console.error("Element d'erreur introuvable après la soumission AJAX."); // Log pour le débogage
+                                    }
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error submitting review:', error);
+                                if (errorMessageElement) { // Vérifiez que l'élément d'erreur existe
+                                    errorMessageElement.textContent = 'Une erreur est survenue. Veuillez réessayer.';
+                                    errorMessageElement.style.display = 'block';
+                                } else {
+                                    console.error("Element d'erreur introuvable dans le catch AJAX."); // Log pour le débogage
+                                }
+                            });
                     });
-                });
+                }
             }
+        });
+
+        function scrollOffreCarousel(carouselWrapperId, direction) {
+            const wrapper = document.getElementById(carouselWrapperId);
+            if (!wrapper) return;
+            const container = wrapper.querySelector('.gallery-image-container.cards-container');
+            if (!container) return;
+            container.scrollBy({
+                left: direction * wrapper.clientWidth,
+                behavior: 'smooth'
+            });
         }
-    });
 
-    function scrollOffreCarousel(carouselWrapperId, direction) {
-        const wrapper = document.getElementById(carouselWrapperId);
-        if (!wrapper) return;
-        const container = wrapper.querySelector('.gallery-image-container.cards-container');
-        if (!container) return;
-        container.scrollBy({ left: direction * wrapper.clientWidth, behavior: 'smooth' });
-    }
+        function updateOffreCarouselArrowsVisibility(wrapperElement) {
+            const container = wrapperElement.querySelector('.gallery-image-container.cards-container');
+            const prevArrow = wrapperElement.querySelector('.carousel-arrow.prev-arrow');
+            const nextArrow = wrapperElement.querySelector('.carousel-arrow.next-arrow');
+            if (!container || !prevArrow || !nextArrow) return;
 
-    function updateOffreCarouselArrowsVisibility(wrapperElement) {
-        const container = wrapperElement.querySelector('.gallery-image-container.cards-container');
-        const prevArrow = wrapperElement.querySelector('.carousel-arrow.prev-arrow');
-        const nextArrow = wrapperElement.querySelector('.carousel-arrow.next-arrow');
-        if (!container || !prevArrow || !nextArrow) return;
+            const atStart = container.scrollLeft < 10;
+            const atEnd = container.scrollWidth - container.scrollLeft - container.clientWidth < 10;
+            const hasNoScroll = container.scrollWidth <= container.clientWidth;
 
-        const atStart = container.scrollLeft < 10;
-        const atEnd = container.scrollWidth - container.scrollLeft - container.clientWidth < 10;
-        const hasNoScroll = container.scrollWidth <= container.clientWidth;
+            prevArrow.style.display = (atStart || hasNoScroll) ? 'none' : 'flex';
+            nextArrow.style.display = (atEnd || hasNoScroll) ? 'none' : 'flex';
+        }
 
-        prevArrow.style.display = (atStart || hasNoScroll) ? 'none' : 'flex';
-        nextArrow.style.display = (atEnd || hasNoScroll) ? 'none' : 'flex';
-    }
-
-    window.addEventListener('resize', () => {
-        const offreCarouselWrapper = document.getElementById('offreImageCarouselWrapper');
-        if (offreCarouselWrapper) updateOffreCarouselArrowsVisibility(offreCarouselWrapper);
-    });
-</script>
+        window.addEventListener('resize', () => {
+            const offreCarouselWrapper = document.getElementById('offreImageCarouselWrapper');
+            if (offreCarouselWrapper) updateOffreCarouselArrowsVisibility(offreCarouselWrapper);
+        });
+    </script>
 </body>
+
 </html>
