@@ -101,10 +101,6 @@ if ($selectedDate) {
     // qui correspondent aux autres filtres, puis les filtrer par PHP.
     // Ou, mieux, adapter la requête SQL pour inclure la logique de date.
 
-    // Pour l'intégration SQL, cela nécessiterait des jointures conditionnelles ou des UNION.
-    // Pour simplifier et éviter une requête trop lourde, nous allons ajouter une logique après la récupération.
-    // Cependant, pour que le filtre soit efficace côté BDD, il faut l'intégrer.
-
     // La stratégie la plus robuste est de faire un LEFT JOIN conditionnel ou d'utiliser EXISTS
     // car une offre peut avoir plusieurs types d'horaires.
 
@@ -234,6 +230,8 @@ function renderStars($rating)
             height: fit-content;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            position: sticky; /* Add this line */
+            top: 80px; /* Add this line to set the offset from the top */
         }
 
         .filter-group {
@@ -514,6 +512,8 @@ function renderStars($rating)
             .filters-sidebar {
                 width: 100%;
                 margin-bottom: 20px;
+                position: static; /* Reset sticky for smaller screens if desired */
+                top: auto;
             }
 
             .results-grid {
