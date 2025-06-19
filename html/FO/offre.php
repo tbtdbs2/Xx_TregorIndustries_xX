@@ -814,10 +814,7 @@ function display_stars($rating) {
         </div>
     </div>
 
-    <script src="script.js" defer></script>
-    <script src="script.js" defer></script>
-<script src="script.js" defer></script>
-<script>
+    <script>
     document.addEventListener('DOMContentLoaded', function() {
         const favoriteButton = document.querySelector('.offre-favorite-btn');
         if (favoriteButton) {
@@ -908,10 +905,12 @@ function display_stars($rating) {
                 const offerId = this.dataset.offerId;
 
                 if (isUserLoggedIn) {
+                    console.log('Utilisateur connecté, chargement du formulaire d\'avis...'); // Ajout pour le débogage
                     // Load the review form into the modal
                     fetch(`laisser-avis-modal.php?offer_id=${offerId}`)
                         .then(response => {
                             if (!response.ok) {
+                                console.error('Erreur HTTP lors du chargement de la modale:', response.status, response.statusText); // Ajout pour le débogage
                                 // If response is not ok (e.g., 401 Unauthorized from laisser-avis-modal.php)
                                 // Try to parse as JSON first, then fall back to text
                                 return response.json().catch(() => response.text());
@@ -931,14 +930,16 @@ function display_stars($rating) {
                             modalBody.innerHTML = data;
                             avisModal.style.display = 'flex'; // Show the modal
                             initializeModalFormLogic(); // Initialize form-specific JS (e.g., star rating)
+                            console.log('Modale d\'avis chargée et affichée.'); // Ajout pour le débogage
                         })
                         .catch(error => {
-                            console.error('Error loading review form:', error);
+                            console.error('Error loading review form:', error); // Ajout pour le débogage
                             modalBody.innerHTML = '<p>Impossible de charger le formulaire d\'avis. Veuillez réessayer plus tard.</p>';
                             avisModal.style.display = 'flex';
                         });
                 } else {
                     // Redirect to login page if not logged in
+                    console.log('Utilisateur non connecté, redirection vers la page de connexion.'); // Ajout pour le débogage
                     window.location.href = 'connexion-compte.php?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
                 }
             });
@@ -947,6 +948,7 @@ function display_stars($rating) {
         if (closeModalButton) {
             closeModalButton.addEventListener('click', function() {
                 avisModal.style.display = 'none';
+                console.log('Modale d\'avis fermée.'); // Ajout pour le débogage
             });
         }
 
@@ -955,6 +957,7 @@ function display_stars($rating) {
             avisModal.addEventListener('click', function(event) {
                 if (event.target === avisModal) {
                     avisModal.style.display = 'none';
+                    console.log('Modale d\'avis fermée (clic extérieur).'); // Ajout pour le débogage
                 }
             });
         }
@@ -989,6 +992,7 @@ function display_stars($rating) {
                     currentRating = parseInt(this.dataset.rating);
                     if (ratingInput) ratingInput.value = currentRating;
                     updateStars(currentRating);
+                    console.log('Note sélectionnée:', currentRating); // Ajout pour le débogage
                 });
             });
 
@@ -1001,13 +1005,14 @@ function display_stars($rating) {
 
             // Handle form submission inside the modal via AJAX
             const avisForm = document.getElementById('avisForm');
-            // MODIFICATION ICI: Ciblez l'élément d'erreur directement depuis modalBody ou avisForm
+            // Ciblez l'élément d'erreur directement depuis avisForm après son chargement
             const errorMessageElement = avisForm ? avisForm.querySelector('.modal-error-message') : null;
 
 
             if (avisForm) { // Vérifiez que le formulaire existe avant d'ajouter l'écouteur
                 avisForm.addEventListener('submit', function(event) {
                     event.preventDefault(); // Prevent default form submission
+                    console.log('Soumission du formulaire d\'avis interceptée.'); // Ajout pour le débogage
 
                     const formData = new FormData(avisForm);
                     
@@ -1031,6 +1036,7 @@ function display_stars($rating) {
                         if (errorMessageElement) { // Vérifiez que l'élément d'erreur existe
                             errorMessageElement.innerHTML = errors.join('<br>');
                             errorMessageElement.style.display = 'block';
+                            console.log('Erreurs de validation côté client:', errors); // Ajout pour le débogage
                         } else {
                             console.error("Element d'erreur introuvable."); // Log pour le débogage
                         }
@@ -1041,22 +1047,34 @@ function display_stars($rating) {
                     if (errorMessageElement) { // Vérifiez que l'élément d'erreur existe avant de cacher
                         errorMessageElement.style.display = 'none'; // Hide previous errors
                     }
-
+                    console.log('Validation client réussie, envoi de la requête AJAX...'); // Ajout pour le débogage
                     fetch('submit-avis.php', { // This file will process the form
                         method: 'POST',
                         body: formData
                     })
-                    .then(response => response.json()) // Expect JSON response
+                    .then(response => {
+                        console.log('Réponse reçue du serveur:', response); // Ajout pour le débogage
+                        // Vérifier si la réponse est JSON
+                        const contentType = response.headers.get("content-type");
+                        if (contentType && contentType.indexOf("application/json") !== -1) {
+                            return response.json();
+                        } else {
+                            // Si ce n'est pas du JSON, c'est probablement une erreur PHP qui a renvoyé du texte/HTML
+                            return response.text().then(text => { throw new Error('Server response was not JSON: ' + text) });
+                        }
+                    })
                     .then(data => {
                         if (data.success) {
                             alert('Avis soumis avec succès !');
                             avisModal.style.display = 'none';
                             location.reload(); // Simple reload for now to see the new review
+                            console.log('Avis soumis avec succès, rechargement de la page.'); // Ajout pour le débogage
                         } else {
                             // Display errors
                             if (errorMessageElement) { // Vérifiez que l'élément d'erreur existe
                                 errorMessageElement.textContent = Object.values(data.errors).join('\n');
                                 errorMessageElement.style.display = 'block';
+                                console.log('Erreurs de validation côté serveur:', data.errors); // Ajout pour le débogage
                             } else {
                                 console.error("Element d'erreur introuvable après la soumission AJAX."); // Log pour le débogage
                             }

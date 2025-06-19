@@ -60,23 +60,15 @@ try {
     $offer_title = "Erreur de chargement du titre";
 }
 
-// Les données postées précédemment (si le formulaire a été soumis avec des erreurs via AJAX)
-// Ces données sont gérées par le JS qui ne rechargera pas la page, donc cette partie PHP ne sera pas exécutée pour un POST AJAX échoué
-// Cette partie était plus utile quand le formulaire était soumis via un rechargement de page.
-// Pour les besoins actuels (AJAX), on peut la simplifier ou la retirer si le JS gère tout le pré-remplissage.
-$old_post_data = []; // Le JS gérera le pré-remplissage en cas d'erreur de soumission AJAX
-
-// Les messages d'erreur de la session (si le formulaire a été soumis avec des erreurs)
-// Idem, pour AJAX, les erreurs reviennent directement dans la réponse JSON de submit-avis.php
-$form_errors = []; // Le JS affichera les erreurs du JSON.
+$old_post_data = [];
+$form_errors = [];
 ?>
 
 <h2>Laisser un avis pour "<?php echo htmlspecialchars($offer_title); ?>"</h2>
 
-<div class="modal-error-message" style="display: none;">
-    </div>
-
 <form id="avisForm" method="POST" action="submit-avis.php">
+    <div class="modal-error-message" style="display: none;"></div>
+
     <input type="hidden" name="offer_id" value="<?php echo htmlspecialchars($offer_id); ?>">
     <input type="hidden" name="membre_id" value="<?php echo htmlspecialchars($membre_id); ?>">
 
