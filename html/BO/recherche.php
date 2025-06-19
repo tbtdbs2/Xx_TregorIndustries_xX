@@ -6,14 +6,16 @@ require_once __DIR__ . '/../../includes/db.php';
 // 2. LOGIQUE PHP
 $all_categories = [];
 try {
-    $category_stmt = $pdo->query('SELECT id, type FROM categories ORDER BY type');
+    // MODIFICATION ICI: Sélectionner distinctement les types de catégories
+    $category_stmt = $pdo->query('SELECT DISTINCT id, type FROM categories ORDER BY type');
     $all_categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     error_log("Erreur de BDD (catégories): " . $e->getMessage());
 }
 
 $searchTerm = $_GET['q'] ?? '';
-$category_id = $_GET['category'] ?? '';
+// Modification ici: category_type_filter pour correspondre au 'type' de la catégorie
+$category_type_filter = $_GET['category_type'] ?? ''; 
 $destination = $_GET['destination'] ?? '';
 $priceMin = isset($_GET['price_min_input']) && $_GET['price_min_input'] !== '' ? (float)$_GET['price_min_input'] : null;
 $priceMax = isset($_GET['price_max_input']) && $_GET['price_max_input'] !== '' ? (float)$_GET['price_max_input'] : null;
@@ -54,9 +56,10 @@ if (!empty($searchTerm)) {
     $params[':keyword'] = '%' . $searchTerm . '%';
 }
 
-if (!empty($category_id)) {
-    $conditions[] = 'offres.categorie_id = :category_id';
-    $params[':category_id'] = $category_id;
+// MODIFICATION ICI: Utiliser le type de catégorie pour le filtre
+if (!empty($category_type_filter)) {
+    $conditions[] = 'categories.type = :category_type';
+    $params[':category_type'] = $category_type_filter;
 }
 
 if (!empty($destination)) {
@@ -97,6 +100,19 @@ if ($selectedDate) {
     try {
         $selectedDateTime = new DateTime($selectedDate);
         $selectedDayOfWeek = strtolower($selectedDateTime->format('l')); // 'monday', 'tuesday', etc.
+        
+        // Mapper les jours de la semaine de l'anglais au français si nécessaire pour la BDD enum
+        $dayMapping = [
+            'monday' => 'lundi',
+            'tuesday' => 'mardi',
+            'wednesday' => 'mercredi',
+            'thursday' => 'jeudi',
+            'friday' => 'vendredi',
+            'saturday' => 'samedi',
+            'sunday' => 'dimanche',
+        ];
+        $selectedDayOfWeekFrench = $dayMapping[$selectedDayOfWeek] ?? $selectedDayOfWeek;
+
     } catch (Exception $e) {
         error_log("Erreur de parsing de date: " . $e->getMessage());
         $selectedDate = null; // Invalide la date si erreur
@@ -105,7 +121,8 @@ if ($selectedDate) {
     if ($selectedDate) {
         // Horaires Activités (activites -> horaires_activites)
         $dateConditions[] = 'EXISTS (SELECT 1 FROM horaires_activites ha 
-                                    WHERE ha.activite_id = offres.categorie_id 
+                                    JOIN activites a_cat ON ha.activite_id = a_cat.categorie_id
+                                    WHERE a_cat.categorie_id = offres.categorie_id 
                                     AND offres.category_type = \'activite\' 
                                     AND ha.date = :selected_date_ha)';
         $dateParams[':selected_date_ha'] = $selectedDate;
@@ -127,17 +144,19 @@ if ($selectedDate) {
         // Parcs Attractions (parcs_attractions -> attractions -> horaires_attractions)
         $dateConditions[] = 'EXISTS (SELECT 1 FROM horaires_attractions hat
                                     JOIN attractions attr ON hat.attraction_id = attr.id
-                                    WHERE attr.parc_attractions_id = offres.categorie_id
-                                    AND offres.category_type = \'parc_attraction\'
+                                    JOIN parcs_attractions pa_cat ON attr.parc_attractions_id = pa_cat.categorie_id
+                                    WHERE pa_cat.categorie_id = offres.categorie_id
+                                    AND offres.category_type = \'parc_attractions\'
                                     AND hat.day = :selected_day_pa)';
-        $dateParams[':selected_day_pa'] = $selectedDayOfWeek;
+        $dateParams[':selected_day_pa'] = $selectedDayOfWeekFrench;
 
         // Restaurations (restaurations -> horaires_restaurants)
         $dateConditions[] = 'EXISTS (SELECT 1 FROM horaires_restaurants hres
-                                    WHERE hres.restauration_id = offres.categorie_id
+                                    JOIN restaurations res_cat ON hres.restauration_id = res_cat.categorie_id
+                                    WHERE res_cat.categorie_id = offres.categorie_id
                                     AND offres.category_type = \'restauration\'
                                     AND hres.day = :selected_day_res)';
-        $dateParams[':selected_day_res'] = $selectedDayOfWeek;
+        $dateParams[':selected_day_res'] = $selectedDayOfWeekFrench;
 
         // Si des conditions de date sont définies, nous devons les encapsuler correctement.
         // Il faut que l'offre corresponde à AU MOINS UNE des conditions de date.
@@ -619,14 +638,23 @@ unset($current_filters['sort']);
                 <form method="GET" action="recherche.php" id="filters-form">
                     <h3>Filtres</h3>
                     <div class="filter-group">
-                        <label for="category">Catégorie</label>
-                        <select id="category" name="category">
+                        <label for="category_type">Catégorie</label>
+                        <select id="category_type" name="category_type">
                             <option value="">Toutes</option>
-                            <?php foreach ($all_categories as $cat): ?>
-                                <option value="<?php echo htmlspecialchars($cat['id']); ?>" <?php if ($category_id == $cat['id']) echo 'selected'; ?>>
+                            <?php 
+                            // Utiliser un tableau pour stocker les types de catégories uniques déjà ajoutés
+                            $added_categories = [];
+                            foreach ($all_categories as $cat): 
+                                if (!in_array($cat['type'], $added_categories)):
+                                    $added_categories[] = $cat['type'];
+                            ?>
+                                <option value="<?php echo htmlspecialchars($cat['type']); ?>" <?php if ($category_type_filter == $cat['type']) echo 'selected'; ?>>
                                     <?php echo htmlspecialchars(ucfirst($cat['type'])); ?>
                                 </option>
-                            <?php endforeach; ?>
+                            <?php 
+                                endif;
+                            endforeach; 
+                            ?>
                         </select>
                     </div>
                     <div class="filter-group">
@@ -680,7 +708,7 @@ unset($current_filters['sort']);
                 <div class="search-and-sort-controls">
                     <form method="GET" action="recherche.php" class="search-bar-results">
                         <input type="text" name="q" placeholder="Rechercher dans mes offres..." value="<?php echo htmlspecialchars($searchTerm); ?>">
-                        <input type="hidden" name="category" value="<?php echo htmlspecialchars($category_id); ?>">
+                        <input type="hidden" name="category_type" value="<?php echo htmlspecialchars($category_type_filter); ?>">
                         <input type="hidden" name="destination" value="<?php echo htmlspecialchars($destination); ?>">
                         <input type="hidden" name="price_min_input" value="<?php echo htmlspecialchars((string)$priceMin); ?>">
                         <input type="hidden" name="price_max_input" value="<?php echo htmlspecialchars((string)$priceMax); ?>">
