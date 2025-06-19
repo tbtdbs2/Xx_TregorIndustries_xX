@@ -251,6 +251,7 @@
             text-decoration: none;
             font-weight: var(--font-weight-medium);
             align-self: flex-start; /* Aligner en bas à gauche de la card-content */
+            margin-top: auto; /* Push to the bottom */
         }
         .card-more:hover {
             text-decoration: underline;
@@ -465,7 +466,8 @@
         <section class="news-section container"> <h2>A la une</h2>
             <div class="cards-container-wrapper" id="alaUneCarouselWrapper">
                 <div class="cards-container">
-                    <div class="card card-a-la-une">
+                    <!-- Card is now clickable and links to the offer page -->
+                    <div class="card card-a-la-une clickable-card" data-href="FO/offre.php">
                         <div class="card-image-wrapper">
                             <img src="FO/images/kayak.jpg" alt="Archipel de Bréhat en kayak">
                             <button class="favorite-btn" aria-label="Ajouter aux favoris">
@@ -480,9 +482,9 @@
                             </div>
                             <p class="card-description">Venez passer un moment inoubliable sur l'archipel de Bréhat ...</p>
                         </div>
-                        <a href="FO/offre.php" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
+                        <!-- "Voir plus" link is removed -->
                     </div>
-                    <div class="card card-a-la-une">
+                    <div class="card card-a-la-une clickable-card" data-href="FO/offre.php">
                         <div class="card-image-wrapper">
                             <img src="FO/images/louer_velo_famille.jpg" alt="Balade familiale à vélo">
                             <button class="favorite-btn" aria-label="Ajouter aux favoris">
@@ -497,9 +499,8 @@
                             </div>
                             <p class="card-description">Les sorties sont volontairement limitées entre 15 km et ...</p>
                         </div>
-                         <a href="FO/offre.php" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
-                    <div class="card card-a-la-une">
+                    <div class="card card-a-la-une clickable-card" data-href="FO/offre.php">
                         <div class="card-image-wrapper">
                             <img src="FO/images/centre-ville.jpg" alt="Découverte du centre-ville historique de Lannion">
                             <button class="favorite-btn" aria-label="Ajouter aux favoris">
@@ -514,9 +515,8 @@
                             </div>
                             <p class="card-description">Les Vedettes des 7 îles proposent des excursions et ...</p>
                         </div>
-                        <a href="FO/offre.php" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
-                    <div class="card card-a-la-une">
+                    <div class="card card-a-la-une clickable-card" data-href="FO/offre.php">
                         <div class="card-image-wrapper">
                              <img src="FO/images/randonnee.jpg" alt="Randonnée dans les Calanques">
                              <button class="favorite-btn" aria-label="Ajouter aux favoris">
@@ -530,9 +530,8 @@
                                 <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star-half-alt"></i> </div>
                             <p class="card-description">Explorez les paysages à couper le souffle des Calanques de Cassis.</p>
                         </div>
-                        <a href="FO/offre.php" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
-                    <div class="card card-a-la-une">
+                    <div class="card card-a-la-une clickable-card" data-href="FO/offre.php">
                         <div class="card-image-wrapper">
                             <img src="FO/images/gordes.jpg" alt="Visite de Gordes et Roussillon">
                             <button class="favorite-btn" aria-label="Ajouter aux favoris">
@@ -547,9 +546,8 @@
                             </div>
                             <p class="card-description">Découvrez le charme des villages perchés du Luberon.</p>
                         </div>
-                        <a href="FO/offre.php" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
-                    <div class="card card-a-la-une">
+                    <div class="card card-a-la-une clickable-card" data-href="FO/offre.php">
                         <div class="card-image-wrapper">
                             <img src="FO/images/cuisine.jpg" alt="Cours de cuisine provençale"> 
                             <button class="favorite-btn" aria-label="Ajouter aux favoris">
@@ -564,7 +562,6 @@
                             </div>
                             <p class="card-description">Apprenez à cuisiner les plats traditionnels de la Provence.</p>
                         </div>
-                        <a href="FO/offre.php" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
                 </div>
                 <div class="carousel-arrow prev-arrow" onclick="scrollSpecificCarousel('alaUneCarouselWrapper', -1)"><i class="fas fa-chevron-left"></i></div>
@@ -575,7 +572,7 @@
         <section class="news-section container"> <h2>Nouveautés</h2>
             <div class="cards-container-wrapper" id="nouveautesCarouselWrapper">
                 <div class="cards-container">
-                    <div class="card">
+                    <div class="card clickable-card" data-href="FO/offre.php">
                         <div class="card-image-wrapper">
                             <img src="FO/images/kayak.jpg" alt="Archipel de Bréhat en kayak">
                             <button class="favorite-btn" aria-label="Ajouter aux favoris">
@@ -589,9 +586,8 @@
                             </div>
                             <p class="card-description">Venez passer un moment inoubliable sur l'archipel de Bréhat ...</p>
                         </div>
-                        <a href="FO/offre.php" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
-                    <div class="card">
+                    <div class="card clickable-card" data-href="FO/offre.php">
                         <div class="card-image-wrapper">
                             <img src="FO/images/louer_velo_famille.jpg" alt="Balade familiale à vélo">
                             <button class="favorite-btn" aria-label="Ajouter aux favoris">
@@ -605,9 +601,8 @@
                             </div>
                             <p class="card-description">Les sorties sont volontairement limitées entre 15 km et ...</p>
                         </div>
-                         <a href="FO/offre.php" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
-                    <div class="card">
+                    <div class="card clickable-card" data-href="FO/offre.php">
                         <div class="card-image-wrapper">
                             <img src="FO/images/centre-ville.jpg" alt="Découverte du centre-ville historique de Lannion">
                             <button class="favorite-btn" aria-label="Ajouter aux favoris">
@@ -621,9 +616,8 @@
                             </div>
                             <p class="card-description">Les Vedettes des 7 îles proposent des excursions et ...</p>
                         </div>
-                        <a href="FO/offre.php" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
-                    <div class="card">
+                    <div class="card clickable-card" data-href="FO/offre.php">
                         <div class="card-image-wrapper">
                             <img src="FO/images/randonnee.jpg" alt="Randonnée dans les Calanques">
                             <button class="favorite-btn" aria-label="Ajouter aux favoris">
@@ -636,9 +630,8 @@
                                 <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star-half-alt"></i> </div>
                             <p class="card-description">Explorez les paysages à couper le souffle des Calanques de Cassis.</p>
                         </div>
-                        <a href="FO/offre.php" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
-                    <div class="card">
+                    <div class="card clickable-card" data-href="FO/offre.php">
                         <div class="card-image-wrapper">
                              <img src="FO/images/gordes.jpg" alt="Visite de Gordes et Roussillon">
                              <button class="favorite-btn" aria-label="Ajouter aux favoris">
@@ -652,9 +645,8 @@
                             </div>
                             <p class="card-description">Découvrez le charme des villages perchés du Luberon.</p>
                         </div>
-                        <a href="FO/offre.php" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
-                    <div class="card">
+                    <div class="card clickable-card" data-href="FO/offre.php">
                         <div class="card-image-wrapper">
                             <img src="FO/images/cuisine.jpg" alt="Cours de cuisine provençale"> 
                             <button class="favorite-btn" aria-label="Ajouter aux favoris">
@@ -668,7 +660,6 @@
                             </div>
                             <p class="card-description">Apprenez à cuisiner les plats traditionnels de la Provence.</p>
                         </div>
-                        <a href="FO/offre.php" class="card-more">Voir plus <i class="fas fa-arrow-right fa-xs"></i></a>
                     </div>
                 </div>
                 <div class="carousel-arrow prev-arrow" onclick="scrollSpecificCarousel('nouveautesCarouselWrapper', -1)"><i class="fas fa-chevron-left"></i></div>
@@ -683,7 +674,7 @@
                         <img src="FO/images/activite.jpg" alt="Activités">
                         <h3>Activités</h3>
                     </div>
-                    <div class="category-card">
+                    <div class="category-card clickable-card" data-category-type="visite">
                         <img src="FO/images/visite.jpg" alt="Visites">
                         <h3>Visites</h3>
                     </div>
@@ -887,22 +878,31 @@
             });
         });
 
-        // NEW SCRIPT FOR REDIRECTION
-        const clickableCards = document.querySelectorAll('.clickable-card');
-        clickableCards.forEach(card => {
-            card.addEventListener('click', function() {
+        // MODIFIED SCRIPT FOR REDIRECTION on all clickable cards
+        document.querySelectorAll('.clickable-card').forEach(card => {
+            card.addEventListener('click', function(event) {
+                // Prevent redirection if the favorite button (or any button/link inside the card) was clicked
+                if (event.target.closest('.favorite-btn')) {
+                    return;
+                }
+
+                const href = this.dataset.href;
                 const categoryType = this.dataset.categoryType;
                 const destination = this.dataset.destination;
                 
-                let redirectUrl = 'FO/recherche.php';
-                
-                if (categoryType) {
-                    redirectUrl += '?category_type=' + encodeURIComponent(categoryType);
+                let redirectUrl;
+
+                if (href) {
+                    redirectUrl = href;
+                } else if (categoryType) {
+                    redirectUrl = 'FO/recherche.php?category_type=' + encodeURIComponent(categoryType);
                 } else if (destination) {
-                    redirectUrl += '?destination=' + encodeURIComponent(destination);
+                    redirectUrl = 'FO/recherche.php?destination=' + encodeURIComponent(destination);
                 }
                 
-                window.location.href = redirectUrl;
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
+                }
             });
         });
     });
