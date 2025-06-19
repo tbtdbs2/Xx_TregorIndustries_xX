@@ -2,7 +2,7 @@
 $error_message = '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    
+
     require_once '../../includes/db.php';
     require_once '../composants/generate_uuid.php';
 
@@ -22,11 +22,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             if ($user && $password === $user['password']) {
                 $token = bin2hex(random_bytes(32));
-                
+
                 // Supprimer les anciens tokens pour cet email
                 $stmtDelete = $pdo->prepare("DELETE FROM auth_tokens WHERE email = :email");
                 $stmtDelete->execute([':email' => $email]);
-                
+
                 // Insérer le nouveau token
                 $stmtInsert = $pdo->prepare("INSERT INTO auth_tokens (id, email, token) VALUES (:id, :email, :token)");
                 $stmtInsert->execute([
@@ -34,7 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     ':email'   => $email,
                     ':token'   => $token
                 ]);
-                
+
                 $cookie_options = [
                     'expires' => time() + 86400,
                     'path' => '/',
@@ -56,6 +56,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 ?>
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -134,7 +135,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             font-size: 36px;
         }
 
-        .content-area p{
+        .content-area p {
             color: #000000;
             margin-bottom: 20px;
             font-size: 24px;
@@ -170,7 +171,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         .login-button {
-            background-color:var(--couleur-principale);
+            background-color: var(--couleur-principale);
             color: #fff;
             border: none;
             padding: 12px 20px;
@@ -221,14 +222,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     </style>
 </head>
+
 <body>
     <header>
         <div class="container header-container">
             <div class="header-left">
-                <a href="../index.html"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
+                <a href="../index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
                 <nav class="main-nav">
                     <ul>
-                        <li><a href="../index.html">Accueil</a></li>
+                        <li><a href="../index.php">Accueil</a></li>
                         <li><a href="recherche.php">Recherche</a></li>
                     </ul>
                 </nav>
@@ -263,8 +265,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <p>Bon retour parmi nous !</p>
 
             <div class="login-container">
-                 <?php if (!empty($error_message)) { echo '<p style="color: red; text-align: center; margin-bottom: 15px;">' . htmlspecialchars($error_message) . '</p>'; } ?>
-                
+                <?php if (!empty($error_message)) {
+                    echo '<p style="color: red; text-align: center; margin-bottom: 15px;">' . htmlspecialchars($error_message) . '</p>';
+                } ?>
+
                 <form class="login-form" action="connexion-compte.php" method="POST">
                     <div class="form-group">
                         <label for="email">Email</label>
@@ -327,4 +331,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </footer>
     <script src="script.js" defer></script>
 </body>
+
 </html>

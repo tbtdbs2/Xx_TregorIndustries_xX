@@ -101,7 +101,7 @@ if ($selectedDate) {
         error_log("Erreur de parsing de date: " . $e->getMessage());
         $selectedDate = null; // Invalide la date si erreur
     }
-    
+
     if ($selectedDate) {
         // Horaires Activités (activites -> horaires_activites)
         $dateConditions[] = 'EXISTS (SELECT 1 FROM horaires_activites ha 
@@ -116,7 +116,7 @@ if ($selectedDate) {
                                     AND offres.category_type = \'spectacle\' 
                                     AND s_cat.date = :selected_date_s)';
         $dateParams[':selected_date_s'] = $selectedDate;
-        
+
         // Visites (visites)
         $dateConditions[] = 'EXISTS (SELECT 1 FROM visites v_cat 
                                     WHERE v_cat.categorie_id = offres.categorie_id 
@@ -138,7 +138,7 @@ if ($selectedDate) {
                                     AND offres.category_type = \'restauration\'
                                     AND hres.day = :selected_day_res)';
         $dateParams[':selected_day_res'] = $selectedDayOfWeek;
-        
+
         // Si des conditions de date sont définies, nous devons les encapsuler correctement.
         // Il faut que l'offre corresponde à AU MOINS UNE des conditions de date.
         if (!empty($dateConditions)) {
@@ -175,7 +175,8 @@ try {
     error_log("Erreur de BDD (recherche offres): " . $e->getMessage());
 }
 
-function getSortLink($sortValue, $currentSort, $filters) {
+function getSortLink($sortValue, $currentSort, $filters)
+{
     $filters['sort'] = $sortValue;
     $queryString = http_build_query($filters);
     $activeClass = ($sortValue == $currentSort) ? 'active' : '';
@@ -183,7 +184,8 @@ function getSortLink($sortValue, $currentSort, $filters) {
     return '<a href="?' . $queryString . '" class="sort-button ' . $activeClass . '">' . $labels[$sortValue] . '</a>';
 }
 
-function renderStars($rating) {
+function renderStars($rating)
+{
     $output = '';
     for ($i = 1; $i <= 5; $i++) {
         if ($rating >= $i) {
@@ -200,6 +202,7 @@ unset($current_filters['sort']);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -211,133 +214,388 @@ unset($current_filters['sort']);
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        body { background-color: #f8f9fa; }
-        .search-page-container { display: flex; gap: 25px; padding-top: 20px; padding-bottom: 20px; }
-        .filters-sidebar { width: 280px; flex-shrink: 0; background-color: var(--couleur-blanche); padding: 20px; height: fit-content; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .filter-group { margin-bottom: 20px; }
-        .filter-group h3 { font-size: 1em; font-weight: var(--font-weight-semibold); color: var(--couleur-texte); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--couleur-bordure); }
-        .filter-group label, .filter-group .label { display: block; margin-bottom: 6px; font-size: 0.9em; color: var(--couleur-texte-footer); }
-        .filter-group input[type="text"], .filter-group input[type="date"], .filter-group select, .filter-group input[type="number"] { width: 100%; padding: 10px; border: 1px solid var(--couleur-bordure); border-radius: 6px; font-size: 0.9em; box-sizing: border-box; }
-        .price-input-container { display: flex; align-items: flex-end; gap: 8px; margin-top: 5px; }
-        .price-input-field { display: flex; flex-direction: column; flex-grow: 1; }
-        .price-input-field label { font-size: 0.8em; margin-bottom: 4px; color: var(--couleur-texte-footer); }
-        .results-area { flex-grow: 1; }
-        .search-and-sort-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
-        .search-bar-results { display: flex; align-items: center; background-color: var(--couleur-blanche); border: 1px solid var(--couleur-bordure); border-radius: 25px; padding: 0 10px 0 15px; height: 45px; flex-grow: 1; min-width: 200px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
-        .search-bar-results input[type="text"] { flex-grow: 1; padding: 10px; border: none; outline: none; font-size: 0.95em; background-color: transparent; }
-        .search-bar-results button { background-color: transparent; color: var(--couleur-principale); border: none; padding: 10px; cursor: pointer; font-size: 1.1em; }
-        .sort-options { display: flex; gap: 8px; }
-        .sort-options .sort-button { text-decoration: none; background-color: var(--couleur-blanche); color: var(--couleur-texte); border: 1px solid var(--couleur-bordure); padding: 8px 18px; border-radius: 20px; cursor: pointer; font-size: 0.9em; font-weight: var(--font-weight-medium); transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
-        .sort-options .sort-button:hover { border-color: var(--couleur-principale); color: var(--couleur-principale); }
-        .sort-options .sort-button.active { background-color: var(--couleur-principale); color: var(--couleur-blanche); border-color: var(--couleur-principale); }
-        .reset-filters-btn { width:100%; background-color: transparent; color: var(--couleur-principale); border: 1px solid var(--couleur-principale); padding: 12px 18px; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: var(--font-weight-medium); transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; margin-top: 10px; }
-        .reset-filters-btn:hover { background-color: var(--couleur-secondaire-hover-bg); }
-        .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
-        .card-bo { background-color: var(--couleur-blanche); border: 1px solid var(--couleur-bordure); border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow: hidden; }
-        .card-bo .card-image-wrapper { position: relative; width: 100%; height: 180px; background-color: #f0f0f0; }
-        .card-bo .card-image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-        .card-bo .card-content { display: flex; flex-direction: column; padding: 15px; flex-grow: 1; }
-        .card-bo .card-title { font-size: 1.2em; font-weight: var(--font-weight-semibold); color: var(--couleur-texte); margin-bottom: 8px; }
-        .card-bo .card-category { font-size: 0.9em; color: var(--couleur-texte-footer); margin-bottom: 12px; }
-        .card-bo .card-actions-bo { display: flex; gap: 10px; margin-top: auto; padding-top: 15px; border-top: 1px solid var(--couleur-bordure); }
-        .card-bo .btn-action { text-decoration: none; padding: 8px 12px; border-radius: 6px; font-size: 0.85em; font-weight: 500; text-align: center; flex-grow: 1; transition: opacity 0.2s; }
-        .card-bo .btn-action i { margin-right: 6px; }
-        .card-bo .btn-view { background-color: #e9ecef; color: #495057; }
-        .card-bo .btn-edit { background-color: var(--couleur-secondaire); color: var(--couleur-principale); }
-        .card-bo .btn-delete { background-color: #f8d7da; color: #721c24; }
-        .card-bo .btn-action:hover { opacity: 0.8; }
-        .no-results { grid-column: 1 / -1; text-align: center; padding: 40px; color: #6c757d; }
+        body {
+            background-color: #f8f9fa;
+        }
 
-        @media (max-width: 992px) { .search-page-container { flex-direction: column; } .filters-sidebar { width: 100%; } }
-        @media (max-width: 768px) { .search-and-sort-controls { flex-direction: column; align-items: stretch; } .sort-options { justify-content: space-around; } }
+        .search-page-container {
+            display: flex;
+            gap: 25px;
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
 
-    .main-nav ul li.nav-item-with-notification {
-        position: relative; /* Contexte pour le positionnement absolu de la bulle */
-    }
+        .filters-sidebar {
+            width: 280px;
+            flex-shrink: 0;
+            background-color: var(--couleur-blanche);
+            padding: 20px;
+            height: fit-content;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
 
-    .profile-link-container {
-        position: relative;
-        display: flex;
-        align-items: center;
-    }
+        .filter-group {
+            margin-bottom: 20px;
+        }
 
-    .notification-bubble {
-        position: absolute;
-        top: -16px;
-        right: 80px;
-        width: 20px;
-        height: 20px;
-        background-color: #dc3545;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.8em;
-        font-weight: bold;
-        border: 2px solid white;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    }
+        .filter-group h3 {
+            font-size: 1em;
+            font-weight: var(--font-weight-semibold);
+            color: var(--couleur-texte);
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--couleur-bordure);
+        }
 
-    .header-right .profile-link-container + .btn-primary {
-        margin-left: 1rem; 
-    }
+        .filter-group label,
+        .filter-group .label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.9em;
+            color: var(--couleur-texte-footer);
+        }
 
-    .nav-item-with-notification .notification-bubble {
-        position: absolute;
-        top: -15px; /* Ajustez pour la position verticale */
-        right: 80px; /* Ajustez pour la position horizontale */
-        width: 20px;
-        height: 20px;
-        background-color: #dc3545;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.75em; /* Police un peu plus petite pour la nav */
-        font-weight: bold;
-        border: 2px solid white;
-    }
-    /* Styles pour le filtre de note */
-    .star-rating-filter {
-        display: flex;
-        gap: 5px;
-        margin-top: 5px;
-    }
-    .star-rating-filter .star-option {
-        cursor: pointer;
-        color: #e0e0e0; /* Couleur des étoiles non sélectionnées */
-        font-size: 1.2em;
-    }
-    .star-rating-filter .star-option.active {
-        color: var(--couleur-principale); /* Couleur des étoiles sélectionnées */
-    }
-    /* Styles pour le filtre de statut */
-    .status-filter label {
-        display: inline-flex;
-        align-items: center;
-        margin-right: 15px;
-        cursor: pointer;
-    }
-    .status-filter input[type="radio"] {
-        margin-right: 5px;
-    }
+        .filter-group input[type="text"],
+        .filter-group input[type="date"],
+        .filter-group select,
+        .filter-group input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--couleur-bordure);
+            border-radius: 6px;
+            font-size: 0.9em;
+            box-sizing: border-box;
+        }
+
+        .price-input-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        .price-input-field {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .price-input-field label {
+            font-size: 0.8em;
+            margin-bottom: 4px;
+            color: var(--couleur-texte-footer);
+        }
+
+        .results-area {
+            flex-grow: 1;
+        }
+
+        .search-and-sort-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-bar-results {
+            display: flex;
+            align-items: center;
+            background-color: var(--couleur-blanche);
+            border: 1px solid var(--couleur-bordure);
+            border-radius: 25px;
+            padding: 0 10px 0 15px;
+            height: 45px;
+            flex-grow: 1;
+            min-width: 200px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+        }
+
+        .search-bar-results input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            border: none;
+            outline: none;
+            font-size: 0.95em;
+            background-color: transparent;
+        }
+
+        .search-bar-results button {
+            background-color: transparent;
+            color: var(--couleur-principale);
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 1.1em;
+        }
+
+        .sort-options {
+            display: flex;
+            gap: 8px;
+        }
+
+        .sort-options .sort-button {
+            text-decoration: none;
+            background-color: var(--couleur-blanche);
+            color: var(--couleur-texte);
+            border: 1px solid var(--couleur-bordure);
+            padding: 8px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: var(--font-weight-medium);
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .sort-options .sort-button:hover {
+            border-color: var(--couleur-principale);
+            color: var(--couleur-principale);
+        }
+
+        .sort-options .sort-button.active {
+            background-color: var(--couleur-principale);
+            color: var(--couleur-blanche);
+            border-color: var(--couleur-principale);
+        }
+
+        .reset-filters-btn {
+            width: 100%;
+            background-color: transparent;
+            color: var(--couleur-principale);
+            border: 1px solid var(--couleur-principale);
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: var(--font-weight-medium);
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            margin-top: 10px;
+        }
+
+        .reset-filters-btn:hover {
+            background-color: var(--couleur-secondaire-hover-bg);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .card-bo {
+            background-color: var(--couleur-blanche);
+            border: 1px solid var(--couleur-bordure);
+            border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .card-bo .card-image-wrapper {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            background-color: #f0f0f0;
+        }
+
+        .card-bo .card-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-bo .card-content {
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            flex-grow: 1;
+        }
+
+        .card-bo .card-title {
+            font-size: 1.2em;
+            font-weight: var(--font-weight-semibold);
+            color: var(--couleur-texte);
+            margin-bottom: 8px;
+        }
+
+        .card-bo .card-category {
+            font-size: 0.9em;
+            color: var(--couleur-texte-footer);
+            margin-bottom: 12px;
+        }
+
+        .card-bo .card-actions-bo {
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px solid var(--couleur-bordure);
+        }
+
+        .card-bo .btn-action {
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: 500;
+            text-align: center;
+            flex-grow: 1;
+            transition: opacity 0.2s;
+        }
+
+        .card-bo .btn-action i {
+            margin-right: 6px;
+        }
+
+        .card-bo .btn-view {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+
+        .card-bo .btn-edit {
+            background-color: var(--couleur-secondaire);
+            color: var(--couleur-principale);
+        }
+
+        .card-bo .btn-delete {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .card-bo .btn-action:hover {
+            opacity: 0.8;
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        @media (max-width: 992px) {
+            .search-page-container {
+                flex-direction: column;
+            }
+
+            .filters-sidebar {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .search-and-sort-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .sort-options {
+                justify-content: space-around;
+            }
+        }
+
+        .main-nav ul li.nav-item-with-notification {
+            position: relative;
+            /* Contexte pour le positionnement absolu de la bulle */
+        }
+
+        .profile-link-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .notification-bubble {
+            position: absolute;
+            top: -16px;
+            right: 80px;
+            width: 20px;
+            height: 20px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .header-right .profile-link-container+.btn-primary {
+            margin-left: 1rem;
+        }
+
+        .nav-item-with-notification .notification-bubble {
+            position: absolute;
+            top: -15px;
+            /* Ajustez pour la position verticale */
+            right: 80px;
+            /* Ajustez pour la position horizontale */
+            width: 20px;
+            height: 20px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75em;
+            /* Police un peu plus petite pour la nav */
+            font-weight: bold;
+            border: 2px solid white;
+        }
+
+        /* Styles pour le filtre de note */
+        .star-rating-filter {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .star-rating-filter .star-option {
+            cursor: pointer;
+            color: #e0e0e0;
+            /* Couleur des étoiles non sélectionnées */
+            font-size: 1.2em;
+        }
+
+        .star-rating-filter .star-option.active {
+            color: var(--couleur-principale);
+            /* Couleur des étoiles sélectionnées */
+        }
+
+        /* Styles pour le filtre de statut */
+        .status-filter label {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        .status-filter input[type="radio"] {
+            margin-right: 5px;
+        }
     </style>
 </head>
+
 <body>
     <header>
-    <div class="container header-container">
-        <div class="header-left">
-            <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
-            <span class="pro-text">Professionnel</span>
-        </div>
+        <div class="container header-container">
+            <div class="header-left">
+                <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
+                <span class="pro-text">Professionnel</span>
+            </div>
 
         <nav class="main-nav">
             <ul>
-                <li><a href="index.php" class="active">Accueil</a></li>
+                <li><a href="index.php" >Accueil</a></li>
                 <li class="nav-item-with-notification">
-                    <a href="recherche.php">Mes Offres</a>
+                    <a href="recherche.php" class="active">Mes Offres</a>
                     <?php if (isset($unanswered_reviews_count) && $unanswered_reviews_count > 0): ?>
                         <span class="notification-bubble"><?php echo $unanswered_reviews_count; ?></span>
                     <?php endif; ?>
@@ -346,15 +604,15 @@ unset($current_filters['sort']);
             </ul>
         </nav>
 
-        <div class="header-right">
-            <div class="profile-link-container">
-                <a href="profil.php" class="btn btn-secondary">Mon profil</a>
+            <div class="header-right">
+                <div class="profile-link-container">
+                    <a href="profil.php" class="btn btn-secondary">Mon profil</a>
+                </div>
+                <a href="../deconnexion.php" class="btn btn-primary">Se déconnecter</a>
             </div>
-            <a href="../deconnexion.php" class="btn btn-primary">Se déconnecter</a>
         </div>
-    </div>
     </header>
-    
+
     <main>
         <div class="container content-area search-page-container">
             <aside class="filters-sidebar">
@@ -389,7 +647,7 @@ unset($current_filters['sort']);
                     </div>
 
                     <div class="filter-group">
-                    <h3>Date</h3>
+                        <h3>Date</h3>
                         <div class="input-with-icon">
                             <input type="date" id="date" name="date" value="<?php echo htmlspecialchars($selectedDate ?? ''); ?>">
                         </div>
@@ -409,8 +667,8 @@ unset($current_filters['sort']);
                     <div class="filter-group">
                         <h3>Statut</h3>
                         <div class="status-filter">
-                        <label><input type="radio" name="status" value="open" <?php if ($statusFilter === 'open') echo 'checked'; ?>> Ouvert</label>
-                        <label><input type="radio" name="status" value="closed" <?php if ($statusFilter === 'closed') echo 'checked'; ?>> Fermé</label>
+                            <label><input type="radio" name="status" value="open" <?php if ($statusFilter === 'open') echo 'checked'; ?>> Ouvert</label>
+                            <label><input type="radio" name="status" value="closed" <?php if ($statusFilter === 'closed') echo 'checked'; ?>> Fermé</label>
                         </div>
                     </div>
                     <input type="hidden" name="q" value="<?php echo htmlspecialchars($searchTerm); ?>">
@@ -420,7 +678,7 @@ unset($current_filters['sort']);
 
             <section class="results-area">
                 <div class="search-and-sort-controls">
-                     <form method="GET" action="recherche.php" class="search-bar-results">
+                    <form method="GET" action="recherche.php" class="search-bar-results">
                         <input type="text" name="q" placeholder="Rechercher dans mes offres..." value="<?php echo htmlspecialchars($searchTerm); ?>">
                         <input type="hidden" name="category" value="<?php echo htmlspecialchars($category_id); ?>">
                         <input type="hidden" name="destination" value="<?php echo htmlspecialchars($destination); ?>">
@@ -433,9 +691,9 @@ unset($current_filters['sort']);
                     </form>
                     <div class="sort-options">
                         <?php
-                            echo getSortLink('note', $sort, $current_filters);
-                            echo getSortLink('price_asc', $sort, $current_filters);
-                            echo getSortLink('price_desc', $sort, $current_filters);
+                        echo getSortLink('note', $sort, $current_filters);
+                        echo getSortLink('price_asc', $sort, $current_filters);
+                        echo getSortLink('price_desc', $sort, $current_filters);
                         ?>
                     </div>
                 </div>
@@ -458,15 +716,17 @@ unset($current_filters['sort']);
                                     <div class="card-actions-bo">
                                         <a href="offre.php?id=<?= $offer['id'] ?>" class="btn-action btn-view"><i class="fas fa-eye"></i> Voir</a>
                                         <a href="modifier-offre.php?id=<?= $offer['id'] ?>" class="btn-action btn-edit"><i class="fas fa-edit"></i> Modifier</a>
-                                        <?php if ($offer['current_status'] == 1): // Si le statut est 1 (Actif) ?>
-                                                <a href="../composants/changer-status-offre.php?id=<?= $offer['id'] ?>&status=0" class="btn-action btn-delete" onclick="return confirm('Êtes-vous sûr de vouloir désactiver cette offre ?');">
-                                                    <i class="fas fa-toggle-off"></i> Rendre Inactif
-                                                </a>
-                                            <?php else: // Si le statut est 0 (Inactif) ?>
-                                                <a href="../composants/changer-status-offre.php?id=<?= $offer['id'] ?>&status=1" class="btn-action btn-view" style="background-color: #d4edda; color: #155724;" onclick="return confirm('Êtes-vous sûr de vouloir réactiver cette offre ?');">
-                                                    <i class="fas fa-toggle-on"></i> Rendre Actif
-                                                </a>
-                                            <?php endif; ?>
+                                        <?php if ($offer['current_status'] == 1): // Si le statut est 1 (Actif) 
+                                        ?>
+                                            <a href="../composants/changer-status-offre.php?id=<?= $offer['id'] ?>&status=0" class="btn-action btn-delete" onclick="return confirm('Êtes-vous sûr de vouloir désactiver cette offre ?');">
+                                                <i class="fas fa-toggle-off"></i> Rendre Inactif
+                                            </a>
+                                        <?php else: // Si le statut est 0 (Inactif) 
+                                        ?>
+                                            <a href="../composants/changer-status-offre.php?id=<?= $offer['id'] ?>&status=1" class="btn-action btn-view" style="background-color: #d4edda; color: #155724;" onclick="return confirm('Êtes-vous sûr de vouloir réactiver cette offre ?');">
+                                                <i class="fas fa-toggle-on"></i> Rendre Actif
+                                            </a>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
@@ -490,7 +750,7 @@ unset($current_filters['sort']);
             <div class="footer-section links">
                 <h3>Visiteur</h3>
                 <ul>
-                    <li><a href="../index.html">Accueil</a></li>
+                    <li><a href="../index.php">Accueil</a></li>
                     <li><a href="../FO/recherche.php">Recherche d'offres</a></li>
                     <li><a href="../FO/connexion-compte.php">Je me connecte en tant que membre</a></li>
                 </ul>
@@ -517,86 +777,87 @@ unset($current_filters['sort']);
     </footer>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const filtersForm = document.getElementById('filters-form');
-        const resetFiltersBtn = document.getElementById('reset-filters-btn');
+        document.addEventListener('DOMContentLoaded', function() {
+            const filtersForm = document.getElementById('filters-form');
+            const resetFiltersBtn = document.getElementById('reset-filters-btn');
 
-        // Soumission du formulaire lors du changement des SELECT et des INPUT date/radio
-        filtersForm.addEventListener('change', function(event) {
-            if (event.target.tagName === 'SELECT' || event.target.type === 'date' || event.target.type === 'radio') {
-                filtersForm.submit();
-            }
-        });
-        
-        // Soumission pour les champs texte/nombre lors de l'appui sur "Entrée"
-        filtersForm.addEventListener('keypress', function(event) {
-            if (event.key === 'Enter' && (event.target.type === 'text' || event.target.type === 'number')) {
-                event.preventDefault(); // Empêche le comportement par défaut (qui peut être différent)
-                filtersForm.submit();
-            }
-        });
-
-        // Gestion du filtre de note par étoiles
-        const minRatingFilter = document.getElementById('min-rating-filter');
-        const minRatingInput = document.getElementById('min-rating-input');
-        const couleurPrincipale = getComputedStyle(document.documentElement).getPropertyValue('--couleur-principale').trim();
-
-        if (minRatingFilter && minRatingInput) {
-            const stars = Array.from(minRatingFilter.querySelectorAll('.fa-star'));
-
-            const updateStarVisuals = (selectedRating) => {
-                stars.forEach(s => {
-                    const starValue = parseInt(s.dataset.rating, 10);
-                    if (starValue <= selectedRating) {
-                        s.classList.add('active');
-                        s.style.color = couleurPrincipale;
-                    } else {
-                        s.classList.remove('active');
-                        s.style.color = '#e0e0e0';
-                    }
-                });
-            };
-
-            // Initialiser l'affichage des étoiles au chargement de la page
-            updateStarVisuals(minRatingInput.value);
-
-            minRatingFilter.addEventListener('click', function(e) {
-                if (e.target.classList.contains('star-option')) {
-                    const rating = e.target.dataset.rating;
-                    if (minRatingInput.value === rating) { 
-                        minRatingInput.value = ""; // Désélectionne si on clique sur l'étoile déjà sélectionnée
-                    } else {
-                        minRatingInput.value = rating;
-                    }
-                    filtersForm.submit(); // Soumet le formulaire après la sélection
+            // Soumission du formulaire lors du changement des SELECT et des INPUT date/radio
+            filtersForm.addEventListener('change', function(event) {
+                if (event.target.tagName === 'SELECT' || event.target.type === 'date' || event.target.type === 'radio') {
+                    filtersForm.submit();
                 }
             });
 
-            minRatingFilter.addEventListener('mouseover', function(e) {
-                if (e.target.classList.contains('star-option')) {
-                    const hoverRating = parseInt(e.target.dataset.rating, 10);
+            // Soumission pour les champs texte/nombre lors de l'appui sur "Entrée"
+            filtersForm.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter' && (event.target.type === 'text' || event.target.type === 'number')) {
+                    event.preventDefault(); // Empêche le comportement par défaut (qui peut être différent)
+                    filtersForm.submit();
+                }
+            });
+
+            // Gestion du filtre de note par étoiles
+            const minRatingFilter = document.getElementById('min-rating-filter');
+            const minRatingInput = document.getElementById('min-rating-input');
+            const couleurPrincipale = getComputedStyle(document.documentElement).getPropertyValue('--couleur-principale').trim();
+
+            if (minRatingFilter && minRatingInput) {
+                const stars = Array.from(minRatingFilter.querySelectorAll('.fa-star'));
+
+                const updateStarVisuals = (selectedRating) => {
                     stars.forEach(s => {
                         const starValue = parseInt(s.dataset.rating, 10);
-                        if (starValue <= hoverRating) {
+                        if (starValue <= selectedRating) {
+                            s.classList.add('active');
                             s.style.color = couleurPrincipale;
                         } else {
+                            s.classList.remove('active');
                             s.style.color = '#e0e0e0';
                         }
                     });
-                }
+                };
+
+                // Initialiser l'affichage des étoiles au chargement de la page
+                updateStarVisuals(minRatingInput.value);
+
+                minRatingFilter.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('star-option')) {
+                        const rating = e.target.dataset.rating;
+                        if (minRatingInput.value === rating) {
+                            minRatingInput.value = ""; // Désélectionne si on clique sur l'étoile déjà sélectionnée
+                        } else {
+                            minRatingInput.value = rating;
+                        }
+                        filtersForm.submit(); // Soumet le formulaire après la sélection
+                    }
+                });
+
+                minRatingFilter.addEventListener('mouseover', function(e) {
+                    if (e.target.classList.contains('star-option')) {
+                        const hoverRating = parseInt(e.target.dataset.rating, 10);
+                        stars.forEach(s => {
+                            const starValue = parseInt(s.dataset.rating, 10);
+                            if (starValue <= hoverRating) {
+                                s.style.color = couleurPrincipale;
+                            } else {
+                                s.style.color = '#e0e0e0';
+                            }
+                        });
+                    }
+                });
+
+                minRatingFilter.addEventListener('mouseout', function() {
+                    updateStarVisuals(minRatingInput.value); // Revenir à l'état sélectionné
+                });
+            }
+
+
+            resetFiltersBtn.addEventListener('click', function() {
+                const url = new URL(window.location);
+                window.location.href = url.pathname;
             });
-
-            minRatingFilter.addEventListener('mouseout', function() {
-                updateStarVisuals(minRatingInput.value); // Revenir à l'état sélectionné
-            });
-        }
-
-
-        resetFiltersBtn.addEventListener('click', function() {
-            const url = new URL(window.location);
-            window.location.href = url.pathname; 
         });
-    });
     </script>
 </body>
+
 </html>

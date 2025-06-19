@@ -104,10 +104,10 @@ SET @compte_membre_id_1 = UUID();
 SET @compte_membre_id_2 = UUID();
 SET @compte_membre_id_3 = UUID();
 
-INSERT INTO `comptes_membre` (`id`, `adresse_id`, `email`, `password`, `phone`, `lastname`, `firstname`, `alias`) VALUES
-(@compte_membre_id_1, @adresse_id_1, 'iwan.cochet@etudiant.univ-rennes.fr', '$2y$10$NotARealHashButAnExample1', '0610203040', 'Cochet', 'Iwan', 'iwanc'),
-(@compte_membre_id_2, @adresse_id_2, 'evan.collet@etudiant.univ-rennes.fr', '$2y$10$NotARealHashButAnExample2', '0650607080', 'Collet', 'Evan', 'evanc'),
-(@compte_membre_id_3, @adresse_id_3, 'louis.milin@etudiant.univ-rennes.fr', '$2y$10$NotARealHashButAnExample3', '0780900010', 'Milin', 'Louis', 'louism');
+INSERT INTO `comptes_membre` (`id`, `adresse_id`, `email`, `password`, `phone`, `lastname`, `firstname`, `alias`, `otp_enabled`, `otp_secret`) VALUES
+(@compte_membre_id_1, @adresse_id_1, 'iwan.cochet@etudiant.univ-rennes.fr', 'mdp_123', '0610203040', 'Cochet', 'Iwan', 'iwanc', '0', NULL),
+(@compte_membre_id_2, @adresse_id_2, 'evan.collet@etudiant.univ-rennes.fr', 'mdp_123', '0650607080', 'Collet', 'Evan', 'evanc', '0', NULL),
+(@compte_membre_id_3, @adresse_id_3, 'louis.milin@etudiant.univ-rennes.fr', 'mdp_123', '0780900010', 'Milin', 'Louis', 'louism', '0', NULL);
 
 -- -------------------------------------
 -- Comptes Professionnels
@@ -123,17 +123,17 @@ SET @compte_pro_id_8 = UUID();
 
 INSERT INTO `comptes_pro` (`id`, `adresse_id`, `email`, `password`, `phone`, `company_name`, `is_private`, `siren`, `iban`, `bic`) VALUES
 -- Privé
-(@compte_pro_id_1, @adresse_id_4, 'contact@gout-des-calanques.fr', '$2y$10$NewProHash1', '0491876543', 'SARL Le Goût des Calanques', 1, '111222333', 'FR7611122233344455566677889', 'BNPAFRPPXXX'),
-(@compte_pro_id_2, @adresse_id_5, 'hello@escape-provence.com', '$2y$10$NewProHash2', '0492345678', 'Escape Game Provence', 1, '444555666', 'FR7644455566677788899900011', 'SOGEFRPPXXX'),
-(@compte_pro_id_3, @adresse_id_6, 'info@velosriviera.com', '$2y$10$NewProHash3', '0493987654', 'Vélos Bleus de la Riviera', 1, '777888999', 'FR7677788899900011122233344', 'CEPAFRPPXXX'),
+(@compte_pro_id_1, @adresse_id_4, 'contact@gout-des-calanques.fr', 'mdp_123', '0491876543', 'SARL Le Goût des Calanques', 1, '111222333', 'FR7611122233344455566677889', 'BNPAFRPPXXX'),
+(@compte_pro_id_2, @adresse_id_5, 'hello@escape-provence.com', 'mdp_123', '0492345678', 'Escape Game Provence', 1, '444555666', 'FR7644455566677788899900011', 'SOGEFRPPXXX'),
+(@compte_pro_id_3, @adresse_id_6, 'info@velosriviera.com', 'mdp_123', '0493987654', 'Vélos Bleus de la Riviera', 1, '777888999', 'FR7677788899900011122233344', 'CEPAFRPPXXX'),
 -- Associatif
-(@compte_pro_id_4, @adresse_id_7, 'contact@patrimoine-var.org', '$2y$10$NewProHash4', '0494112233', 'Les Amis du Patrimoine Varois', 0, '121212121', NULL, NULL),
-(@compte_pro_id_5, @adresse_id_8, 'info@voile-saint-tropez.fr', '$2y$10$NewProHash5', '0494543210', 'Club de Voile de Saint-Tropez', 0, '343434343', NULL, NULL),
+(@compte_pro_id_4, @adresse_id_7, 'contact@patrimoine-var.org', 'mdp_123', '0494112233', 'Les Amis du Patrimoine Varois', 0, '121212121', NULL, NULL),
+(@compte_pro_id_5, @adresse_id_8, 'info@voile-saint-tropez.fr', 'mdp_123', '0494543210', 'Club de Voile de Saint-Tropez', 0, '343434343', NULL, NULL),
 -- Public
-(@compte_pro_id_6, @adresse_id_9, 'evenementiel@cannes.fr', '$2y$10$NewProHash6', '0493392424', 'Mairie de Cannes - Événements', 0, '565656565', NULL, NULL),
-(@compte_pro_id_7, @adresse_id_10, 'accueil@mercantour.fr', '$2y$10$NewProHash7', '0493032315', 'Parc National du Mercantour', 0, '787878787', NULL, NULL),
+(@compte_pro_id_6, @adresse_id_9, 'evenementiel@cannes.fr', 'mdp_123', '0493392424', 'Mairie de Cannes - Événements', 0, '565656565', NULL, NULL),
+(@compte_pro_id_7, @adresse_id_10, 'accueil@mercantour.fr', 'mdp_123', '0493032315', 'Parc National du Mercantour', 0, '787878787', NULL, NULL),
 -- Privé
-(@compte_pro_id_8, @adresse_id_11, 'manager@la-cantina-nice.fr', '$2y$10$NewProHash8', '0493887766', 'La Cantina', 1, '909090909', 'FR7690909090989898987654321', 'CMCIFRPPXXX');
+(@compte_pro_id_8, @adresse_id_11, 'manager@la-cantina-nice.fr', 'mdp_123', '0493887766', 'La Cantina', 1, '909090909', 'FR7690909090989898987654321', 'CMCIFRPPXXX');
 
 
 -- -------------------------------------
@@ -297,8 +297,10 @@ INSERT INTO `restaurations` (`categorie_id`, `menu_url`, `price_range`) VALUES
 (@categorie_id_2, 'https://gout-des-calanques.fr/menu', '€€€');
 
 INSERT INTO `visites` (`categorie_id`, `duration`, `minimum_price`, `date`, `start_time`, `is_guided_tour`) VALUES
-(@categorie_id_3, 90, 10.00, '2025-07-15', '10:30:00', 1),
-(@categorie_id_4, 360, 35.00, '2025-08-01', '09:00:00', 1);
+-- Date de visite dans le futur (dans 1 mois)
+(@categorie_id_3, 90, 10.00, DATE_ADD(CURDATE(), INTERVAL 1 MONTH), '10:30:00', 1),
+-- Date de visite dans le futur (dans 45 jours)
+(@categorie_id_4, 360, 35.00, DATE_ADD(CURDATE(), INTERVAL 45 DAY), '09:00:00', 1);
 
 INSERT INTO `activites` (`categorie_id`, `duration`, `minimum_price`, `required_age`) VALUES
 (@categorie_id_5, 1440, 250.00, 18),
@@ -309,8 +311,10 @@ INSERT INTO `parcs_attractions` (`categorie_id`, `minimum_price`, `required_age`
 (@categorie_id_8, 8.00, 0, 5, 'https://mercantour.fr/ecomusee/plan');
 
 INSERT INTO `spectacles` (`categorie_id`, `duration`, `minimum_price`, `date`, `start_time`, `capacity`) VALUES
-(@categorie_id_9, 120, 0.00, '2025-07-20', '21:30:00', 1000),
-(@categorie_id_10, 75, 22.00, '2025-09-15', '21:00:00', 150);
+-- Date de spectacle dans le futur (dans 1 mois)
+(@categorie_id_9, 120, 0.00, DATE_ADD(CURDATE(), INTERVAL 1 MONTH), '21:30:00', 1000),
+-- Date de spectacle dans le futur (dans 3 mois)
+(@categorie_id_10, 75, 22.00, DATE_ADD(CURDATE(), INTERVAL 3 MONTH), '21:00:00', 150);
 
 INSERT INTO `offres_tags` (`offre_id`, `tag_id`) VALUES
 (@offre_id_1, @tag_id_9),
@@ -350,6 +354,23 @@ INSERT INTO `restaurations_repas` (`restauration_id`, `repas_id`) VALUES
 (@categorie_id_1, @repas_id_2),
 (@categorie_id_2, @repas_id_2);
 
+-- -------------------------------------
+-- Souscriptions
+-- -------------------------------------
+-- La logique de la page d'accueil affiche les offres ayant une souscription 'A la une' active.
+INSERT INTO `souscriptions` (`offre_id`, `option_id`, `duration`, `taken_date`, `launch_date`) VALUES
+-- Souscription ACTIVE. Début : il y a 1 mois. Durée : 3 mois. Fin : dans 2 mois. DEVRAIT APPARAITRE.
+(@offre_id_5, @option_id_2, 3, DATE_SUB(CURDATE(), INTERVAL 40 DAY), DATE_SUB(CURDATE(), INTERVAL 1 MONTH)),
+
+-- Souscription ACTIVE. Début : il y a 5 jours. Durée : 6 mois. Fin : dans ~6 mois. DEVRAIT APPARAITRE.
+(@offre_id_2, @option_id_2, 6, DATE_SUB(CURDATE(), INTERVAL 10 DAY), DATE_SUB(CURDATE(), INTERVAL 5 DAY)),
+
+-- Souscription EXPIREE. Début : il y a 6 mois. Durée : 3 mois. Fin : il y a 3 mois. NE DEVRAIT PAS APPARAITRE.
+(@offre_id_6, @option_id_1, 3, DATE_SUB(CURDATE(), INTERVAL 190 DAY), DATE_SUB(CURDATE(), INTERVAL 6 MONTH)),
+
+-- Souscription FUTURE. Début : dans 1 mois. Durée : 2 mois. NE DEVRAIT PAS APPARAITRE.
+(@offre_id_10, @option_id_2, 2, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 1 MONTH));
+
 
 -- =================================================================================
 -- PEUPLEMENT DU CONTENU UTILISATEUR
@@ -362,8 +383,10 @@ SET @avis_id_1 = UUID();
 SET @avis_id_2 = UUID();
 
 INSERT INTO `avis` (`id`, `membre_id`, `offre_id`, `title`, `comment`, `rating`, `visit_date`, `context`, `viewed`, `thumb_up_nb`, `thumb_down_nb`, `published_at`) VALUES
-(@avis_id_1, @compte_membre_id_1, @offre_id_5, 'Expérience géniale !', 'Le stage de voile était parfait. Le moniteur, Fred, est un excellent pédagogue. On apprend en toute sécurité dans un cadre de rêve. Je reviendrai !', 5, '2025-08-10', 'solo', 1, 18, 0, NOW()),
-(@avis_id_2, @compte_membre_id_3, @offre_id_7, 'Original et bien fait', 'On a passé un super après-midi à L''Enigme Absolue. Les décors sont immersifs et les énigmes sont bien pensées. Idéal pour un groupe d''amis.', 4.5, '2025-07-25', 'amis', 1, 11, 0, NOW());
+-- Date de visite dans le passé récent (il y a 1 mois)
+(@avis_id_1, @compte_membre_id_1, @offre_id_5, 'Expérience géniale !', 'Le stage de voile était parfait. Le moniteur, Fred, est un excellent pédagogue. On apprend en toute sécurité dans un cadre de rêve. Je reviendrai !', 5, DATE_SUB(CURDATE(), INTERVAL 1 MONTH), 'solo', 1, 18, 0, NOW()),
+-- Date de visite dans le passé récent (il y a 20 jours)
+(@avis_id_2, @compte_membre_id_3, @offre_id_7, 'Original et bien fait', 'On a passé un super après-midi à L''Enigme Absolue. Les décors sont immersifs et les énigmes sont bien pensées. Idéal pour un groupe d''amis.', 4.5, DATE_SUB(CURDATE(), INTERVAL 20 DAY), 'amis', 1, 11, 0, NOW());
 
 -- -------------------------------------
 -- Réponses des professionnels

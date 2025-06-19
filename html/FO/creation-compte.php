@@ -100,10 +100,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACT - Création de compte</title><link rel="icon" href="images/Logo2withoutbg.png">
+    <title>PACT - Création de compte</title>
+    <link rel="icon" href="images/Logo2withoutbg.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -123,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             text-align: center;
-            width: 600px; 
+            width: 600px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -135,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 36px;
         }
 
-        .content-area p{
+        .content-area p {
             color: #000000;
             margin-bottom: 20px;
             font-size: 24px;
@@ -144,7 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .register-form {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); 
+            grid-template-columns: repeat(2, 1fr);
             gap: 15px 20px;
             width: 100%;
         }
@@ -181,13 +183,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .register-button-container {
             grid-column: 1 / -1;
             display: flex;
-            flex-direction: row; 
-            justify-content: space-between; 
+            flex-direction: row;
+            justify-content: space-between;
             margin-top: 20px;
         }
 
         .register-button {
-            background-color:var(--couleur-principale);
+            background-color: var(--couleur-principale);
             color: #fff;
             border: none;
             padding: 15px 30px;
@@ -205,7 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .already-registered {
             text-decoration: underline;
             color: #000;
-            align-self: center; /
+            align-self: center;/
         }
 
         .already-registered:hover {
@@ -216,26 +218,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         /* Styles responsives pour le formulaire */
         @media (max-width: 768px) {
             .content-area {
-                padding: 20px; 
+                padding: 20px;
             }
 
             .register-container {
-                width: 90%; 
-                padding: 30px 20px; 
+                width: 90%;
+                padding: 30px 20px;
             }
 
             .content-area h1 {
-                font-size: 28px; 
+                font-size: 28px;
             }
 
             .content-area p {
-                font-size: 18px; 
+                font-size: 18px;
                 margin-bottom: 25px;
             }
 
             .register-form {
-                grid-template-columns: 1fr; 
-                gap: 15px 0; 
+                grid-template-columns: 1fr;
+                gap: 15px 0;
             }
 
             .form-group label {
@@ -253,48 +255,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             .register-button-container {
-                flex-direction: column-reverse; 
-                align-items: stretch; 
-                gap: 15px; 
+                flex-direction: column-reverse;
+                align-items: stretch;
+                gap: 15px;
                 margin-top: 25px;
             }
 
             .register-button-container .already-registered {
-                text-align: center; 
-                margin-bottom: 5px; 
+                text-align: center;
+                margin-bottom: 5px;
             }
 
             .register-button {
-                width: 100%; 
+                width: 100%;
                 padding: 14px 20px;
             }
         }
 
-        @media (max-width: 480px) { 
+        @media (max-width: 480px) {
             .content-area {
                 padding: 15px;
             }
+
             .register-container {
                 padding: 25px 15px;
             }
+
             .content-area h1 {
                 font-size: 24px;
             }
+
             .content-area p {
                 font-size: 16px;
             }
         }
-
     </style>
 </head>
+
 <body>
     <header>
         <div class="container header-container">
             <div class="header-left">
-                <a href="../index.html"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
+                <a href="../index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
                 <nav class="main-nav">
                     <ul>
-                        <li><a href="../index.html">Accueil</a></li>
+                        <li><a href="../index.php">Accueil</a></li>
                         <li><a href="recherche.php">Recherche</a></li>
                     </ul>
                 </nav>
@@ -385,7 +390,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
 
     <footer>
-        </footer>
+    </footer>
     <script src="script.js" defer></script>
 </body>
+
 </html>
