@@ -123,17 +123,17 @@ SET @compte_pro_id_8 = UUID();
 
 INSERT INTO `comptes_pro` (`id`, `adresse_id`, `email`, `password`, `phone`, `company_name`, `is_private`, `siren`, `iban`, `bic`) VALUES
 -- Privé
-(@compte_pro_id_1, @adresse_id_4, 'contact@gout-des-calanques.fr', '$2y$10$NewProHash1', '0491876543', 'SARL Le Goût des Calanques', 1, '111222333', 'FR7611122233344455566677889', 'BNPAFRPPXXX'),
-(@compte_pro_id_2, @adresse_id_5, 'hello@escape-provence.com', '$2y$10$NewProHash2', '0492345678', 'Escape Game Provence', 1, '444555666', 'FR7644455566677788899900011', 'SOGEFRPPXXX'),
-(@compte_pro_id_3, @adresse_id_6, 'info@velosriviera.com', '$2y$10$NewProHash3', '0493987654', 'Vélos Bleus de la Riviera', 1, '777888999', 'FR7677788899900011122233344', 'CEPAFRPPXXX'),
+(@compte_pro_id_1, @adresse_id_4, 'contact@gout-des-calanques.fr', 'mdp_123', '0491876543', 'SARL Le Goût des Calanques', 1, '111222333', 'FR7611122233344455566677889', 'BNPAFRPPXXX'),
+(@compte_pro_id_2, @adresse_id_5, 'hello@escape-provence.com', 'mdp_123', '0492345678', 'Escape Game Provence', 1, '444555666', 'FR7644455566677788899900011', 'SOGEFRPPXXX'),
+(@compte_pro_id_3, @adresse_id_6, 'info@velosriviera.com', 'mdp_123', '0493987654', 'Vélos Bleus de la Riviera', 1, '777888999', 'FR7677788899900011122233344', 'CEPAFRPPXXX'),
 -- Associatif
-(@compte_pro_id_4, @adresse_id_7, 'contact@patrimoine-var.org', '$2y$10$NewProHash4', '0494112233', 'Les Amis du Patrimoine Varois', 0, '121212121', NULL, NULL),
-(@compte_pro_id_5, @adresse_id_8, 'info@voile-saint-tropez.fr', '$2y$10$NewProHash5', '0494543210', 'Club de Voile de Saint-Tropez', 0, '343434343', NULL, NULL),
+(@compte_pro_id_4, @adresse_id_7, 'contact@patrimoine-var.org', 'mdp_123', '0494112233', 'Les Amis du Patrimoine Varois', 0, '121212121', NULL, NULL),
+(@compte_pro_id_5, @adresse_id_8, 'info@voile-saint-tropez.fr', 'mdp_123', '0494543210', 'Club de Voile de Saint-Tropez', 0, '343434343', NULL, NULL),
 -- Public
-(@compte_pro_id_6, @adresse_id_9, 'evenementiel@cannes.fr', '$2y$10$NewProHash6', '0493392424', 'Mairie de Cannes - Événements', 0, '565656565', NULL, NULL),
-(@compte_pro_id_7, @adresse_id_10, 'accueil@mercantour.fr', '$2y$10$NewProHash7', '0493032315', 'Parc National du Mercantour', 0, '787878787', NULL, NULL),
+(@compte_pro_id_6, @adresse_id_9, 'evenementiel@cannes.fr', 'mdp_123', '0493392424', 'Mairie de Cannes - Événements', 0, '565656565', NULL, NULL),
+(@compte_pro_id_7, @adresse_id_10, 'accueil@mercantour.fr', 'mdp_123', '0493032315', 'Parc National du Mercantour', 0, '787878787', NULL, NULL),
 -- Privé
-(@compte_pro_id_8, @adresse_id_11, 'manager@la-cantina-nice.fr', '$2y$10$NewProHash8', '0493887766', 'La Cantina', 1, '909090909', 'FR7690909090989898987654321', 'CMCIFRPPXXX');
+(@compte_pro_id_8, @adresse_id_11, 'manager@la-cantina-nice.fr', 'mdp_123', '0493887766', 'La Cantina', 1, '909090909', 'FR7690909090989898987654321', 'CMCIFRPPXXX');
 
 
 -- -------------------------------------
