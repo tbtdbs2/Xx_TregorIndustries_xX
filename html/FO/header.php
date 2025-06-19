@@ -5,10 +5,10 @@ $is_member_logged_in = isset($_COOKIE['user_type']) && $_COOKIE['user_type'] ===
 <header>
     <div class="container header-container">
         <div class="header-left">
-            <a href="../index.html"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
+            <a href="../index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
             <nav class="main-nav">
                 <ul>
-                    <li><a href="../index.html">Accueil</a></li>
+                    <li><a href="../index.php">Accueil</a></li>
                     <li><a href="recherche.php">Recherche</a></li>
                 </ul>
             </nav>

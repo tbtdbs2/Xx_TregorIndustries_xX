@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACT - Connexion</title><link rel="icon" href="images/Logo2withoutbg.png">
+    <title>PACT - Connexion</title>
+    <link rel="icon" href="images/Logo2withoutbg.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
+
     <style>
         .content-area {
             display: flex;
@@ -37,7 +39,7 @@
             font-size: 36px;
         }
 
-        .content-area p{
+        .content-area p {
             color: #000000;
             margin-bottom: 20px;
             font-size: 24px;
@@ -64,7 +66,7 @@
             font-weight: 500;
         }
 
-        .form-group input[type="email"]{
+        .form-group input[type="email"] {
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -72,8 +74,8 @@
         }
 
         .login-button {
-            background-color:var(--couleur-principale);
-            
+            background-color: var(--couleur-principale);
+
             color: #fff;
             border: none;
             padding: 12px 20px;
@@ -89,14 +91,15 @@
         }
     </style>
 </head>
+
 <body>
     <header>
         <div class="container header-container">
             <div class="header-left">
-                <a href="../index.html"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
+                <a href="../index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
                 <nav class="main-nav">
                     <ul>
-                        <li><a href="../index.html">Accueil</a></li>
+                        <li><a href="../index.php">Accueil</a></li>
                         <li><a href="recherche.php">Recherche</a></li>
                     </ul>
                 </nav>
@@ -163,7 +166,7 @@
             <div class="footer-section links">
                 <h3>Découvrir</h3>
                 <ul>
-                    <li><a href="../index.html">Accueil</a></li>
+                    <li><a href="../index.php">Accueil</a></li>
                     <li><a href="recherche.php">Recherche</a></li>
                 </ul>
             </div>
@@ -181,4 +184,5 @@
     </footer>
     <script src="script.js" defer></script>
 </body>
+
 </html>

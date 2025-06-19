@@ -53,14 +53,17 @@ try {
 ?>
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACT - Accueil</title><link rel="icon" href="images/Logo2withoutbg.png">
+    <title>PACT - Accueil</title>
+    <link rel="icon" href="images/Logo2withoutbg.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="FO/style.css"> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="FO/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* Styles spécifiques à la page d'accueil */
         .hero-section {
@@ -105,7 +108,7 @@ try {
             font-size: 3em;
             font-weight: var(--font-weight-semibold);
             margin-bottom: var(--espacement-triple);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
         .search-bar-container {
@@ -118,7 +121,7 @@ try {
             height: 50px;
             border-radius: 25px;
             padding: 0 var(--espacement-standard);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         .search-bar-container input[type="text"] {
@@ -146,6 +149,7 @@ try {
             height: 100%;
             box-sizing: border-box;
         }
+
         .search-bar-container button:hover {
             color: var(--couleur-principale-hover);
         }
@@ -175,15 +179,18 @@ try {
             padding-top: var(--espacement-standard);
             align-items: stretch;
         }
-        
+
         /* Masquer la scrollbar pour Chrome, Safari et Opera */
         .cards-container::-webkit-scrollbar {
             display: none;
         }
+
         /* Masquer la scrollbar pour IE, Edge et Firefox */
         .cards-container {
-            -ms-overflow-style: none;  /* IE et Edge */
-            scrollbar-width: none;  /* Firefox */
+            -ms-overflow-style: none;
+            /* IE et Edge */
+            scrollbar-width: none;
+            /* Firefox */
         }
 
         .card {
@@ -194,15 +201,16 @@ try {
             min-width: 280px;
             max-width: 300px;
             flex: 0 0 auto;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
+
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         /* Updated card image structure styles */
@@ -224,7 +232,8 @@ try {
         .favorite-btn {
             position: absolute;
             top: 10px;
-            right: 10px; /* Changed from left to right */
+            right: 10px;
+            /* Changed from left to right */
             background-color: rgba(255, 255, 255, 0.8);
             border: none;
             border-radius: 50%;
@@ -234,8 +243,10 @@ try {
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            color: var(--couleur-texte); /* Default color for empty heart */
-            font-size: 1rem; /* Adjust icon size */
+            color: var(--couleur-texte);
+            /* Default color for empty heart */
+            font-size: 1rem;
+            /* Adjust icon size */
             z-index: 5;
             padding: 0;
             transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
@@ -247,18 +258,26 @@ try {
             transform: scale(1.1);
         }
 
-        .favorite-btn .fas.fa-heart { /* Filled heart icon */
-            display: none; /* Hidden by default */
+        .favorite-btn .fas.fa-heart {
+            /* Filled heart icon */
+            display: none;
+            /* Hidden by default */
         }
 
-        .favorite-btn.active .far.fa-heart { /* Empty heart icon */
-            display: none; /* Hide empty heart when active */
+        .favorite-btn.active .far.fa-heart {
+            /* Empty heart icon */
+            display: none;
+            /* Hide empty heart when active */
         }
 
-        .favorite-btn.active .fas.fa-heart { /* Filled heart icon */
-            display: inline-block; /* Show filled heart when active */
-            color: var(--couleur-principale); /* Or red e.g. #E53935 */
+        .favorite-btn.active .fas.fa-heart {
+            /* Filled heart icon */
+            display: inline-block;
+            /* Show filled heart when active */
+            color: var(--couleur-principale);
+            /* Or red e.g. #E53935 */
         }
+
         /* End of new favorite button styles */
 
 
@@ -277,16 +296,20 @@ try {
 
         .star-rating {
             margin-bottom: var(--espacement-standard);
-            color: var(--couleur-principale); /* Couleur par défaut pour étoiles pleines */
+            color: var(--couleur-principale);
+            /* Couleur par défaut pour étoiles pleines */
         }
 
         .star-rating .fas.fa-star {
             /* La couleur est héritée de .star-rating ou peut être surchargée ici si besoin */
         }
+
         .star-rating .fas.fa-star-half-alt {
             /* La couleur est héritée de .star-rating */
         }
-        .star-rating .far.fa-star { /* Étoiles vides */
+
+        .star-rating .far.fa-star {
+            /* Étoiles vides */
             color: var(--couleur-bordure);
         }
 
@@ -295,7 +318,8 @@ try {
             color: var(--couleur-texte-footer);
             line-height: 1.5;
             margin-bottom: var(--espacement-moyen);
-            flex-grow: 1; /* Pour que la description prenne l'espace disponible */
+            flex-grow: 1;
+            /* Pour que la description prenne l'espace disponible */
         }
 
         .card-more {
@@ -303,9 +327,12 @@ try {
             color: var(--couleur-principale);
             text-decoration: none;
             font-weight: var(--font-weight-medium);
-            align-self: flex-start; /* Aligner en bas à gauche de la card-content */
-            margin-top: auto; /* Push to the bottom */
+            align-self: flex-start;
+            /* Aligner en bas à gauche de la card-content */
+            margin-top: auto;
+            /* Push to the bottom */
         }
+
         .card-more:hover {
             text-decoration: underline;
             color: var(--couleur-principale-hover);
@@ -327,73 +354,88 @@ try {
             font-size: 1.5em;
             cursor: pointer;
             z-index: 10;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             transition: background-color 0.2s ease, color 0.2s ease;
         }
+
         .carousel-arrow:hover {
             background-color: var(--couleur-blanche);
             color: var(--couleur-principale-hover);
         }
+
         .prev-arrow {
-            left: -20px; /* Ajuster pour qu'elle soit visible et cliquable */
+            left: -20px;
+            /* Ajuster pour qu'elle soit visible et cliquable */
         }
+
         .next-arrow {
-            right: -20px; /* Ajuster */
+            right: -20px;
+            /* Ajuster */
         }
 
         /* Styling for "À la une" cards */
         .card.card-a-la-une {
-            border: 1px solid #ffe390; /* Bordure jaune sur tous les côtés */
-            position: relative; /* Nécessaire pour le positionnement absolu de l'étoile */
+            border: 1px solid #ffe390;
+            /* Bordure jaune sur tous les côtés */
+            position: relative;
+            /* Nécessaire pour le positionnement absolu de l'étoile */
         }
 
         .card-a-la-une .highlight-star-icon {
             position: absolute;
-            bottom: 10px; 
-            right: 10px;   /* Positionné à droite */
-            color: #FFC107; 
-            font-size: 1em;  
-            z-index: 5;      
+            bottom: 10px;
+            right: 10px;
+            /* Positionné à droite */
+            color: #FFC107;
+            font-size: 1em;
+            z-index: 5;
         }
 
         /* Styling for Category and Destination cards */
-        .category-card, .destination-card {
+        .category-card,
+        .destination-card {
             background-color: var(--couleur-blanche);
             border: var(--bordure-standard-interface);
-            border-radius: 12px; 
-            min-width: 250px;    /* Augmenté */
-            max-width: 260px;    /* Augmenté */
-            flex: 0 0 auto;      
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-radius: 12px;
+            min-width: 250px;
+            /* Augmenté */
+            max-width: 260px;
+            /* Augmenté */
+            flex: 0 0 auto;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
             text-align: center;
             display: flex;
             flex-direction: column;
-            overflow: hidden; 
+            overflow: hidden;
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
 
-        .category-card:hover, .destination-card:hover {
+        .category-card:hover,
+        .destination-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .category-card img, .destination-card img {
+        .category-card img,
+        .destination-card img {
             width: 100%;
-            height: 150px; /* Augmenté */
-            object-fit: cover; 
+            height: 150px;
+            /* Augmenté */
+            object-fit: cover;
         }
 
-        .category-card h3, .destination-card h3 {
-            font-size: 1em; 
+        .category-card h3,
+        .destination-card h3 {
+            font-size: 1em;
             font-weight: var(--font-weight-medium);
             color: var(--couleur-texte);
-            margin: 0; 
-            padding: var(--espacement-moyen) var(--espacement-standard); 
-            background-color: var(--couleur-blanche); 
-            flex-grow: 1; 
+            margin: 0;
+            padding: var(--espacement-moyen) var(--espacement-standard);
+            background-color: var(--couleur-blanche);
+            flex-grow: 1;
             display: flex;
-            align-items: center; 
-            justify-content: center; 
+            align-items: center;
+            justify-content: center;
         }
 
         .clickable-card {
@@ -405,74 +447,102 @@ try {
             .hero-section h1 {
                 font-size: 2.2em;
             }
+
             .hero-section {
                 padding: 60px var(--espacement-standard);
             }
+
             .news-section {
                 padding: var(--espacement-double) var(--espacement-standard);
             }
+
             .search-bar-container {
                 height: 45px;
                 border-radius: 22.5px;
             }
+
             .search-bar-container input[type="text"] {
                 font-size: 1em;
             }
+
             .search-bar-container button {
                 font-size: 1.2em;
             }
-            .card { /* S'applique aussi aux .card-a-la-une */
+
+            .card {
+                /* S'applique aussi aux .card-a-la-une */
                 min-width: 250px;
             }
-             .card .card-image-wrapper { /* Ensure image height is responsive if needed */
+
+            .card .card-image-wrapper {
+                /* Ensure image height is responsive if needed */
                 /* height: 160px; /* Example adjustment for smaller cards */
             }
-            .category-card, .destination-card { 
-                min-width: 220px; /* Ajustement pour mobile aussi */
+
+            .category-card,
+            .destination-card {
+                min-width: 220px;
+                /* Ajustement pour mobile aussi */
                 max-width: 230px;
             }
-            .category-card img, .destination-card img {
-                height: 130px; /* Peut-être réduire un peu la hauteur sur mobile */
+
+            .category-card img,
+            .destination-card img {
+                height: 130px;
+                /* Peut-être réduire un peu la hauteur sur mobile */
             }
+
             .carousel-arrow {
-                 display: none; 
+                display: none;
             }
         }
-         @media (max-width: 480px) {
+
+        @media (max-width: 480px) {
             .hero-section h1 {
                 font-size: 1.8em;
             }
+
             .search-bar-container {
                 height: 40px;
                 border-radius: 20px;
             }
-             .search-bar-container input[type="text"] {
+
+            .search-bar-container input[type="text"] {
                 font-size: 0.9em;
             }
-             .search-bar-container button {
+
+            .search-bar-container button {
                 font-size: 1.1em;
             }
-            .card .card-image-wrapper { /* Example for very small screens */
+
+            .card .card-image-wrapper {
+                /* Example for very small screens */
                 /* height: 140px; */
             }
-            .category-card, .destination-card {
-                min-width: 180px; /* Ajustement plus petit pour très petits écrans */
-                 max-width: 190px;
+
+            .category-card,
+            .destination-card {
+                min-width: 180px;
+                /* Ajustement plus petit pour très petits écrans */
+                max-width: 190px;
             }
-            .category-card img, .destination-card img {
-                height: 110px; 
+
+            .category-card img,
+            .destination-card img {
+                height: 110px;
             }
-         }
+        }
     </style>
 </head>
+
 <body>
     <header>
         <div class="container header-container">
             <div class="header-left">
-                <a href="../index.html"><img src="FO/images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
+                <a href="../index.php"><img src="FO/images/Logowithoutbg.png" alt="Logo PACT" class="logo"></a>
                 <nav class="main-nav">
                     <ul>
-                        <li><a href="../index.html"class="active">Accueil</a></li>
+                        <li><a href="../index.php" class="active">Accueil</a></li>
                         <li><a href="FO/recherche.php">Recherche</a></li>
                     </ul>
                 </nav>
@@ -516,7 +586,8 @@ try {
             </div>
         </section>
 
-        <section class="news-section container"> <h2>A la une</h2>
+        <section class="news-section container">
+            <h2>A la une</h2>
             <div class="cards-container-wrapper" id="alaUneCarouselWrapper">
                 <div class="cards-container">
                     <?php if (empty($alaune_offres)): ?>
@@ -547,7 +618,8 @@ try {
             </div>
         </section>
 
-        <section class="news-section container"> <h2>Nouveautés</h2>
+        <section class="news-section container">
+            <h2>Nouveautés</h2>
             <div class="cards-container-wrapper" id="nouveautesCarouselWrapper">
                 <div class="cards-container">
                     <?php if (empty($nouveautes)): ?>
@@ -577,7 +649,8 @@ try {
             </div>
         </section>
 
-        <section class="news-section container"> <h2>Catégories</h2>
+        <section class="news-section container">
+            <h2>Catégories</h2>
             <div class="cards-container-wrapper" id="categoriesCarouselWrapper">
                 <div class="cards-container">
                     <div class="category-card clickable-card" data-category-type="activite">
@@ -606,7 +679,8 @@ try {
             </div>
         </section>
 
-        <section class="news-section container"> <h2>Destinations</h2>
+        <section class="news-section container">
+            <h2>Destinations</h2>
             <div class="cards-container-wrapper" id="destinationsCarouselWrapper">
                 <div class="cards-container">
                     <div class="destination-card clickable-card" data-destination="Avignon">
@@ -640,7 +714,7 @@ try {
     <footer>
         <div class="container footer-content">
             <div class="footer-section social-media">
-                 <a href="index.html"><img src="FO/images/Logowithoutbg.png" alt="Logo PACT" class="footer-logo"></a>
+                <a href="index.php"><img src="FO/images/Logowithoutbg.png" alt="Logo PACT" class="footer-logo"></a>
                 <div class="social-icons">
                     <a href="#" aria-label="X"><i class="fab fa-x-twitter"></i></a>
                     <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
@@ -659,7 +733,7 @@ try {
             <div class="footer-section links">
                 <h3>Découvrir</h3>
                 <ul>
-                    <li><a href="index.html">Accueil</a></li>
+                    <li><a href="index.php">Accueil</a></li>
                     <li><a href="FO/recherche.php">Recherche</a></li>
                 </ul>
             </div>
@@ -678,145 +752,149 @@ try {
 
     <script src="FO/script.js" defer></script>
     <script>
-    function scrollSpecificCarousel(carouselWrapperId, direction) {
-        const wrapper = document.getElementById(carouselWrapperId);
-        if (!wrapper) {
-            console.error('Carousel wrapper not found:', carouselWrapperId);
-            return;
-        }
-        const container = wrapper.querySelector('.cards-container');
-        if (!container) {
-            console.error('Cards container not found in wrapper:', carouselWrapperId);
-            return;
-        }
-
-        let card = container.querySelector('.card'); 
-        if (!card) { 
-            card = container.querySelector('.category-card, .destination-card');
-        }
-        
-        if (!card) { 
-            console.warn('No cards found in container for width calculation:', container);
-            return;
-        }
-
-        const cardWidth = card.offsetWidth;
-        const gapStyle = getComputedStyle(container).gap;
-        const gap = (gapStyle && gapStyle !== 'normal' && !isNaN(parseFloat(gapStyle))) ? parseFloat(gapStyle) : 20; 
-        const scrollAmount = cardWidth + gap;
-
-        container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
-
-        const prevArrow = wrapper.querySelector('.prev-arrow');
-        const nextArrow = wrapper.querySelector('.next-arrow');
-
-        setTimeout(() => {
-            if (prevArrow) {
-                prevArrow.style.display = container.scrollLeft <= 0 ? 'none' : 'flex';
+        function scrollSpecificCarousel(carouselWrapperId, direction) {
+            const wrapper = document.getElementById(carouselWrapperId);
+            if (!wrapper) {
+                console.error('Carousel wrapper not found:', carouselWrapperId);
+                return;
             }
-            if (nextArrow) {
-                const isAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth - (gap / 2) - 2; 
-                nextArrow.style.display = isAtEnd ? 'none' : 'flex';
-
-                if (container.scrollWidth <= container.clientWidth) {
-                    nextArrow.style.display = 'none';
-                     if (prevArrow) prevArrow.style.display = 'none';
-                }
-            }
-        }, 350); 
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const carouselWrappers = document.querySelectorAll('.cards-container-wrapper');
-        const isMobile = window.matchMedia("(max-width: 768px)").matches;
-
-        carouselWrappers.forEach(wrapper => {
             const container = wrapper.querySelector('.cards-container');
-            if (!container) return;
+            if (!container) {
+                console.error('Cards container not found in wrapper:', carouselWrapperId);
+                return;
+            }
+
+            let card = container.querySelector('.card');
+            if (!card) {
+                card = container.querySelector('.category-card, .destination-card');
+            }
+
+            if (!card) {
+                console.warn('No cards found in container for width calculation:', container);
+                return;
+            }
+
+            const cardWidth = card.offsetWidth;
+            const gapStyle = getComputedStyle(container).gap;
+            const gap = (gapStyle && gapStyle !== 'normal' && !isNaN(parseFloat(gapStyle))) ? parseFloat(gapStyle) : 20;
+            const scrollAmount = cardWidth + gap;
+
+            container.scrollBy({
+                left: direction * scrollAmount,
+                behavior: 'smooth'
+            });
 
             const prevArrow = wrapper.querySelector('.prev-arrow');
             const nextArrow = wrapper.querySelector('.next-arrow');
-            
-            const updateArrowVisibility = () => {
-                if (isMobile) { 
-                     if(prevArrow) prevArrow.style.display = 'none';
-                     if(nextArrow) nextArrow.style.display = 'none';
-                     return; 
-                }
 
-                if (container.scrollWidth > container.clientWidth) {
-                    if (prevArrow) {
-                        prevArrow.style.display = container.scrollLeft <= 0 ? 'none' : 'flex';
-                    }
-                    if (nextArrow) {
-                        const isAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth - 2; 
-                        nextArrow.style.display = isAtEnd ? 'none' : 'flex';
-                    }
-                } else {
-                    if (prevArrow) prevArrow.style.display = 'none';
-                    if (nextArrow) nextArrow.style.display = 'none';
+            setTimeout(() => {
+                if (prevArrow) {
+                    prevArrow.style.display = container.scrollLeft <= 0 ? 'none' : 'flex';
                 }
-            };
-            updateArrowVisibility(); 
-        });
-        
-        if (!isMobile) { 
-            window.addEventListener('resize', () => {
-                 carouselWrappers.forEach(wrapper => {
-                    const container = wrapper.querySelector('.cards-container');
-                    if (!container) return;
-                    const prevArrow = wrapper.querySelector('.prev-arrow');
-                    const nextArrow = wrapper.querySelector('.next-arrow');
+                if (nextArrow) {
+                    const isAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth - (gap / 2) - 2;
+                    nextArrow.style.display = isAtEnd ? 'none' : 'flex';
+
+                    if (container.scrollWidth <= container.clientWidth) {
+                        nextArrow.style.display = 'none';
+                        if (prevArrow) prevArrow.style.display = 'none';
+                    }
+                }
+            }, 350);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const carouselWrappers = document.querySelectorAll('.cards-container-wrapper');
+            const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+            carouselWrappers.forEach(wrapper => {
+                const container = wrapper.querySelector('.cards-container');
+                if (!container) return;
+
+                const prevArrow = wrapper.querySelector('.prev-arrow');
+                const nextArrow = wrapper.querySelector('.next-arrow');
+
+                const updateArrowVisibility = () => {
+                    if (isMobile) {
+                        if (prevArrow) prevArrow.style.display = 'none';
+                        if (nextArrow) nextArrow.style.display = 'none';
+                        return;
+                    }
+
                     if (container.scrollWidth > container.clientWidth) {
-                        if (prevArrow) prevArrow.style.display = container.scrollLeft <= 0 ? 'none' : 'flex';
-                        if (nextArrow) nextArrow.style.display = (container.scrollLeft + container.clientWidth >= container.scrollWidth -2) ? 'none' : 'flex';
+                        if (prevArrow) {
+                            prevArrow.style.display = container.scrollLeft <= 0 ? 'none' : 'flex';
+                        }
+                        if (nextArrow) {
+                            const isAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth - 2;
+                            nextArrow.style.display = isAtEnd ? 'none' : 'flex';
+                        }
                     } else {
                         if (prevArrow) prevArrow.style.display = 'none';
                         if (nextArrow) nextArrow.style.display = 'none';
                     }
-                 });
+                };
+                updateArrowVisibility();
             });
-        }
 
-        // Add click listener for favorite buttons (basic toggle example)
-        const favoriteButtons = document.querySelectorAll('.favorite-btn');
-        favoriteButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                button.classList.toggle('active');
-                // Here you would typically also send a request to a server
-                // to save the favorite state for the user.
+            if (!isMobile) {
+                window.addEventListener('resize', () => {
+                    carouselWrappers.forEach(wrapper => {
+                        const container = wrapper.querySelector('.cards-container');
+                        if (!container) return;
+                        const prevArrow = wrapper.querySelector('.prev-arrow');
+                        const nextArrow = wrapper.querySelector('.next-arrow');
+                        if (container.scrollWidth > container.clientWidth) {
+                            if (prevArrow) prevArrow.style.display = container.scrollLeft <= 0 ? 'none' : 'flex';
+                            if (nextArrow) nextArrow.style.display = (container.scrollLeft + container.clientWidth >= container.scrollWidth - 2) ? 'none' : 'flex';
+                        } else {
+                            if (prevArrow) prevArrow.style.display = 'none';
+                            if (nextArrow) nextArrow.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            // Add click listener for favorite buttons (basic toggle example)
+            const favoriteButtons = document.querySelectorAll('.favorite-btn');
+            favoriteButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    button.classList.toggle('active');
+                    // Here you would typically also send a request to a server
+                    // to save the favorite state for the user.
+                });
+            });
+
+            // MODIFIED SCRIPT FOR REDIRECTION on all clickable cards
+            document.querySelectorAll('.clickable-card').forEach(card => {
+                card.addEventListener('click', function(event) {
+                    // Prevent redirection if the favorite button (or any button/link inside the card) was clicked
+                    if (event.target.closest('.favorite-btn')) {
+                        return;
+                    }
+
+                    const href = this.dataset.href;
+                    const categoryType = this.dataset.categoryType;
+                    const destination = this.dataset.destination;
+
+                    let redirectUrl;
+
+                    if (href) {
+                        redirectUrl = href;
+                    } else if (categoryType) {
+                        redirectUrl = 'FO/recherche.php?category_type=' + encodeURIComponent(categoryType);
+                    } else if (destination) {
+                        redirectUrl = 'FO/recherche.php?destination=' + encodeURIComponent(destination);
+                    }
+
+                    if (redirectUrl) {
+                        window.location.href = redirectUrl;
+                    }
+                });
             });
         });
-
-        // MODIFIED SCRIPT FOR REDIRECTION on all clickable cards
-        document.querySelectorAll('.clickable-card').forEach(card => {
-            card.addEventListener('click', function(event) {
-                // Prevent redirection if the favorite button (or any button/link inside the card) was clicked
-                if (event.target.closest('.favorite-btn')) {
-                    return;
-                }
-
-                const href = this.dataset.href;
-                const categoryType = this.dataset.categoryType;
-                const destination = this.dataset.destination;
-                
-                let redirectUrl;
-
-                if (href) {
-                    redirectUrl = href;
-                } else if (categoryType) {
-                    redirectUrl = 'FO/recherche.php?category_type=' + encodeURIComponent(categoryType);
-                } else if (destination) {
-                    redirectUrl = 'FO/recherche.php?destination=' + encodeURIComponent(destination);
-                }
-                
-                if (redirectUrl) {
-                    window.location.href = redirectUrl;
-                }
-            });
-        });
-    });
     </script>
 
 </body>
+
 </html>
