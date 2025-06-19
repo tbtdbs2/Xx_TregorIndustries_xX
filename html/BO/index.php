@@ -738,7 +738,7 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
     </footer>
     <script src="script.js" defer></script>
     <script>
-        / Script pour le carrousel (similaire à celui du FO)
+        // Script pour le carrousel (similaire à celui du FO)
 
         function scrollSpecificCarousel(carouselWrapperId, direction) {
             const wrapper = document.getElementById(carouselWrapperId);
@@ -753,9 +753,9 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
             }
 
             let card = container.querySelector('.card');
-            / Adaptez si la classe de carte est différente (ex: .card-bo)
+            // Adaptez si la classe de carte est différente (ex: .card-bo)
             if (!card) {
-                / Fallback si la classe .card n'est pas trouvée directement, essayez .card-bo
+                // Fallback si la classe .card n'est pas trouvée directement, essayez .card-bo
                 card = container.querySelector('.card-bo');
             }
 
@@ -767,7 +767,7 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
             const cardWidth = card.offsetWidth;
             const gapStyle = getComputedStyle(container).gap;
             const gap = (gapStyle && gapStyle !== 'normal' && !isNaN(parseFloat(gapStyle))) ? parseFloat(gapStyle) : 20;
-            / Valeur de gap par défaut si non trouvée
+            // Valeur de gap par défaut si non trouvée
             const scrollAmount = cardWidth + gap;
 
             container.scrollBy({
@@ -775,29 +775,29 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
                 behavior: 'smooth'
             });
 
-            / Mise à jour de la visibilité des flèches (Optionnel, mais recommandé pour une bonne UX)
+            // Mise à jour de la visibilité des flèches (Optionnel, mais recommandé pour une bonne UX)
             const prevArrow = wrapper.querySelector('.prev-arrow');
             const nextArrow = wrapper.querySelector('.next-arrow');
 
-            / Attendre un peu que le scroll se termine pour mettre à jour les flèches
+            // Attendre un peu que le scroll se termine pour mettre à jour les flèches
             setTimeout(() => {
                 if (prevArrow) {
                     prevArrow.style.display = container.scrollLeft <= 0 ? 'none' : 'flex';
                 }
                 if (nextArrow) {
-                    / Ajustement pour la condition de fin de scroll
+                    // Ajustement pour la condition de fin de scroll
                     const isAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth - (gap / 2) - 2;
-                    / Tolérance pour la fin
+                    // Tolérance pour la fin
                     nextArrow.style.display = isAtEnd ? 'none' : 'flex';
 
-                    / Si le contenu est plus petit que le conteneur, masquer les deux flèches
+                    // Si le contenu est plus petit que le conteneur, masquer les deux flèches
                     if (container.scrollWidth <= container.clientWidth) {
                         nextArrow.style.display = 'none';
                         if (prevArrow) prevArrow.style.display = 'none';
                     }
                 }
             }, 350);
-            / Délai pour la mise à jour (ajuster si besoin)
+            // Délai pour la mise à jour (ajuster si besoin)
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -811,40 +811,40 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
                 const prevArrow = wrapper.querySelector('.prev-arrow');
                 const nextArrow = wrapper.querySelector('.next-arrow');
 
-                / Fonction pour mettre à jour la visibilité des flèches
+                // Fonction pour mettre à jour la visibilité des flèches
                 const updateArrowVisibility = () => {
                     if (isMobile) {
-                        / Si mobile, masquer les flèches (carrousel par swipe)
+                        // Si mobile, masquer les flèches (carrousel par swipe)
                         if (prevArrow) prevArrow.style.display = 'none';
                         if (nextArrow) nextArrow.style.display = 'none';
                         return;
-                        / Sortir de la fonction si mobile
+                        // Sortir de la fonction si mobile
                     }
 
-                    / Logique pour desktop
+                    // Logique pour desktop
                     if (container.scrollWidth > container.clientWidth) {
-                        / Si le contenu dépasse
+                        // Si le contenu dépasse
                         if (prevArrow) {
                             prevArrow.style.display = container.scrollLeft <= 0 ? 'none' : 'flex';
                         }
                         if (nextArrow) {
-                            / Ajustement pour la condition de fin de scroll
+                            // Ajustement pour la condition de fin de scroll
                             const isAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth - 2;
-                            / Petite tolérance
+                            // Petite tolérance
                             nextArrow.style.display = isAtEnd ? 'none' : 'flex';
                         }
                     } else {
-                        / Si le contenu ne dépasse pas, masquer les deux
+                        // Si le contenu ne dépasse pas, masquer les deux
                         if (prevArrow) prevArrow.style.display = 'none';
                         if (nextArrow) nextArrow.style.display = 'none';
                     }
                 };
 
-                / Appel initial pour définir l'état des flèches
+                // Appel initial pour définir l'état des flèches
                 updateArrowVisibility();
 
-                / Ajouter un écouteur pour le redimensionnement pour réévaluer la visibilité des flèches /
-                Uniquement si ce n 'est PAS mobile, car sur mobile elles sont toujours cachées
+                // Ajouter un écouteur pour le redimensionnement pour réévaluer la visibilité des flèches
+                // Uniquement si ce n 'est PAS mobile, car sur mobile elles sont toujours cachées
                 if (!isMobile) {
                     window.addEventListener('resize', updateArrowVisibility);
                     / Optionnel: écouter l'événement de scroll sur le conteneur pour mettre à jour dynamiquement /
