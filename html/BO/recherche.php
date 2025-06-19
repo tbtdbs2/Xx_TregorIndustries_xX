@@ -591,18 +591,18 @@ unset($current_filters['sort']);
                 <span class="pro-text">Professionnel</span>
             </div>
 
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="index.php" class="active">Accueil</a></li>
-                    <li class="nav-item-with-notification">
-                        <a href="recherche.php">Mes Offres</a>
-                        <?php if (isset($unanswered_reviews_count) && $unanswered_reviews_count > 0): ?>
-                            <span class="notification-bubble"><?php echo $unanswered_reviews_count; ?></span>
-                        <?php endif; ?>
-                    </li>
-                    <li><a href="publier-une-offre.php">Publier une offre</a></li>
-                </ul>
-            </nav>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="index.php" >Accueil</a></li>
+                <li class="nav-item-with-notification">
+                    <a href="recherche.php" class="active">Mes Offres</a>
+                    <?php if (isset($unanswered_reviews_count) && $unanswered_reviews_count > 0): ?>
+                        <span class="notification-bubble"><?php echo $unanswered_reviews_count; ?></span>
+                    <?php endif; ?>
+                </li>
+                <li><a href="publier-une-offre.php">Publier une offre</a></li>
+            </ul>
+        </nav>
 
             <div class="header-right">
                 <div class="profile-link-container">
