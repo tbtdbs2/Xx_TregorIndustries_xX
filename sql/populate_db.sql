@@ -104,10 +104,10 @@ SET @compte_membre_id_1 = UUID();
 SET @compte_membre_id_2 = UUID();
 SET @compte_membre_id_3 = UUID();
 
-INSERT INTO `comptes_membre` (`id`, `adresse_id`, `email`, `password`, `phone`, `lastname`, `firstname`, `alias`) VALUES
-(@compte_membre_id_1, @adresse_id_1, 'iwan.cochet@etudiant.univ-rennes.fr', '$2y$10$NotARealHashButAnExample1', '0610203040', 'Cochet', 'Iwan', 'iwanc'),
-(@compte_membre_id_2, @adresse_id_2, 'evan.collet@etudiant.univ-rennes.fr', '$2y$10$NotARealHashButAnExample2', '0650607080', 'Collet', 'Evan', 'evanc'),
-(@compte_membre_id_3, @adresse_id_3, 'louis.milin@etudiant.univ-rennes.fr', '$2y$10$NotARealHashButAnExample3', '0780900010', 'Milin', 'Louis', 'louism');
+INSERT INTO `comptes_membre` (`id`, `adresse_id`, `email`, `password`, `phone`, `lastname`, `firstname`, `alias`, `otp_enabled`, `otp_secret`) VALUES
+(@compte_membre_id_1, @adresse_id_1, 'iwan.cochet@etudiant.univ-rennes.fr', 'mdp_123', '0610203040', 'Cochet', 'Iwan', 'iwanc', '0', NULL),
+(@compte_membre_id_2, @adresse_id_2, 'evan.collet@etudiant.univ-rennes.fr', 'mdp_123', '0650607080', 'Collet', 'Evan', 'evanc', '0', NULL),
+(@compte_membre_id_3, @adresse_id_3, 'louis.milin@etudiant.univ-rennes.fr', 'mdp_123', '0780900010', 'Milin', 'Louis', 'louism', '0', NULL);
 
 -- -------------------------------------
 -- Comptes Professionnels

@@ -152,7 +152,7 @@ CREATE TABLE `comptes_membre` (
   `firstname` varchar(32) NOT NULL,
   `alias` varchar(32) NOT NULL,
   `otp_enabled` tinyint(1) NOT NULL,
-  `otp_secret` varchar(512) NOT NULL
+  `otp_secret` varchar(512) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
