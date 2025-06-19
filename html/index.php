@@ -1,3 +1,40 @@
+<?php
+// INCLUSION DE LA CONNEXION À LA BDD ET AUTRES NÉCESSITÉS
+require_once __DIR__ . '/../includes/db.php';
+
+// FONCTION POUR GÉNÉRER LES ÉTOILES DE NOTATION
+// Cette fonction convertit une note (ex: 4.5) en icônes d'étoiles.
+function generateStarRating($rating)
+{
+    if ($rating === null) {
+        $rating = 0;
+    }
+    $fullStars = floor($rating);
+    $halfStar = ($rating - $fullStars) >= 0.5 ? 1 : 0;
+    $emptyStars = 5 - $fullStars - $halfStar;
+
+    $starsHtml = '';
+    $starsHtml .= str_repeat('<i class="fas fa-star"></i> ', $fullStars);
+    if ($halfStar) {
+        $starsHtml .= '<i class="fas fa-star-half-alt"></i> ';
+    }
+    $starsHtml .= str_repeat('<i class="far fa-star"></i> ', $emptyStars);
+
+    echo trim($starsHtml);
+}
+
+// PRÉPARATION ET EXÉCUTION DE LA REQUÊTE POUR LES NOUVEAUTÉS
+// On sélectionne les 6 offres les plus récentes en se basant sur la date de création.
+try {
+    $stmt = $pdo->query("SELECT id, title, summary, main_photo, rating FROM offres ORDER BY created_at DESC LIMIT 6");
+    $nouveautes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    // En cas d'erreur, on initialise un tableau vide pour éviter que la page ne plante.
+    $nouveautes = [];
+    // Optionnel : vous pourriez logger l'erreur ici.
+    // error_log("Erreur de requête pour les nouveautés : " . $e->getMessage());
+}
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -466,7 +503,6 @@
         <section class="news-section container"> <h2>A la une</h2>
             <div class="cards-container-wrapper" id="alaUneCarouselWrapper">
                 <div class="cards-container">
-                    <!-- Card is now clickable and links to the offer page -->
                     <div class="card card-a-la-une clickable-card" data-href="FO/offre.php">
                         <div class="card-image-wrapper">
                             <img src="FO/images/kayak.jpg" alt="Archipel de Bréhat en kayak">
@@ -482,8 +518,7 @@
                             </div>
                             <p class="card-description">Venez passer un moment inoubliable sur l'archipel de Bréhat ...</p>
                         </div>
-                        <!-- "Voir plus" link is removed -->
-                    </div>
+                        </div>
                     <div class="card card-a-la-une clickable-card" data-href="FO/offre.php">
                         <div class="card-image-wrapper">
                             <img src="FO/images/louer_velo_famille.jpg" alt="Balade familiale à vélo">
@@ -572,95 +607,27 @@
         <section class="news-section container"> <h2>Nouveautés</h2>
             <div class="cards-container-wrapper" id="nouveautesCarouselWrapper">
                 <div class="cards-container">
-                    <div class="card clickable-card" data-href="FO/offre.php">
-                        <div class="card-image-wrapper">
-                            <img src="FO/images/kayak.jpg" alt="Archipel de Bréhat en kayak">
-                            <button class="favorite-btn" aria-label="Ajouter aux favoris">
-                                <i class="far fa-heart"></i><i class="fas fa-heart"></i>
-                            </button>
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Archipel de Bréhat en kayak</h3>
-                            <div class="star-rating">
-                                <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i>
+                    <?php if (empty($nouveautes)): ?>
+                        <p>Aucune nouveauté à afficher pour le moment.</p>
+                    <?php else: ?>
+                        <?php foreach ($nouveautes as $offre): ?>
+                            <div class="card clickable-card" data-href="FO/offre.php?id=<?= htmlspecialchars($offre['id']) ?>">
+                                <div class="card-image-wrapper">
+                                    <img src="<?= htmlspecialchars($offre['main_photo']) ?>" alt="<?= htmlspecialchars($offre['title']) ?>">
+                                    <button class="favorite-btn" aria-label="Ajouter aux favoris">
+                                        <i class="far fa-heart"></i><i class="fas fa-heart"></i>
+                                    </button>
+                                </div>
+                                <div class="card-content">
+                                    <h3 class="card-title"><?= htmlspecialchars($offre['title']) ?></h3>
+                                    <div class="star-rating">
+                                        <?php generateStarRating($offre['rating']); ?>
+                                    </div>
+                                    <p class="card-description"><?= htmlspecialchars($offre['summary']) ?></p>
+                                </div>
                             </div>
-                            <p class="card-description">Venez passer un moment inoubliable sur l'archipel de Bréhat ...</p>
-                        </div>
-                    </div>
-                    <div class="card clickable-card" data-href="FO/offre.php">
-                        <div class="card-image-wrapper">
-                            <img src="FO/images/louer_velo_famille.jpg" alt="Balade familiale à vélo">
-                            <button class="favorite-btn" aria-label="Ajouter aux favoris">
-                                <i class="far fa-heart"></i><i class="fas fa-heart"></i>
-                            </button>
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Balade familiale à vélo</h3>
-                            <div class="star-rating">
-                                <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="far fa-star"></i>
-                            </div>
-                            <p class="card-description">Les sorties sont volontairement limitées entre 15 km et ...</p>
-                        </div>
-                    </div>
-                    <div class="card clickable-card" data-href="FO/offre.php">
-                        <div class="card-image-wrapper">
-                            <img src="FO/images/centre-ville.jpg" alt="Découverte du centre-ville historique de Lannion">
-                            <button class="favorite-btn" aria-label="Ajouter aux favoris">
-                                <i class="far fa-heart"></i><i class="fas fa-heart"></i>
-                            </button>
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Découverte du centre-ville historique de Lannion</h3>
-                            <div class="star-rating">
-                                <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="far fa-star"></i> <i class="far fa-star"></i>
-                            </div>
-                            <p class="card-description">Les Vedettes des 7 îles proposent des excursions et ...</p>
-                        </div>
-                    </div>
-                    <div class="card clickable-card" data-href="FO/offre.php">
-                        <div class="card-image-wrapper">
-                            <img src="FO/images/randonnee.jpg" alt="Randonnée dans les Calanques">
-                            <button class="favorite-btn" aria-label="Ajouter aux favoris">
-                                <i class="far fa-heart"></i><i class="fas fa-heart"></i>
-                            </button>
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Randonnée dans les Calanques</h3>
-                            <div class="star-rating">
-                                <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star-half-alt"></i> </div>
-                            <p class="card-description">Explorez les paysages à couper le souffle des Calanques de Cassis.</p>
-                        </div>
-                    </div>
-                    <div class="card clickable-card" data-href="FO/offre.php">
-                        <div class="card-image-wrapper">
-                             <img src="FO/images/gordes.jpg" alt="Visite de Gordes et Roussillon">
-                             <button class="favorite-btn" aria-label="Ajouter aux favoris">
-                                <i class="far fa-heart"></i><i class="fas fa-heart"></i>
-                            </button>
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Visite de Gordes et Roussillon</h3>
-                            <div class="star-rating">
-                                <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="far fa-star"></i>
-                            </div>
-                            <p class="card-description">Découvrez le charme des villages perchés du Luberon.</p>
-                        </div>
-                    </div>
-                    <div class="card clickable-card" data-href="FO/offre.php">
-                        <div class="card-image-wrapper">
-                            <img src="FO/images/cuisine.jpg" alt="Cours de cuisine provençale"> 
-                            <button class="favorite-btn" aria-label="Ajouter aux favoris">
-                                <i class="far fa-heart"></i><i class="fas fa-heart"></i>
-                            </button>
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Cours de cuisine provençale</h3>
-                            <div class="star-rating">
-                                <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i> <i class="fas fa-star"></i>
-                            </div>
-                            <p class="card-description">Apprenez à cuisiner les plats traditionnels de la Provence.</p>
-                        </div>
-                    </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
                 <div class="carousel-arrow prev-arrow" onclick="scrollSpecificCarousel('nouveautesCarouselWrapper', -1)"><i class="fas fa-chevron-left"></i></div>
                 <div class="carousel-arrow next-arrow" onclick="scrollSpecificCarousel('nouveautesCarouselWrapper', 1)"><i class="fas fa-chevron-right"></i></div>
