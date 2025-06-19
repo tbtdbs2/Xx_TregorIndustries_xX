@@ -1165,14 +1165,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
         <nav class="main-nav">
             <ul>
-                <li><a href="index.php" class="active">Accueil</a></li>
+                <li><a href="index.php" >Accueil</a></li>
                 <li class="nav-item-with-notification">
                     <a href="recherche.php">Mes Offres</a>
                     <?php if (isset($unanswered_reviews_count) && $unanswered_reviews_count > 0): ?>
                         <span class="notification-bubble"><?php echo $unanswered_reviews_count; ?></span>
                     <?php endif; ?>
                 </li>
-                <li><a href="publier-une-offre.php">Publier une offre</a></li>
+                <li><a href="publier-une-offre.php"  class="active">Publier une offre</a></li>
             </ul>
         </nav>
 

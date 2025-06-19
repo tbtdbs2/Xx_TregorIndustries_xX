@@ -335,9 +335,9 @@ unset($current_filters['sort']);
 
         <nav class="main-nav">
             <ul>
-                <li><a href="index.php" class="active">Accueil</a></li>
+                <li><a href="index.php" >Accueil</a></li>
                 <li class="nav-item-with-notification">
-                    <a href="recherche.php">Mes Offres</a>
+                    <a href="recherche.php" class="active">Mes Offres</a>
                     <?php if (isset($unanswered_reviews_count) && $unanswered_reviews_count > 0): ?>
                         <span class="notification-bubble"><?php echo $unanswered_reviews_count; ?></span>
                     <?php endif; ?>
