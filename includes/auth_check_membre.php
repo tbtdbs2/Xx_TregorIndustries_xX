@@ -41,4 +41,3 @@ if (!$membre_user) {
 
 // 4. Authentification réussie. On retourne l'ID du membre.
 return $membre_user['id'];
-?>

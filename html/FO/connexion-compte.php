@@ -1,4 +1,7 @@
 <?php
+// On démarre la session au tout début du script.
+session_start();
+
 $error_message = '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -9,28 +12,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (!isset($pdo)) {
         $error_message = "Erreur de connexion à la base de données.";
     } else {
-        session_start(); // On démarre la session pour pouvoir stocker l'état A2F
         $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
 
         if (empty($email) || empty($password)) {
             $error_message = "Veuillez saisir votre email et votre mot de passe.";
         } else {
-            // On récupère otp_enabled et otp_secret
-            $stmt = $pdo->prepare("SELECT id, password, otp_enabled, otp_secret FROM comptes_membre WHERE email = :email");
+            // --- CORRECTION DE LA REQUÊTE ---
+            // On ajoute le champ 'email' à la sélection
+            $stmt = $pdo->prepare("SELECT id, email, password, otp_enabled, otp_secret FROM comptes_membre WHERE email = :email");
             $stmt->execute([':email' => $email]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if ($user && $password === $user['password']) { // Attention: comparaison de mdp en clair, à changer pour password_verify
-
-                // VÉRIFICATION A2F
+            // Vérification du mot de passe en clair
+            if ($user && $password === $user['password']) {
+                
                 if ($user['otp_enabled'] && !empty($user['otp_secret'])) {
-                    // A2F activée -> stocker l'info et rediriger vers la page de vérification
+                    // La variable $user['email'] contient maintenant la bonne valeur.
                     $_SESSION['2fa_user_email'] = $user['email'];
                     header("Location: verifier-login-a2f.php");
                     exit();
                 } else {
-                    // A2F non activée -> Connexion normale
+                    // Connexion normale
                     $token = bin2hex(random_bytes(32));
                     
                     $stmtDelete = $pdo->prepare("DELETE FROM auth_tokens WHERE email = :email");
