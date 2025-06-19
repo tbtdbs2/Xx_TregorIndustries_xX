@@ -3,7 +3,8 @@
 require_once(__DIR__ . '/../../includes/db.php');
 
 // --- RÉCUPÉRATION DES CATÉGORIES POUR LE FILTRE ---
-$category_stmt = $pdo->query('SELECT id, type FROM categories ORDER BY type');
+// MODIFICATION ICI : Récupérer uniquement les types de catégories distincts
+$category_stmt = $pdo->query('SELECT DISTINCT id, type FROM categories ORDER BY type');
 $all_categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // --- RÉCUPÉRATION DES FILTRES ET DU TRI ---
@@ -38,7 +39,7 @@ if (!empty($category_type) && empty($category_id)) {
 
 
 // --- CONSTRUCTION DE LA REQUÊTE SQL ---
-$sql = 'SELECT o.*, c.type as category_type, 
+$sql = 'SELECT o.*, c.type as category_type,
                COALESCE(o.rating, 0) as offer_rating
         FROM offres o
         JOIN adresses a ON o.adresse_id = a.id
@@ -55,7 +56,8 @@ if (!empty($searchTerm)) {
 }
 
 if (!empty($category_id)) {
-    $conditions[] = 'o.categorie_id = ?';
+    // MODIFICATION ICI : Filtrer par category_id qui correspond au type sélectionné
+    $conditions[] = 'o.categorie_id IN (SELECT id FROM categories WHERE type = (SELECT type FROM categories WHERE id = ?))';
     $params[] = $category_id;
 } elseif (!empty($category_type)) {
     $conditions[] = 'c.type = ?';
@@ -91,35 +93,22 @@ if ($selectedDate) {
     $selectedDateTime = new DateTime($selectedDate);
     $selectedDayOfWeek = strtolower($selectedDateTime->format('l')); // 'monday', 'tuesday', etc.
 
-    // On doit filtrer les résultats déjà obtenus par la première requête
-    // Pour cela, on va récupérer les IDs des offres qui correspondent à la date
-    // Et ensuite les utiliser dans une clause IN ou similaire.
-    // C'est plus simple de faire un deuxième passe ou de construire la requête de manière plus complexe.
-    // Pour la simplicité et la lisibilité, nous allons faire un post-filtrage ici
-    // ou une sous-requête complexe si nécessaire.
-    // Étant donné la complexité de la jointure des horaires, on va d'abord récupérer toutes les offres
-    // qui correspondent aux autres filtres, puis les filtrer par PHP.
-    // Ou, mieux, adapter la requête SQL pour inclure la logique de date.
-
-    // La stratégie la plus robuste est de faire un LEFT JOIN conditionnel ou d'utiliser EXISTS
-    // car une offre peut avoir plusieurs types d'horaires.
-
     $dateConditions = [];
     $dateParams = [];
 
     // Sub-query pour activités
-    $dateConditions[] = 'EXISTS (SELECT 1 FROM horaires_activites ha 
-                                JOIN activites a_cat ON ha.activite_id = a_cat.categorie_id 
+    $dateConditions[] = 'EXISTS (SELECT 1 FROM horaires_activites ha
+                                JOIN activites a_cat ON ha.activite_id = a_cat.categorie_id
                                 WHERE o.categorie_id = a_cat.categorie_id AND ha.date = ?)';
     $dateParams[] = $selectedDate;
 
     // Sub-query pour spectacles
-    $dateConditions[] = 'EXISTS (SELECT 1 FROM spectacles s_cat 
+    $dateConditions[] = 'EXISTS (SELECT 1 FROM spectacles s_cat
                                 WHERE o.categorie_id = s_cat.categorie_id AND s_cat.date = ?)';
     $dateParams[] = $selectedDate;
 
     // Sub-query pour visites
-    $dateConditions[] = 'EXISTS (SELECT 1 FROM visites v_cat 
+    $dateConditions[] = 'EXISTS (SELECT 1 FROM visites v_cat
                                 WHERE o.categorie_id = v_cat.categorie_id AND v_cat.date = ?)';
     $dateParams[] = $selectedDate;
 
@@ -608,9 +597,24 @@ function renderStars($rating)
                     <h3>Catégorie</h3>
                     <select id="category" name="category">
                         <option value="">Toutes</option>
-                        <?php foreach ($all_categories as $cat): ?>
-                            <option value="<?php echo htmlspecialchars($cat['id']); ?>" <?php if ($category_id == $cat['id']) echo 'selected'; ?>>
-                                <?php echo htmlspecialchars(ucfirst($cat['type'])); ?>
+                        <?php
+                        // Get distinct categories to populate the dropdown
+                        $distinct_category_types_stmt = $pdo->query('SELECT DISTINCT type FROM categories ORDER BY type');
+                        $distinct_category_types = $distinct_category_types_stmt->fetchAll(PDO::FETCH_COLUMN);
+
+                        foreach ($distinct_category_types as $type):
+                            // To correctly pre-select, we need the ID of a category with this type
+                            // For a distinct type, we'll just use the first ID we find for that type
+                            $current_cat_id = '';
+                            foreach ($all_categories as $cat) {
+                                if ($cat['type'] === $type) {
+                                    $current_cat_id = $cat['id'];
+                                    break;
+                                }
+                            }
+                            ?>
+                            <option value="<?php echo htmlspecialchars($current_cat_id); ?>" <?php if ($category_id == $current_cat_id || $category_type == $type) echo 'selected'; ?>>
+                                <?php echo htmlspecialchars(ucfirst($type)); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
