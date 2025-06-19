@@ -6,6 +6,35 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
 require_once '../composants/generate_uuid.php';
 require_once '../../includes/db.php';
 
+// Récupération des IDs d'options pour les abonnements
+$option_premium_id = null;
+$option_offre_speciale_id = null;
+
+try {
+    $stmt_options = $pdo->query("SELECT id, name FROM options WHERE name IN ('Mise en avant Premium', 'Offre à la Une')");
+    $options_data = $stmt_options->fetchAll(PDO::FETCH_KEY_PAIR); // Récupère id => name
+
+    // Inverser pour avoir name => id
+    $options_map = array_flip($options_data);
+
+    $option_premium_id = $options_map['Mise en avant Premium'] ?? null;
+    $option_offre_speciale_id = $options_map['Offre à la Une'] ?? null;
+
+    // Si une option n'existe pas, l'insérer (utile pour le premier déploiement ou si vous n'utilisez pas populate_db.sql)
+    if (is_null($option_premium_id)) {
+        $option_premium_id = generate_uuid();
+        $pdo->prepare("INSERT INTO options (id, name, price) VALUES (?, ?, ?)")->execute([$option_premium_id, 'Mise en avant Premium', 29.99]);
+    }
+    if (is_null($option_offre_speciale_id)) {
+        $option_offre_speciale_id = generate_uuid();
+        $pdo->prepare("INSERT INTO options (id, name, price) VALUES (?, ?, ?)")->execute([$option_offre_speciale_id, 'Offre à la Une', 19.99]);
+    }
+} catch (PDOException $e) {
+    error_log("Erreur lors du chargement/insertion des options d'abonnement : " . $e->getMessage());
+    $erreurs['db_options'] = "Impossible de charger les options payantes."; // Ajoutez ceci à votre tableau d'erreurs global
+}
+
+
 // 3. Logique de traitement du formulaire
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
@@ -24,7 +53,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
 
     // fonction qui nettoie les input (Suppression d'espace, supprime les antislash, convertit les caractères spéciaux en entités HTML)
-    function validate_input($data) {
+    function validate_input($data)
+    {
         $data = trim($data);
         $data = stripslashes($data);
         $data = htmlspecialchars($data);
@@ -71,7 +101,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
     // --- CATEGORY PREPARATION (MODIFIED LOGIC from previous step) ---
     $categorie_form_value = filter_input(INPUT_POST, 'categorie', FILTER_VALIDATE_INT);
-    $categorie_type_enum_for_new_row = null; 
+    $categorie_type_enum_for_new_row = null;
 
     if ($categorie_form_value === false || $categorie_form_value === null || $categorie_form_value < 1 || $categorie_form_value > 5) {
         $erreurs["categorie"] = "Veuillez sélectionner une catégorie valide.";
@@ -110,10 +140,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             $site_web = $site_input;
         }
     }
-    
+
     $date_offre_principale = null;
-    $isDateHandledByCategory = in_array($categorie_form_value, [1, 3, 4]); 
-    
+    $isDateHandledByCategory = in_array($categorie_form_value, [1, 3, 4]);
+
     if (!$isDateHandledByCategory && !empty($_POST["date"])) {
         if (!preg_match("/^\d{4}-\d{2}-\d{2}$/", $_POST["date"])) {
             $erreurs["date"] = "Format de date invalide pour l'offre. Utilisez YYYY-MM-DD.";
@@ -121,12 +151,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             $date_obj = DateTime::createFromFormat('Y-m-d', $_POST["date"]);
             if ($date_obj && $date_obj->format('Y-m-d') === $_POST["date"]) {
                 if (new DateTime() > $date_obj && $date_obj->format('Y-m-d') !== (new DateTime())->format('Y-m-d')) { // Regarder si la date est dans le passé
-                     $erreurs["date_passee"] = "La date de l'offre ne peut pas être une date passée.";
+                    $erreurs["date_passee"] = "La date de l'offre ne peut pas être une date passée.";
                 } else {
                     $date_offre_principale = $_POST["date"];
                 }
             } else {
-                 $erreurs["date"] = "Date de l'offre invalide.";
+                $erreurs["date"] = "Date de l'offre invalide.";
             }
         }
     } elseif (!$isDateHandledByCategory && empty($_POST["date"]) && ($categorie_form_value == 2)) {
@@ -163,7 +193,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 }
             }
             if (!is_writable($target_dir_absolute) && !isset($erreurs["photos_upload_dir"])) {
-                 $erreurs["photos_upload_permission"] = "Le dossier de téléchargement n'est pas accessible en écriture sur le serveur.";
+                $erreurs["photos_upload_permission"] = "Le dossier de téléchargement n'est pas accessible en écriture sur le serveur.";
             }
 
             if (!isset($erreurs["photos_upload_dir"]) && !isset($erreurs["photos_upload_permission"])) {
@@ -180,7 +210,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                         $allowed_extensions = ["jpg", "jpeg", "png", "gif"];
 
                         if (in_array($mime_type, $allowed_mime_types) && in_array($file_extension, $allowed_extensions)) {
-                            if ($file_size <= 40000000) { 
+                            if ($file_size <= 40000000) {
                                 $new_file_name = uniqid('offre_', true) . '.' . $file_extension;
                                 $dest_path_absolute = $target_dir_absolute . $new_file_name;
                                 if (move_uploaded_file($file_tmp_path, $dest_path_absolute)) {
@@ -205,9 +235,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             }
         }
     } else {
-         $erreurs["photos_missing"] = "Veuillez ajouter au moins une photo (aucun fichier soumis).";
+        $erreurs["photos_missing"] = "Veuillez ajouter au moins une photo (aucun fichier soumis).";
     }
-     if (empty($photo_paths_for_db) && empty($erreurs['photos_missing']) && empty($erreurs['photos_count']) && empty($erreurs['photos_upload_dir']) && empty($erreurs['photos_upload_permission']) && !preg_grep('/^photos_upload_move_/', array_keys($erreurs)) && !preg_grep('/^photos_size_/', array_keys($erreurs)) && !preg_grep('/^photos_type_/', array_keys($erreurs)) && !preg_grep('/^photos_upload_error_/', array_keys($erreurs)) ) {
+    if (empty($photo_paths_for_db) && empty($erreurs['photos_missing']) && empty($erreurs['photos_count']) && empty($erreurs['photos_upload_dir']) && empty($erreurs['photos_upload_permission']) && !preg_grep('/^photos_upload_move_/', array_keys($erreurs)) && !preg_grep('/^photos_size_/', array_keys($erreurs)) && !preg_grep('/^photos_type_/', array_keys($erreurs)) && !preg_grep('/^photos_upload_error_/', array_keys($erreurs))) {
         $erreurs["photos_final_check"] = "Au moins une photo valide est requise et doit être correctement traitée.";
     }
 
@@ -266,7 +296,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             $stmtOffer = $pdo->prepare($sqlOffer);
             $stmtOffer->execute([
                 ':id' => $offre_id_uuid,
-                ':categorie_id' => $categorie_id_for_offer_and_specific_table, 
+                ':categorie_id' => $categorie_id_for_offer_and_specific_table,
                 ':adresse_id' => $adresse_id_uuid,
                 ':pro_id' => $current_pro_id,
                 ':title' => $titre,
@@ -291,14 +321,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     ]);
                 }
             }
-            
+
             // 4. Statut initial de l'offre
             $statut_id_uuid = generate_uuid();
             $stmtStatut = $pdo->prepare("INSERT INTO statuts (id, offre_id, status, changed_at) VALUES (:id, :offre_id, :status, NOW())");
             $stmtStatut->execute([
                 ':id' => $statut_id_uuid,
                 ':offre_id' => $offre_id_uuid,
-                ':status' => 1 
+                ':status' => 1
             ]);
 
 
@@ -307,7 +337,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 case 'activite':
                     $duree_activite = filter_input(INPUT_POST, 'duree', FILTER_VALIDATE_INT, ["options" => ["min_range" => 1]]);
                     if ($duree_activite === false || $duree_activite === null) $erreurs["duree_activite"] = "Durée activité (minutes) requise et doit être un nombre positif.";
-                    
+
                     $prix_min_act_str = $_POST['prix_minimum_activite'] ?? '';
                     $prix_min_act = null;
                     if ($prix_min_act_str !== '') {
@@ -318,14 +348,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     $age_req_act_str = $_POST['age_requis_activite'] ?? '';
                     $age_req_act = null;
                     if ($age_req_act_str !== '') {
-                         $age_req_act = filter_var($age_req_act_str, FILTER_VALIDATE_INT, ["options" => ["min_range" => 0]]);
-                         if ($age_req_act === false) $erreurs["age_requis_activite"] = "Âge requis activité invalide.";
+                        $age_req_act = filter_var($age_req_act_str, FILTER_VALIDATE_INT, ["options" => ["min_range" => 0]]);
+                        if ($age_req_act === false) $erreurs["age_requis_activite"] = "Âge requis activité invalide.";
                     }
-                    
+
                     if (empty($erreurs["duree_activite"]) && empty($erreurs["prix_minimum_activite"]) && empty($erreurs["age_requis_activite"])) {
                         $stmtAct = $pdo->prepare("INSERT INTO activites (categorie_id, duration, minimum_price, required_age) VALUES (:cat_id, :duration, :min_price, :req_age)");
                         $stmtAct->execute([
-                            ':cat_id' => $categorie_id_for_offer_and_specific_table, 
+                            ':cat_id' => $categorie_id_for_offer_and_specific_table,
                             ':duration' => $duree_activite,
                             ':min_price' => $prix_min_act ?? $prix,
                             ':req_age' => $age_req_act ?? 0
@@ -337,18 +367,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                                 $h_date = validate_input($horaire_data['date'] ?? '');
                                 $h_debut = validate_input($horaire_data['heure_debut'] ?? '');
 
-                                if (empty($h_date)) $erreurs["horaire_activite_date_".$key] = "Date requise pour l'horaire d'activité " . ($key+1) . ".";
+                                if (empty($h_date)) $erreurs["horaire_activite_date_" . $key] = "Date requise pour l'horaire d'activité " . ($key + 1) . ".";
                                 elseif (new DateTime() > new DateTime($h_date) && (new DateTime($h_date))->format('Y-m-d') !== (new DateTime())->format('Y-m-d')) {
-                                     $erreurs["horaire_activite_date_passee_".$key] = "La date de l'horaire d'activité ".($key+1)." ne peut pas être passée.";
+                                    $erreurs["horaire_activite_date_passee_" . $key] = "La date de l'horaire d'activité " . ($key + 1) . " ne peut pas être passée.";
                                 }
 
-                                if (empty($h_debut)) $erreurs["horaire_activite_debut_".$key] = "Heure de début requise pour l'horaire d'activité " . ($key+1) . ".";
-                                
-                                if (!empty($h_date) && !empty($h_debut) && !isset($erreurs["horaire_activite_date_passee_".$key])) {
+                                if (empty($h_debut)) $erreurs["horaire_activite_debut_" . $key] = "Heure de début requise pour l'horaire d'activité " . ($key + 1) . ".";
+
+                                if (!empty($h_date) && !empty($h_debut) && !isset($erreurs["horaire_activite_date_passee_" . $key])) {
                                     $horaire_act_id_uuid = generate_uuid();
                                     $stmtHoraireAct->execute([
                                         ':id' => $horaire_act_id_uuid,
-                                        ':act_id' => $categorie_id_for_offer_and_specific_table, 
+                                        ':act_id' => $categorie_id_for_offer_and_specific_table,
                                         ':date' => $h_date,
                                         ':start_time' => $h_debut
                                     ]);
@@ -386,7 +416,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                                         $stmtActPrestaNonInclus->execute([':act_id' => $categorie_id_for_offer_and_specific_table, ':presta_id' => $prestation_id_uuid]);
                                     }
                                 } else if (isset($service_data['nom_service'])) {
-                                     $erreurs["service_activite_nom_manquant"] = "Le nom du service ne peut pas être vide.";
+                                    $erreurs["service_activite_nom_manquant"] = "Le nom du service ne peut pas être vide.";
                                 }
                             }
                         }
@@ -400,24 +430,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
                     $prix_min_vis_str = $_POST['prix_minimum_visite'] ?? '';
                     $prix_min_vis = null;
-                     if ($prix_min_vis_str !== '') {
+                    if ($prix_min_vis_str !== '') {
                         $prix_min_vis = filter_var($prix_min_vis_str, FILTER_VALIDATE_FLOAT, ["options" => ["min_range" => 0]]);
                         if ($prix_min_vis === false) $erreurs["prix_minimum_visite"] = "Prix minimum visite invalide.";
                     }
 
                     $heure_debut_visite = validate_input($_POST["heure_debut_visite"] ?? '');
                     if (empty($heure_debut_visite)) $erreurs["heure_debut_visite"] = "Heure de début visite requise.";
-                    
+
                     if (empty($date_offre_principale) && !isset($erreurs["date_passee"])) $erreurs["date_visite"] = "Date de la visite requise.";
                     elseif (isset($erreurs["date_passee"])) $erreurs["date_visite_passee"] = "La date de la visite ne peut pas être passée.";
 
 
                     $visite_guidee = isset($_POST["visite_guidee"]) ? 1 : 0;
-                    
+
                     if (empty($erreurs["duree_visite"]) && empty($erreurs["prix_minimum_visite"]) && empty($erreurs["heure_debut_visite"]) && empty($erreurs["date_visite"]) && empty($erreurs["date_visite_passee"])) {
                         $stmtVis = $pdo->prepare("INSERT INTO visites (categorie_id, duration, minimum_price, date, start_time, is_guided_tour) VALUES (:cat_id, :duration, :min_price, :date, :start_time, :is_guided)");
                         $stmtVis->execute([
-                            ':cat_id' => $categorie_id_for_offer_and_specific_table, 
+                            ':cat_id' => $categorie_id_for_offer_and_specific_table,
                             ':duration' => $duree_visite_minutes,
                             ':min_price' => $prix_min_vis ?? $prix,
                             ':date' => $date_offre_principale,
@@ -436,9 +466,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                                     $stmtLangSearch->execute([':lang_code' => $lang_code_valide]);
                                     $lang_row = $stmtLangSearch->fetch();
                                     if ($lang_row) {
-                                        $stmtVisLangInsert->execute([':vis_id' => $categorie_id_for_offer_and_specific_table, ':lang_id' => $lang_row['id']]); 
+                                        $stmtVisLangInsert->execute([':vis_id' => $categorie_id_for_offer_and_specific_table, ':lang_id' => $lang_row['id']]);
                                     } else {
-                                        $erreurs["langue_inconnue_".$lang_code_valide] = "La langue '".$lang_code_valide."' n'est pas configurée.";
+                                        $erreurs["langue_inconnue_" . $lang_code_valide] = "La langue '" . $lang_code_valide . "' n'est pas configurée.";
                                     }
                                 }
                             }
@@ -460,17 +490,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     $date_spectacle_str = validate_input($_POST["date_spectacle"] ?? '');
                     $date_spectacle = null;
                     if (empty($date_spectacle_str) || !preg_match("/^\d{4}-\d{2}-\d{2}$/", $date_spectacle_str)) {
-                         $erreurs["date_spectacle"] = "Date spectacle requise (YYYY-MM-DD).";
+                        $erreurs["date_spectacle"] = "Date spectacle requise (YYYY-MM-DD).";
                     } else {
                         $date_obj = DateTime::createFromFormat('Y-m-d', $date_spectacle_str);
                         if ($date_obj && $date_obj->format('Y-m-d') === $date_spectacle_str) {
-                             if (new DateTime() > $date_obj && $date_obj->format('Y-m-d') !== (new DateTime())->format('Y-m-d') ) {
+                            if (new DateTime() > $date_obj && $date_obj->format('Y-m-d') !== (new DateTime())->format('Y-m-d')) {
                                 $erreurs["date_spectacle_passee"] = "La date du spectacle ne peut pas être une date passée.";
                             } else {
                                 $date_spectacle = $date_spectacle_str;
                             }
                         } else {
-                             $erreurs["date_spectacle_validite"] = "Date spectacle invalide.";
+                            $erreurs["date_spectacle_validite"] = "Date spectacle invalide.";
                         }
                     }
 
@@ -483,7 +513,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     if (empty($erreurs["duree_spectacle"]) && empty($erreurs["prix_minimum_spectacle"]) && empty($erreurs["date_spectacle"]) && empty($erreurs["heure_debut_spectacle"]) && empty($erreurs["capacite_spectacle"]) && empty($erreurs["date_spectacle_validite"]) && empty($erreurs["date_spectacle_passee"])) {
                         $stmtSpec = $pdo->prepare("INSERT INTO spectacles (categorie_id, duration, minimum_price, date, start_time, capacity) VALUES (:cat_id, :duration, :min_price, :date, :start_time, :capacity)");
                         $stmtSpec->execute([
-                            ':cat_id' => $categorie_id_for_offer_and_specific_table, 
+                            ':cat_id' => $categorie_id_for_offer_and_specific_table,
                             ':duration' => $duree_spectacle,
                             ':min_price' => $prix_min_spec ?? $prix,
                             ':date' => $date_spectacle,
@@ -507,12 +537,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                         $age_req_parc = filter_var($age_req_parc_str, FILTER_VALIDATE_INT, ["options" => ["min_range" => 0]]);
                         if ($age_req_parc === false) $erreurs["age_requis_parc"] = "Âge requis parc invalide.";
                     }
-                    
+
                     $nb_attr_parc_str = $_POST['nombre_total_attractions_parc'] ?? '';
                     $nb_attr_parc = null;
                     if ($nb_attr_parc_str !== '') {
                         $nb_attr_parc = filter_var($nb_attr_parc_str, FILTER_VALIDATE_INT, ["options" => ["min_range" => 0]]);
-                         if ($nb_attr_parc === false) $erreurs["nombre_total_attractions_parc"] = "Nombre d'attractions invalide.";
+                        if ($nb_attr_parc === false) $erreurs["nombre_total_attractions_parc"] = "Nombre d'attractions invalide.";
                     }
 
                     $maps_url_parc = null;
@@ -521,7 +551,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                         if (!filter_var($maps_url_input, FILTER_VALIDATE_URL)) {
                             $erreurs["maps_url_parc"] = "URL du plan du parc invalide.";
                         } else {
-                            $maps_url_parc = $maps_url_input;
+                            $maps_url_parc = $maps_input;
                         }
                     }
                     if (empty($maps_url_parc)) $erreurs["maps_url_parc_required"] = "L'URL du plan du parc est requise.";
@@ -529,7 +559,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     if (empty($erreurs["prix_minimum_parc"]) && empty($erreurs["age_requis_parc"]) && empty($erreurs["nombre_total_attractions_parc"]) && empty($erreurs["maps_url_parc"]) && empty($erreurs["maps_url_parc_required"])) {
                         $stmtParc = $pdo->prepare("INSERT INTO parcs_attractions (categorie_id, minimum_price, required_age, attraction_nb, map_url) VALUES (:cat_id, :min_price, :req_age, :attr_nb, :map_url)");
                         $stmtParc->execute([
-                            ':cat_id' => $categorie_id_for_offer_and_specific_table, 
+                            ':cat_id' => $categorie_id_for_offer_and_specific_table,
                             ':min_price' => $prix_min_parc ?? $prix,
                             ':req_age' => $age_req_parc ?? 0,
                             ':attr_nb' => $nb_attr_parc ?? 0,
@@ -543,68 +573,82 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                             foreach ($_POST['attractions'] as $attr_key => $attr_data) {
                                 $attr_nom = validate_input($attr_data['nom_attraction'] ?? '');
                                 if (empty($attr_nom)) {
-                                    $erreurs["attraction_nom_".$attr_key] = "Nom requis pour l'attraction " . ($attr_key+1) . ".";
+                                    $erreurs["attraction_nom_" . $attr_key] = "Nom requis pour l'attraction " . ($attr_key + 1) . ".";
                                     continue;
                                 }
                                 $attraction_id_uuid = generate_uuid();
                                 $stmtAttractionInsert->execute([
                                     ':id' => $attraction_id_uuid,
-                                    ':parc_id' => $categorie_id_for_offer_and_specific_table, 
+                                    ':parc_id' => $categorie_id_for_offer_and_specific_table,
                                     ':name' => $attr_nom
                                 ]);
 
                                 if (isset($attr_data['horaires']) && is_array($attr_data['horaires'])) {
                                     foreach ($attr_data['horaires'] as $h_key => $h_data) {
-                                        $h_date_str = validate_input($h_data['date'] ?? ''); 
+                                        $h_date_str = validate_input($h_data['date'] ?? '');
                                         $h_debut = validate_input($h_data['heure_debut'] ?? '');
                                         $h_fin = validate_input($h_data['heure_fin'] ?? '');
-                                        $day_of_week_for_db = null; 
+                                        $day_of_week_for_db = null;
 
-                                        if (empty($h_date_str)) $erreurs["attraction_".$attr_key."_horaire_date_".$h_key] = "Date requise pour l'horaire de ".$attr_nom.".";
+                                        if (empty($h_date_str)) $erreurs["attraction_" . $attr_key . "_horaire_date_" . $h_key] = "Date requise pour l'horaire de " . $attr_nom . ".";
                                         elseif (new DateTime() > new DateTime($h_date_str) && (new DateTime($h_date_str))->format('Y-m-d') !== (new DateTime())->format('Y-m-d')) {
-                                            $erreurs["attraction_".$attr_key."_horaire_date_passee_".$h_key] = "La date de l'horaire de l'attraction ".$attr_nom." ne peut pas être passée.";
+                                            $erreurs["attraction_" . $attr_key . "_horaire_date_passee_" . $h_key] = "La date de l'horaire de l'attraction " . $attr_nom . " ne peut pas être passée.";
                                         }
 
-                                        if (empty($h_debut)) $erreurs["attraction_".$attr_key."_horaire_debut_".$h_key] = "Début requis pour l'horaire de ".$attr_nom.".";
-                                        if (empty($h_fin)) $erreurs["attraction_".$attr_key."_horaire_fin_".$h_key] = "Fin requise pour l'horaire de ".$attr_nom.".";
-                                        
-                                        if (!empty($h_date_str) && !empty($h_debut) && !empty($h_fin) && !isset($erreurs["attraction_".$attr_key."_horaire_date_passee_".$h_key])) {
+                                        if (empty($h_debut)) $erreurs["attraction_" . $attr_key . "_horaire_debut_" . $h_key] = "Début requis pour l'horaire de " . $attr_nom . ".";
+                                        if (empty($h_fin)) $erreurs["attraction_" . $attr_key . "_horaire_fin_" . $h_key] = "Fin requise pour l'horaire de " . $attr_nom . ".";
+
+                                        if (!empty($h_date_str) && !empty($h_debut) && !empty($h_fin) && !isset($erreurs["attraction_" . $attr_key . "_horaire_date_passee_" . $h_key])) {
                                             try {
                                                 $date_obj_attr = new DateTime($h_date_str);
-                                                $day_of_week_php = $date_obj_attr->format('l'); 
+                                                $day_of_week_php = $date_obj_attr->format('l');
                                                 switch (strtolower($day_of_week_php)) {
-                                                    case 'monday': $day_of_week_for_db = 'lundi'; break;
-                                                    case 'tuesday': $day_of_week_for_db = 'mardi'; break;
-                                                    case 'wednesday': $day_of_week_for_db = 'mercredi'; break;
-                                                    case 'thursday': $day_of_week_for_db = 'jeudi'; break;
-                                                    case 'friday': $day_of_week_for_db = 'vendredi'; break;
-                                                    case 'saturday': $day_of_week_for_db = 'samedi'; break;
-                                                    case 'sunday': $day_of_week_for_db = 'dimanche'; break;
+                                                    case 'monday':
+                                                        $day_of_week_for_db = 'lundi';
+                                                        break;
+                                                    case 'tuesday':
+                                                        $day_of_week_for_db = 'mardi';
+                                                        break;
+                                                    case 'wednesday':
+                                                        $day_of_week_for_db = 'mercredi';
+                                                        break;
+                                                    case 'thursday':
+                                                        $day_of_week_for_db = 'jeudi';
+                                                        break;
+                                                    case 'friday':
+                                                        $day_of_week_for_db = 'vendredi';
+                                                        break;
+                                                    case 'saturday':
+                                                        $day_of_week_for_db = 'samedi';
+                                                        break;
+                                                    case 'sunday':
+                                                        $day_of_week_for_db = 'dimanche';
+                                                        break;
                                                     default:
-                                                        $erreurs["attraction_".$attr_key."_horaire_day_invalid_".$h_key] = "Jour de la semaine invalide pour l'horaire de ".$attr_nom.".";
+                                                        $erreurs["attraction_" . $attr_key . "_horaire_day_invalid_" . $h_key] = "Jour de la semaine invalide pour l'horaire de " . $attr_nom . ".";
                                                 }
 
                                                 if ($day_of_week_for_db) {
                                                     $horaire_attr_id_uuid = generate_uuid();
                                                     $stmtHoraireAttrInsert->execute([
                                                         ':id' => $horaire_attr_id_uuid,
-                                                        ':attr_id' => $attraction_id_uuid, 
+                                                        ':attr_id' => $attraction_id_uuid,
                                                         ':day' => $day_of_week_for_db,
                                                         ':start_time' => $h_debut,
                                                         ':end_time' => $h_fin
                                                     ]);
                                                 }
                                             } catch (Exception $ex) {
-                                                $erreurs["attraction_".$attr_key."_horaire_date_parse_".$h_key] = "Format de date invalide pour l'horaire de ".$attr_nom.".";
+                                                $erreurs["attraction_" . $attr_key . "_horaire_date_parse_" . $h_key] = "Format de date invalide pour l'horaire de " . $attr_nom . ".";
                                             }
                                         }
                                     }
                                 } else {
-                                     $erreurs["attraction_".$attr_key."_horaires_manquants"] = "Au moins un horaire complet est requis pour l'attraction " . $attr_nom . ".";
+                                    $erreurs["attraction_" . $attr_key . "_horaires_manquants"] = "Au moins un horaire complet est requis pour l'attraction " . $attr_nom . ".";
                                 }
                             }
                         } else {
-                             $erreurs["attractions_parc_manquantes"] = "Au moins une attraction spécifique avec ses horaires doit être ajoutée pour un parc.";
+                            $erreurs["attractions_parc_manquantes"] = "Au moins une attraction spécifique avec ses horaires doit être ajoutée pour un parc.";
                         }
                     }
                     break;
@@ -626,26 +670,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     if ($prix_moyen_resto_str !== '') {
                         $prix_moyen_val = filter_var($prix_moyen_resto_str, FILTER_VALIDATE_FLOAT, ["options" => ["min_range" => 0]]);
                         if ($prix_moyen_val === false) {
-                             $erreurs["prix_moyen_restaurant"] = "Prix moyen invalide pour le restaurant.";
+                            $erreurs["prix_moyen_restaurant"] = "Prix moyen invalide pour le restaurant.";
                         } else {
                             if ($prix_moyen_val <= 15) $prix_range_enum = '€';
                             elseif ($prix_moyen_val <= 35) $prix_range_enum = '€€';
                             else $prix_range_enum = '€€€';
                         }
                     } else {
-                         $erreurs["prix_moyen_restaurant_required"] = "Le prix moyen du restaurant est requis.";
+                        $erreurs["prix_moyen_restaurant_required"] = "Le prix moyen du restaurant est requis.";
                     }
 
                     if (empty($erreurs["lien_menu_restaurant"]) && empty($erreurs["lien_menu_restaurant_required"]) && empty($erreurs["prix_moyen_restaurant"]) && empty($erreurs["prix_moyen_restaurant_required"])) {
                         $stmtResto = $pdo->prepare("INSERT INTO restaurations (categorie_id, menu_url, price_range) VALUES (:cat_id, :menu_url, :price_range)");
                         $stmtResto->execute([
-                            ':cat_id' => $categorie_id_for_offer_and_specific_table, 
+                            ':cat_id' => $categorie_id_for_offer_and_specific_table,
                             ':menu_url' => $menu_url_resto,
                             ':price_range' => $prix_range_enum
                         ]);
 
                         if (isset($_POST['plats']) && is_array($_POST['plats'])) {
-                             if (count($_POST['plats']) > 0 && !empty(array_filter($_POST['plats']))) {
+                            if (count($_POST['plats']) > 0 && !empty(array_filter($_POST['plats']))) {
                                 $stmtRepasSearch = $pdo->prepare("SELECT id FROM repas WHERE name = :name LIMIT 1");
                                 $stmtRepasInsert = $pdo->prepare("INSERT INTO repas (id, name) VALUES (:id, :name)");
                                 $stmtRestoRepasInsert = $pdo->prepare("INSERT INTO restaurations_repas (restauration_id, repas_id) VALUES (:resto_id, :repas_id)");
@@ -653,10 +697,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                                 foreach ($_POST['plats'] as $idx => $plat_nom_input) {
                                     $plat_nom = validate_input($plat_nom_input);
                                     if (empty($plat_nom)) {
-                                        if (count($_POST['plats']) > 1 || !empty(array_filter(array_slice($_POST['plats'], $idx+1)))) {
-                                           $erreurs["plat_restaurant_nom_".$idx] = "Le nom du plat " . ($idx+1) . " est requis s'il est ajouté.";
+                                        if (count($_POST['plats']) > 1 || !empty(array_filter(array_slice($_POST['plats'], $idx + 1)))) {
+                                            $erreurs["plat_restaurant_nom_" . $idx] = "Le nom du plat " . ($idx + 1) . " est requis s'il est ajouté.";
                                         }
-                                        continue; 
+                                        continue;
                                     }
 
                                     $stmtRepasSearch->execute([':name' => $plat_nom]);
@@ -670,7 +714,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                                         $stmtRepasInsert->execute([':id' => $repas_id_uuid, ':name' => $plat_nom]);
                                     }
                                     $stmtRestoRepasInsert->execute([
-                                        ':resto_id' => $categorie_id_for_offer_and_specific_table, 
+                                        ':resto_id' => $categorie_id_for_offer_and_specific_table,
                                         ':repas_id' => $repas_id_uuid
                                     ]);
                                 }
@@ -683,19 +727,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             if (!empty($erreurs)) {
                 $pdo->rollBack();
             } else {
+                // 6. Gestion des souscriptions payantes
+                $stmtSouscription = $pdo->prepare("INSERT INTO souscriptions (offre_id, option_id, duration, taken_date, launch_date) VALUES (:offre_id, :option_id, :duration, :taken_date, :launch_date)");
+
+                if (isset($_POST['mettre_a_la_une']) && $option_premium_id) {
+                    $stmtSouscription->execute([
+                        ':offre_id' => $offre_id_uuid,
+                        ':option_id' => $option_premium_id,
+                        ':duration' => 30, // Exemple: 30 jours pour "Mettre à la une"
+                        ':taken_date' => date('Y-m-d'),
+                        ':launch_date' => date('Y-m-d') // Lancez immédiatement après publication
+                    ]);
+                }
+
+                if (isset($_POST['offre_speciale']) && $option_offre_speciale_id) {
+                    $stmtSouscription->execute([
+                        ':offre_id' => $offre_id_uuid,
+                        ':option_id' => $option_offre_speciale_id,
+                        ':duration' => 15, // Exemple: 15 jours pour "Offre Spéciale"
+                        ':taken_date' => date('Y-m-d'),
+                        ':launch_date' => date('Y-m-d')
+                    ]);
+                }
+
                 $pdo->commit();
                 $notification_message = "L'offre \"" . htmlspecialchars($titre) . "\" a été publiée avec succès !";
                 header("Location: index.php?publish_status=success&notification_message=" . urlencode($notification_message));
                 exit();
             }
-
         } catch (PDOException $e) {
             if ($pdo && $pdo->inTransaction()) {
                 $pdo->rollBack();
             }
             error_log("Database Insertion Error: " . $e->getMessage() . " - Data: " . json_encode($_POST));
-            if ($e->getCode() == '23000') { 
-                 $erreurs["db_general"] = "Une erreur de contrainte de base de données est survenue (ex: duplicata). Détail: " . $e->getMessage();
+            if ($e->getCode() == '23000') {
+                $erreurs["db_general"] = "Une erreur de contrainte de base de données est survenue (ex: duplicata). Détail: " . $e->getMessage();
             } else {
                 $erreurs["db_general"] = "Une erreur est survenue lors de la publication de votre offre : " . $e->getMessage() . ". Veuillez réessayer. ";
             }
@@ -705,6 +771,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 ?>
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -716,13 +783,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
-        
-
         /* Style pour les sections du formulaire */
         .form-section {
             padding: var(--espacement-double);
             border-bottom: var(--bordure-standard-interface);
         }
+
         .form-section:last-of-type {
             border-bottom: none;
         }
@@ -746,13 +812,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             width: 100%;
             padding: var(--espacement-standard);
             border: var(--bordure-standard-interface);
-            border-radius: var(--border-radius-bouton); 
+            border-radius: var(--border-radius-bouton);
             font-size: 1em;
             font-family: var(--police-principale);
             margin-bottom: var(--espacement-double);
             background-color: var(--couleur-blanche);
             box-sizing: border-box;
-            height: auto; 
+            height: auto;
         }
 
         /* Réinitialisation de l'apparence pour le select de catégorie */
@@ -767,7 +833,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             min-height: 100px;
         }
 
-        .form-group { 
+        .form-group {
             margin-bottom: var(--espacement-double);
         }
 
@@ -789,6 +855,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+
         .error ul {
             margin: 0;
             padding-left: 20px;
@@ -796,16 +863,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
         /* Conteneur du formulaire principal */
         form#offer-form {
-            max-width: 660px; /* Consistent with profil.php's form container */
-            margin-left: auto; /* Center the form */
-            margin-right: auto; /* Center the form */
-            margin-top: var(--espacement-double); /* Add top margin for spacing */
-            margin-bottom: var(--espacement-double); /* Existing bottom margin */
-            background-color: #fff; /* Card-like background */
-            padding: var(--espacement-double); /* Existing padding */
-            border: 1px solid #ddd; /* Existing border */
-            border-radius: var(--border-radius-standard); /* Existing radius */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Card-like shadow, similar to creation-compte.php */
+            max-width: 660px;
+            /* Consistent with profil.php's form container */
+            margin-left: auto;
+            /* Center the form */
+            margin-right: auto;
+            /* Center the form */
+            margin-top: var(--espacement-double);
+            /* Add top margin for spacing */
+            margin-bottom: var(--espacement-double);
+            /* Existing bottom margin */
+            background-color: #fff;
+            /* Card-like background */
+            padding: var(--espacement-double);
+            /* Existing padding */
+            border: 1px solid #ddd;
+            /* Existing border */
+            border-radius: var(--border-radius-standard);
+            /* Existing radius */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            /* Card-like shadow, similar to creation-compte.php */
         }
 
         /* Style pour les champs invalides */
@@ -818,14 +895,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
         .error-message {
             color: red;
             font-size: 0.9em;
-            margin-top: -10px; 
+            margin-top: -10px;
             margin-bottom: 10px;
-            display: none; 
+            display: none;
         }
 
         /* bouton de soumission principal */
         form#offer-form button[type="submit"] {
-            background-color: var(--couleur-principale); 
+            background-color: var(--couleur-principale);
             color: var(--couleur-blanche);
             width: 80%;
             padding: var(--espacement-moyen);
@@ -835,19 +912,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             border-radius: var(--border-radius-bouton);
             font-size: 1.1em;
             cursor: pointer;
-            transition: background-color 0.3s ease; /* Transition pour le hover */
+            transition: background-color 0.3s ease;
+            /* Transition pour le hover */
         }
 
         form#offer-form button[type="submit"]:hover {
-            background-color: var(--couleur-principale-hover); /* Orange foncé pr le hover */
+            background-color: var(--couleur-principale-hover);
+            /* Orange foncé pr le hover */
         }
 
         /* Section pour la visite guidée */
-        #langues-guidees { 
-            display: none; /* Caché par défaut, affiché par JS */
+        #langues-guidees {
+            display: none;
+            /* Caché par défaut, affiché par JS */
         }
-        #langues-guidees.show { 
-            display: block; 
+
+        #langues-guidees.show {
+            display: block;
         }
 
         /* Style pour les champs spécifiques aux catégorie(dynamiquement ajoutés) */
@@ -857,14 +938,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             color: var(--couleur-texte);
             font-size: 1.1em;
             font-weight: var(--font-weight-semibold);
-            padding-bottom: var(--espacement-petit); 
+            padding-bottom: var(--espacement-petit);
         }
 
         #categorie-specific-fields .item-group {
             position: relative;
             border: 1px solid var(--couleur-bordure);
             padding: var(--espacement-moyen);
-            padding-top: calc(var(--espacement-moyen) + 20px); /* Espace pour la croix*/
+            padding-top: calc(var(--espacement-moyen) + 20px);
+            /* Espace pour la croix*/
             margin-bottom: var(--espacement-moyen);
             border-radius: var(--border-radius-standard);
             background-color: #f9f9f9;
@@ -880,7 +962,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
         .text-add-link {
             background: none !important;
             border: none !important;
-            padding: var(--espacement-standard) 0 !important; 
+            padding: var(--espacement-standard) 0 !important;
             color: var(--couleur-principale);
             cursor: pointer;
             text-decoration: none;
@@ -889,6 +971,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             margin-top: var(--espacement-moyen);
             display: inline-block;
         }
+
         .text-add-link:hover {
             color: var(--couleur-principale-hover);
             text-decoration: underline;
@@ -908,12 +991,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             color: #888;
             cursor: pointer;
             border-radius: 50%;
-            line-height: 1; 
+            line-height: 1;
             transition: color 0.2s ease, background-color 0.2s ease;
         }
+
         .remove-icon-cross:hover {
             color: #333;
-            background-color: rgba(0,0,0,0.05);
+            background-color: rgba(0, 0, 0, 0.05);
         }
 
         /* Groupe d'inputs pour les horaires (date, début, fin) */
@@ -921,30 +1005,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             display: flex;
             flex-wrap: wrap;
             gap: var(--espacement-standard);
-            align-items: flex-end; 
-            margin-bottom: var(--espacement-petit); 
+            align-items: flex-end;
+            margin-bottom: var(--espacement-petit);
         }
-        #categorie-specific-fields .horaire-group-inputs > div {
+
+        #categorie-specific-fields .horaire-group-inputs>div {
             display: flex;
             flex-direction: column;
             flex-grow: 1;
-            min-width: 120px; /* Empêche les champs d'être trop petits */
+            min-width: 120px;
+            /* Empêche les champs d'être trop petits */
         }
+
         #categorie-specific-fields .horaire-group-inputs label {
-            margin-bottom: var(--espacement-petit); 
+            margin-bottom: var(--espacement-petit);
             font-size: 0.9em;
         }
+
         #categorie-specific-fields .horaire-group-inputs input[type="time"],
         #categorie-specific-fields .horaire-group-inputs input[type="date"] {
-            margin-bottom: 0; 
-            padding: var(--espacement-standard); 
+            margin-bottom: 0;
+            padding: var(--espacement-standard);
         }
 
         /* Titre pour un groupe d'attraction spécifique */
         #categorie-specific-fields .attraction-group h3 {
             margin-top: 0;
             margin-bottom: var(--espacement-standard);
-            color: var(--couleur-principale); 
+            color: var(--couleur-principale);
         }
 
         .data-display {
@@ -954,10 +1042,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             border-radius: var(--border-radius-standard);
             background-color: #f9f9f9;
         }
-        .data-display h3 { margin-top: 0; margin-bottom: var(--espacement-moyen); color: var(--couleur-principale); }
-        .data-display p { margin-bottom: var(--espacement-standard); }
-        .data-display ul { list-style-type: none; padding-left: 0; }
-        .data-display li { margin-bottom: var(--espacement-petit); } 
+
+        .data-display h3 {
+            margin-top: 0;
+            margin-bottom: var(--espacement-moyen);
+            color: var(--couleur-principale);
+        }
+
+        .data-display p {
+            margin-bottom: var(--espacement-standard);
+        }
+
+        .data-display ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .data-display li {
+            margin-bottom: var(--espacement-petit);
+        }
 
         /* Prévisualisation des images */
         #image-preview-container {
@@ -967,6 +1070,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             margin-top: var(--espacement-standard);
             margin-bottom: var(--espacement-double);
         }
+
         #image-preview-container .preview-item {
             position: relative;
             width: 120px;
@@ -979,19 +1083,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             align-items: center;
             background-color: #f9f9f9;
         }
+
         #image-preview-container .preview-image {
             max-width: 100%;
             max-height: 100%;
             display: block;
-            cursor: pointer; /* Pour indiquer qu'on peut cliquer pour agrandir */
+            cursor: pointer;
+            /* Pour indiquer qu'on peut cliquer pour agrandir */
         }
+
         #image-preview-container .delete-image-btn {
             position: absolute;
             top: 4px;
             right: 4px;
             width: 22px;
             height: 22px;
-            background-color: rgba(0,0,0,0.6);
+            background-color: rgba(0, 0, 0, 0.6);
             color: white;
             border: none;
             border-radius: 50%;
@@ -1001,40 +1108,47 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             font-size: 13px;
             font-weight: bold;
             cursor: pointer;
-            line-height: 22px; 
+            line-height: 22px;
             text-align: center;
             transition: background-color 0.2s ease;
         }
+
         #image-preview-container .delete-image-btn:hover {
-            background-color: rgba(220, 53, 69, 0.9); 
+            background-color: rgba(220, 53, 69, 0.9);
         }
 
         /* Modale pour l'image agrandie */
         #image-modal {
-            display: none; 
+            display: none;
             position: fixed;
-            z-index: 1050; 
+            z-index: 1050;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            overflow: auto; /* Permet de scroller si l'image est trop grande */
-            background-color: rgba(0,0,0,0.85); 
-            justify-content: center; /* Centre l'image horizontalement */
-            align-items: center; /* Centre l'image verticalement */
+            overflow: auto;
+            /* Permet de scroller si l'image est trop grande */
+            background-color: rgba(0, 0, 0, 0.85);
+            justify-content: center;
+            /* Centre l'image horizontalement */
+            align-items: center;
+            /* Centre l'image verticalement */
             padding: var(--espacement-double);
             box-sizing: border-box;
         }
-        #image-modal.show-modal { 
+
+        #image-modal.show-modal {
             display: flex;
         }
+
         #modal-image-content {
             margin: auto;
             display: block;
             max-width: 90%;
-            max-height: 90vh; 
+            max-height: 90vh;
             border-radius: var(--border-radius-standard);
         }
+
         #close-modal {
             position: absolute;
             top: var(--espacement-moyen);
@@ -1045,91 +1159,97 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             cursor: pointer;
             transition: color 0.2s ease;
         }
+
         #close-modal:hover {
             color: var(--couleur-bordure);
         }
+
         /* --- STYLES POUR LA NOTIFICATION PROFIL --- */
 
-    .main-nav ul li.nav-item-with-notification {
-        position: relative; /* Contexte pour le positionnement absolu de la bulle */
-    }
+        .main-nav ul li.nav-item-with-notification {
+            position: relative;
+            /* Contexte pour le positionnement absolu de la bulle */
+        }
 
-    .profile-link-container {
-        position: relative;
-        display: flex;
-        align-items: center;
-    }
+        .profile-link-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
 
-    .notification-bubble {
-        position: absolute;
-        top: -16px;
-        right: 80px;
-        width: 20px;
-        height: 20px;
-        background-color: #dc3545;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.8em;
-        font-weight: bold;
-        border: 2px solid white;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    }
+        .notification-bubble {
+            position: absolute;
+            top: -16px;
+            right: 80px;
+            width: 20px;
+            height: 20px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
 
-    .header-right .profile-link-container + .btn-primary {
-        margin-left: 1rem; 
-    }
+        .header-right .profile-link-container+.btn-primary {
+            margin-left: 1rem;
+        }
 
-    .nav-item-with-notification .notification-bubble {
-        position: absolute;
-        top: -15px; /* Ajustez pour la position verticale */
-        right: 80px; /* Ajustez pour la position horizontale */
-        width: 20px;
-        height: 20px;
-        background-color: #dc3545;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.75em; /* Police un peu plus petite pour la nav */
-        font-weight: bold;
-        border: 2px solid white;
-    }
+        .nav-item-with-notification .notification-bubble {
+            position: absolute;
+            top: -15px;
+            /* Ajustez pour la position verticale */
+            right: 80px;
+            /* Ajustez pour la position horizontale */
+            width: 20px;
+            height: 20px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75em;
+            /* Police un peu plus petite pour la nav */
+            font-weight: bold;
+            border: 2px solid white;
+        }
     </style>
 
 </head>
 
 <body>
     <header>
-    <div class="container header-container">
-        <div class="header-left">
-            <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
-            <span class="pro-text">Professionnel</span>
-        </div>
+        <div class="container header-container">
+            <div class="header-left">
+                <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
+                <span class="pro-text">Professionnel</span>
+            </div>
 
         <nav class="main-nav">
             <ul>
-                <li><a href="index.php" class="active">Accueil</a></li>
+                <li><a href="index.php" >Accueil</a></li>
                 <li class="nav-item-with-notification">
                     <a href="recherche.php">Mes Offres</a>
                     <?php if (isset($unanswered_reviews_count) && $unanswered_reviews_count > 0): ?>
                         <span class="notification-bubble"><?php echo $unanswered_reviews_count; ?></span>
                     <?php endif; ?>
                 </li>
-                <li><a href="publier-une-offre.php">Publier une offre</a></li>
+                <li><a href="publier-une-offre.php"  class="active">Publier une offre</a></li>
             </ul>
         </nav>
 
-        <div class="header-right">
-            <div class="profile-link-container">
-                <a href="profil.php" class="btn btn-secondary">Mon profil</a>
+            <div class="header-right">
+                <div class="profile-link-container">
+                    <a href="profil.php" class="btn btn-secondary">Mon profil</a>
+                </div>
+                <a href="/deconnexion.php" class="btn btn-primary">Se déconnecter</a>
             </div>
-            <a href="../deconnexion.php" class="btn btn-primary">Se déconnecter</a>
         </div>
-    </div>
     </header>
 
     <main>
@@ -1139,7 +1259,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
             <?php
             if (!$pdo) {
-                 echo "<div class='error message'>Erreur critique: Impossible de se connecter à la base de données. L'application ne peut pas fonctionner. Veuillez contacter l'administrateur.</div>";
+                echo "<div class='error message'>Erreur critique: Impossible de se connecter à la base de données. L'application ne peut pas fonctionner. Veuillez contacter l'administrateur.</div>";
             }
 
             if (isset($_SESSION['success_message'])) {
@@ -1155,7 +1275,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 }
                 echo "</ul></div>";
             } elseif (isset($erreurs["db_general"]) && !empty($erreurs["db_general"])) {
-                 echo "<div class='error message'>" . htmlspecialchars($erreurs["db_general"]) . "</div>";
+                echo "<div class='error message'>" . htmlspecialchars($erreurs["db_general"]) . "</div>";
             }
             ?>
 
@@ -1198,7 +1318,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 </div>
 
                 <div id="categorie-specific-fields" class="form-section">
-                    </div>
+                </div>
 
                 <div class="form-section" id="visite-guidee-section" style="display: none;">
                     <label>
@@ -1221,7 +1341,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 </div>
 
                 <div class="form-section">
-                    <div id="main-date-input-container" style="<?php echo (isset($_POST['categorie']) && in_array($_POST['categorie'], ['1','3','4'])) ? 'display:none;' : 'display:block;'; ?>">
+                    <div id="main-date-input-container" style="<?php echo (isset($_POST['categorie']) && in_array($_POST['categorie'], ['1', '3', '4'])) ? 'display:none;' : 'display:block;'; ?>">
                         <label for="date">Date de l'offre/visite *</label> <input type="date" id="date" name="date" value="<?php echo isset($_POST['date']) ? htmlspecialchars($_POST['date']) : ''; ?>">
                         <div class="error-message">Veuillez entrer la date de l'offre/visite.</div>
                     </div>
@@ -1246,15 +1366,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     <input type="file" id="photos" name="photos[]" multiple accept="image/*" required>
                     <div class="error-message" id="photos-error-message">Veuillez ajouter au moins une photo (jusqu'à 6).</div>
                     <div id="image-preview-container">
-                        </div>
+                    </div>
 
-                     <label style="font-weight: normal; font-size: 0.9em; margin-top: var(--espacement-double);">
+                    <label style="font-weight: normal; font-size: 0.9em; margin-top: var(--espacement-double);">
                         <input type="checkbox" name="mettre_a_la_une" style="width:auto; margin-right: 5px;" <?php echo isset($_POST['mettre_a_la_une']) ? 'checked' : ''; ?>> Je souhaite mettre mon offre à la une
-                        (fonctionnalité payante - TODO : à implémenter via table 'souscriptions')
+                        
                     </label>
                     <label style="font-weight: normal; font-size: 0.9em;">
                         <input type="checkbox" name="offre_speciale" style="width:auto; margin-right: 5px;" <?php echo isset($_POST['offre_speciale']) ? 'checked' : ''; ?>> Je souhaite mettre mon offre en avant comme "Offre Spéciale"
-                        (fonctionnalité payante - TODO : à implémenter via table souscriptions')
+                        
                     </label>
                     <button type="submit">Publier mon annonce</button>
                 </div>
@@ -1279,7 +1399,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             <div class="footer-section links">
                 <h3>Visiteur</h3>
                 <ul>
-                    <li><a href="../index.html">Accueil</a></li>
+                    <li><a href="../index.php">Accueil</a></li>
                     <li><a href="../FO/recherche.php">Recherche d'offres</a></li>
                     <li><a href="../FO/connexion-compte.php">Je me connecte en tant que membre</a></li>
                 </ul>
@@ -1323,31 +1443,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
         const serverPostData = <?php echo json_encode($_POST); ?>;
         const today = new Date().toISOString().split('T')[0];
-        
+
         // Met la date du jours comme date minimal (pour le calandrier)
-        function setMinDateForInput(inputElement) { 
+        function setMinDateForInput(inputElement) {
             if (inputElement) {
                 inputElement.setAttribute('min', today);
             }
         }
-        // Genere et affiche dynamiquement les champs de formulaire spécifiques à la catégorie sélectionnée (activité, visite, etc.) 
+        // Genere et affiche dynamiquement les champs de formulaire spécifiques à la catégorie sélectionnée (activité, visite, etc.)
         function fetchCategorieFields(categorieId, postData = {}) {
             let htmlContent = '';
             const isDateHandledByCategoryOrNotApplicable = (categorieId === '1' || categorieId === '3' || categorieId === '4');
 
-            if(mainDateInputContainer) mainDateInputContainer.style.display = isDateHandledByCategoryOrNotApplicable ? 'none' : 'block';
-            if(mainDateInput) {
-                 mainDateInput.required = !isDateHandledByCategoryOrNotApplicable;
-                 if (categorieId === '2') mainDateInput.required = true;
-                 else if (categorieId === '5') mainDateInput.required = false;
-                 setMinDateForInput(mainDateInput); // Set min date for main date input
+            if (mainDateInputContainer) mainDateInputContainer.style.display = isDateHandledByCategoryOrNotApplicable ? 'none' : 'block';
+            if (mainDateInput) {
+                mainDateInput.required = !isDateHandledByCategoryOrNotApplicable;
+                if (categorieId === '2') mainDateInput.required = true;
+                else if (categorieId === '5') mainDateInput.required = false;
+                setMinDateForInput(mainDateInput); // Set min date for main date input
             }
 
 
             if (categorieId === '1') { // Activité
-                 const dureeVal = postData['duree'] || '';
-                 const prixMinVal = postData['prix_minimum_activite'] || '';
-                 const ageReqVal = postData['age_requis_activite'] || '';
+                const dureeVal = postData['duree'] || '';
+                const prixMinVal = postData['prix_minimum_activite'] || '';
+                const ageReqVal = postData['age_requis_activite'] || '';
                 htmlContent = `
                     <label for="duree_activite">Durée de l'activité (en minutes) *</label>
                     <input type="number" id="duree_activite" name="duree" required min="1" value="${dureeVal}">
@@ -1456,7 +1576,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 `;
             }
             categorieSpecificFields.innerHTML = htmlContent;
-            
+
             // Set min date for date_spectacle if it exists
             const dateSpectacleInput = document.getElementById('date_spectacle');
             setMinDateForInput(dateSpectacleInput);
@@ -1466,30 +1586,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 if (postData.activites && postData.activites[0] && postData.activites[0].horaires && Array.isArray(postData.activites[0].horaires)) {
                     postData.activites[0].horaires.forEach(h => addHoraireActivite(null, h.date, h.heure_debut));
                 } else {
-                     addHoraireActivite();
+                    addHoraireActivite();
                 }
                 if (postData.activites && postData.activites[0] && postData.activites[0].services && Array.isArray(postData.activites[0].services)) {
                     postData.activites[0].services.forEach(s => addServiceActivite(null, s.nom_service, s.inclusion === 'on' || s.inclusion === true));
                 }
             } else if (categorieId === '4') {
-                 if (postData.attractions && Array.isArray(postData.attractions)) {
+                if (postData.attractions && Array.isArray(postData.attractions)) {
                     postData.attractions.forEach(attr => {
                         addAttractionParc(null, attr.nom_attraction, attr.horaires || []);
                     });
                 } else {
-                     addAttractionParc();
+                    addAttractionParc();
                 }
             } else if (categorieId === '5') {
-                 if (postData.plats && Array.isArray(postData.plats)) {
-                     postData.plats.forEach(platName => addPlatRestaurant(null, platName));
-                 }
+                if (postData.plats && Array.isArray(postData.plats)) {
+                    postData.plats.forEach(platName => addPlatRestaurant(null, platName));
+                }
             }
 
 
             if (categorieId === '2') {
                 visiteGuideeSection.style.display = 'block';
                 const visiteGuideeCheckbox = document.getElementById('visite_guidee');
-                if(visiteGuideeCheckbox) {
+                if (visiteGuideeCheckbox) {
                     const isChecked = postData['visite_guidee'] === 'on' || postData['visite_guidee'] === true;
                     visiteGuideeCheckbox.checked = isChecked;
                     languesGuideesDiv.style.display = isChecked ? 'block' : 'none';
@@ -1497,7 +1617,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 }
             } else {
                 visiteGuideeSection.style.display = 'none';
-                if(languesSelect) languesSelect.required = false;
+                if (languesSelect) languesSelect.required = false;
             }
             initializeDynamicEventListeners();
             validateAllFields(categorieSpecificFields);
@@ -1513,9 +1633,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     if (!e.target.checked) {
                         languesSelect.classList.remove('invalid');
                         const errorMsgContainer = languesSelect.closest('.form-group');
-                        if (errorMsgContainer){
-                             const errorMsg = errorMsgContainer.querySelector('.error-message');
-                             if(errorMsg) errorMsg.style.display = 'none';
+                        if (errorMsgContainer) {
+                            const errorMsg = errorMsgContainer.querySelector('.error-message');
+                            if (errorMsg) errorMsg.style.display = 'none';
                         }
                     } else if (e.target.checked && offerForm.dataset.submitted === 'true') {
                         validateField(languesSelect);
@@ -1531,14 +1651,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 } else if (event.target.matches('#add-attraction-parc')) {
                     addAttractionParc(event);
                 } else if (event.target.matches('.add-horaire-parc-attraction')) {
-                     addHoraireToAttraction(event);
+                    addHoraireToAttraction(event);
                 } else if (event.target.matches('#add-plat-restaurant')) {
                     addPlatRestaurant(event);
                 } else if (event.target.matches('.remove-element')) {
                     handleRemoveElement(event);
                 }
             });
-             categorieSpecificFields.querySelectorAll('.item-group').forEach(group => addRemoveCrossIfNeeded(group));
+            categorieSpecificFields.querySelectorAll('.item-group').forEach(group => addRemoveCrossIfNeeded(group));
         }
 
         // Crée et retourne un élément <span> (une croix "×") utilisé comme bouton pour supprimer des éléments dynamiques.
@@ -1576,7 +1696,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     if (items.length > minItems) {
                         cross.style.display = 'flex';
                     } else {
-                         cross.style.display = 'none';
+                        cross.style.display = 'none';
                     }
                 }
             });
@@ -1584,7 +1704,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
         // Ajoute dynamiquement un nouveau groupe de champs pour saisir une date et une heure de début pour un horaire d'activité
         function addHoraireActivite(event, dateVal = '', debutVal = '') {
-            if(event) event.preventDefault();
+            if (event) event.preventDefault();
             const container = document.getElementById('horaires-container-activite');
             const count = container.querySelectorAll('.horaire-group').length;
             const newGroup = document.createElement('div');
@@ -1605,7 +1725,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
         // Ajoute dynamiquement un nouveau groupe de champs pour saisir le nom d'un service/prestation et indiquer s'il est inclus pour une activité
         function addServiceActivite(event, nomVal = '', inclusVal = false) {
-            if(event) event.preventDefault();
+            if (event) event.preventDefault();
             const container = document.getElementById('services-container-activite');
             const count = container.querySelectorAll('.service-group').length;
             const newGroup = document.createElement('div');
@@ -1627,7 +1747,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
         //Ajoute dynamiquement un nouveau groupe de champs pour une attraction de parc, incluant son nom et un espace pour ses propres horaires
         function addAttractionParc(event, nomVal = '', horairesData = []) {
-            if(event) event.preventDefault();
+            if (event) event.preventDefault();
             const container = document.getElementById('attractions-container');
             const count = container.querySelectorAll('.attraction-group').length;
             const newGroup = document.createElement('div');
@@ -1648,7 +1768,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             addRemoveCrossIfNeeded(newGroup);
 
             const attractionHorairesContainer = newGroup.querySelector('.horaires-container-attraction');
-            if(horairesData && horairesData.length > 0) {
+            if (horairesData && horairesData.length > 0) {
                 horairesData.forEach(h => addHoraireToAttraction(null, attractionHorairesContainer, h.date, h.heure_debut, h.heure_fin));
             } else {
                 addHoraireToAttraction(null, attractionHorairesContainer);
@@ -1659,7 +1779,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
         //Ajoute dynamiquement un nouveau groupe de champs pour saisir une date, une heure de début et une heure de fin pour un horaire spécifique à une attraction de parc
         function addHoraireToAttraction(event, containerElement = null, dateVal = '', debutVal = '', finVal = '') {
-            if(event) event.preventDefault();
+            if (event) event.preventDefault();
             const attractionGroup = containerElement ? containerElement.closest('.attraction-group') : event.target.closest('.attraction-group');
             if (!attractionGroup) return;
             const horairesContainer = containerElement || attractionGroup.querySelector('.horaires-container-attraction');
@@ -1667,7 +1787,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             const attractionIndexInput = attractionGroup.querySelector('[name*="[nom_attraction]"]');
             const nameAttr = attractionIndexInput ? attractionIndexInput.name : `attractions[${document.querySelectorAll('.attraction-group').length -1}]`;
             const attractionIndexMatch = nameAttr.match(/attractions\[(\d+)\]/);
-            const attractionIndex = attractionIndexMatch ? attractionIndexMatch[1] : (document.querySelectorAll('.attraction-group').length -1) ;
+            const attractionIndex = attractionIndexMatch ? attractionIndexMatch[1] : (document.querySelectorAll('.attraction-group').length - 1);
 
             const horaireCount = horairesContainer.querySelectorAll('.horaire-group').length;
             const newGroup = document.createElement('div');
@@ -1689,13 +1809,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
         // Ajoute dynamiquement un champ pour saisir le nom d'un plat pour un restaurant.
         function addPlatRestaurant(event, nomVal = '') {
-            if(event) event.preventDefault();
+            if (event) event.preventDefault();
             const container = document.getElementById('plats-container-restaurant');
             const platGroups = container.querySelectorAll('.plat-group');
 
             if (platGroups.length >= 5) {
                 const addPlatButton = document.getElementById('add-plat-restaurant');
-                if(addPlatButton) addPlatButton.style.display = 'none';
+                if (addPlatButton) addPlatButton.style.display = 'none';
                 return;
             }
 
@@ -1710,8 +1830,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             addRemoveCrossIfNeeded(newGroup);
 
             if (container.querySelectorAll('.plat-group').length >= 5) {
-                 const addPlatButton = document.getElementById('add-plat-restaurant');
-                 if(addPlatButton) addPlatButton.style.display = 'none';
+                const addPlatButton = document.getElementById('add-plat-restaurant');
+                if (addPlatButton) addPlatButton.style.display = 'none';
             }
             if (offerForm.dataset.submitted === 'true') validateAllFields(newGroup);
         }
@@ -1733,11 +1853,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 } else if (parentContainer.id === 'attractions-container') {
                     updateRemoveCrossVisibility(parentContainer, '.attraction-group');
                 } else if (parentContainer.id === 'horaires-container-activite') {
-                     updateRemoveCrossVisibility(parentContainer, '.horaire-group');
+                    updateRemoveCrossVisibility(parentContainer, '.horaire-group');
                 } else if (parentContainer.id === 'services-container-activite') {
-                     updateRemoveCrossVisibility(parentContainer, '.service-group');
+                    updateRemoveCrossVisibility(parentContainer, '.service-group');
                 } else if (parentContainer.classList.contains('horaires-container-attraction')) {
-                     updateRemoveCrossVisibility(parentContainer, '.horaire-group');
+                    updateRemoveCrossVisibility(parentContainer, '.horaire-group');
                 }
             }
         }
@@ -1747,7 +1867,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             let directSibling = field.nextElementSibling;
             if (directSibling && directSibling.classList.contains('error-message')) return directSibling;
             let parentDiv = field.closest('div');
-            if(parentDiv) {
+            if (parentDiv) {
                 let children = Array.from(parentDiv.children);
                 let fieldIndex = children.indexOf(field);
                 if (fieldIndex !== -1 && children[fieldIndex + 1] && children[fieldIndex + 1].classList.contains('error-message')) {
@@ -1757,12 +1877,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 if (parentSibling && parentSibling.classList.contains('error-message')) return parentSibling;
             }
             const label = document.querySelector(`label[for="${field.id}"]`);
-            if(label) {
+            if (label) {
                 let nextAfterLabel = label.nextElementSibling;
                 if (nextAfterLabel && nextAfterLabel.id === field.id && nextAfterLabel.nextElementSibling && nextAfterLabel.nextElementSibling.classList.contains('error-message')) {
                     return nextAfterLabel.nextElementSibling;
                 }
-                 if (nextAfterLabel && nextAfterLabel.classList.contains('error-message')) return nextAfterLabel;
+                if (nextAfterLabel && nextAfterLabel.classList.contains('error-message')) return nextAfterLabel;
             }
             if (field.tagName.toLowerCase() === 'select' && field.nextElementSibling && field.nextElementSibling.classList.contains('error-message')) {
                 return field.nextElementSibling;
@@ -1777,15 +1897,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             const isVisible = field.offsetWidth > 0 || field.offsetHeight > 0 || field.getClientRects().length > 0 || field.type === 'hidden';
 
             if (isVisible || field.required) {
-                 isValidField = field.checkValidity();
+                isValidField = field.checkValidity();
                 if (field.type === 'file' && field.required && currentSelectedFiles.length === 0) isValidField = false;
                 if (field.id === 'photos' && currentSelectedFiles.length > 6) isValidField = false;
                 if (field.multiple && field.required && field.selectedOptions.length === 0) isValidField = false;
-                
+
                 // Check date field min attribute
                 if (field.type === 'date' && field.min && field.value && field.value < field.min) {
                     isValidField = false;
-                    if(errorMessageElement) errorMessageElement.textContent = "La date ne peut pas être antérieure à aujourd'hui.";
+                    if (errorMessageElement) errorMessageElement.textContent = "La date ne peut pas être antérieure à aujourd'hui.";
                 }
 
             }
@@ -1798,7 +1918,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     field.classList.add('invalid');
                     if (errorMessageElement) {
                         if (field.id === 'photos' && currentSelectedFiles.length === 0 && field.required) {
-                             errorMessageElement.textContent = "Veuillez ajouter au moins une photo.";
+                            errorMessageElement.textContent = "Veuillez ajouter au moins une photo.";
                         } else if (field.id === 'photos' && currentSelectedFiles.length > 6) {
                             errorMessageElement.textContent = "Vous ne pouvez sélectionner que 6 photos maximum.";
                         } else if (field.type === 'date' && field.min && field.value && field.value < field.min) {
@@ -1819,7 +1939,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             let allValid = true;
             containerOrForm.querySelectorAll('input:not([type="button"]):not([type="submit"]), textarea, select').forEach(field => {
                 const isVisible = field.offsetWidth > 0 || field.offsetHeight > 0 || field.getClientRects().length > 0 || field.type === 'hidden';
-                if ( isVisible || field.required ) {
+                if (isVisible || field.required) {
                     if (field.id === 'photos') {
                         if (!validatePhotosField()) allValid = false;
                     } else {
@@ -1841,7 +1961,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             files.forEach(file => {
                 if (file.type.startsWith('image/') && currentSelectedFiles.length < 6) {
                     if (!currentSelectedFiles.some(existingFile => existingFile.name === file.name && existingFile.size === file.size)) {
-                         newFilesToAdd.push(file);
+                        newFilesToAdd.push(file);
                     }
                 }
             });
@@ -1861,7 +1981,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             updateFileInput();
             validatePhotosField();
         }
-        
+
         // Affiche les prévisualisations des images actuellement sélectionnées.
         function renderPhotoPreviews() {
             imagePreviewContainer.innerHTML = '';
@@ -1891,8 +2011,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 reader.readAsDataURL(file);
             });
         }
-        
-        // met à jour l'objet FileList du champ de saisie de fichier 
+
+        // met à jour l'objet FileList du champ de saisie de fichier
         function updateFileInput() {
             const dataTransfer = new DataTransfer();
             currentSelectedFiles.forEach(file => dataTransfer.items.add(file));
@@ -1909,9 +2029,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
         // ferme la modal
         function closeImageModal() {
-             if (imageModal) {
+            if (imageModal) {
                 imageModal.classList.remove('show-modal');
-             }
+            }
         }
 
         // Valide le champ de photos (nombre minimum/maximum de photos).
@@ -1935,9 +2055,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             return isValid;
         }
 
-        if(photosInput) photosInput.addEventListener('change', handlePhotoSelection);
-        if(closeModalButton) closeModalButton.addEventListener('click', closeImageModal);
-        if(imageModal) imageModal.addEventListener('click', (event) => {
+        if (photosInput) photosInput.addEventListener('change', handlePhotoSelection);
+        if (closeModalButton) closeModalButton.addEventListener('click', closeImageModal);
+        if (imageModal) imageModal.addEventListener('click', (event) => {
             if (event.target === imageModal) {
                 closeImageModal();
             }
@@ -1947,7 +2067,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
             categorieSpecificFields.innerHTML = '';
             const tempFormData = new FormData(offerForm);
             const currentPostData = {};
-             for (const [key, value] of tempFormData.entries()) {
+            for (const [key, value] of tempFormData.entries()) {
                 if (key.endsWith('[]')) {
                     const actualKey = key.slice(0, -2);
                     if (!currentPostData[actualKey]) currentPostData[actualKey] = [];
@@ -1960,7 +2080,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
         });
 
 
-        window.onload = function () {
+        window.onload = function() {
             // Set min attribute for main date input on load
             setMinDateForInput(mainDateInput);
 
@@ -1968,8 +2088,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                 categorieSelect.value = serverPostData.categorie;
                 fetchCategorieFields(serverPostData.categorie, serverPostData);
             } else {
-                 if(mainDateInputContainer) mainDateInputContainer.style.display = 'block';
-                 if(mainDateInput) mainDateInput.required = true;
+                if (mainDateInputContainer) mainDateInputContainer.style.display = 'block';
+                if (mainDateInput) mainDateInput.required = true;
             }
 
             if (serverPostData.categorie === '2') {
@@ -1990,44 +2110,50 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
                 phpErrors.forEach(fieldName => {
                     let field = document.getElementById(fieldName) ||
-                                document.querySelector(`[name="${fieldName}"]`) ||
-                                document.querySelector(`[name^="${fieldName}["]`);
+                        document.querySelector(`[name="${fieldName}"]`) ||
+                        document.querySelector(`[name^="${fieldName}["]`);
 
                     if (field) {
                         field.classList.add('invalid');
                         const errorMessageElement = getErrorMessageElementForField(field);
                         if (errorMessageElement) {
-                             errorMessageElement.style.display = 'block';
+                            errorMessageElement.style.display = 'block';
                         }
                         if (!firstInvalidFieldForFocus) firstInvalidFieldForFocus = field;
                     } else if (fieldName.startsWith('photos_') || fieldName === 'photos') {
                         const photosErrorMsgEl = document.getElementById('photos-error-message');
                         if (photosErrorMsgEl) {
                             photosErrorMsgEl.textContent = "<?php
-                                if(isset($erreurs['photos_final_check'])) echo addslashes($erreurs['photos_final_check']);
-                                elseif(isset($erreurs['photos_missing'])) echo addslashes($erreurs['photos_missing']);
-                                elseif(isset($erreurs['photos_count'])) echo addslashes($erreurs['photos_count']);
-                                elseif(isset($erreurs['photos_upload_dir'])) echo addslashes($erreurs['photos_upload_dir']);
-                                elseif(isset($erreurs['photos_upload_permission'])) echo addslashes($erreurs['photos_upload_permission']);
-                                else echo 'Erreur avec le téléchargement des photos.';
-                            ?>";
+                                                            if (isset($erreurs['photos_final_check'])) echo addslashes($erreurs['photos_final_check']);
+                                                            elseif (isset($erreurs['photos_missing'])) echo addslashes($erreurs['photos_missing']);
+                                                            elseif (isset($erreurs['photos_count'])) echo addslashes($erreurs['photos_count']);
+                                                            elseif (isset($erreurs['photos_upload_dir'])) echo addslashes($erreurs['photos_upload_dir']);
+                                                            elseif (isset($erreurs['photos_upload_permission'])) echo addslashes($erreurs['photos_upload_permission']);
+                                                            else echo 'Erreur avec le téléchargement des photos.';
+                                                            ?>";
                             photosErrorMsgEl.style.display = 'block';
                         }
-                        if(photosInput) {
+                        if (photosInput) {
                             photosInput.classList.add('invalid');
                             if (!firstInvalidFieldForFocus) firstInvalidFieldForFocus = photosInput;
                         }
                     }
                 });
 
-                 if (firstInvalidFieldForFocus) {
-                     firstInvalidFieldForFocus.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                 } else {
-                     const generalErrorDisplay = document.querySelector('.error.message ul');
-                     if (generalErrorDisplay) {
-                         generalErrorDisplay.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                     }
-                 }
+                if (firstInvalidFieldForFocus) {
+                    firstInvalidFieldForFocus.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                } else {
+                    const generalErrorDisplay = document.querySelector('.error.message ul');
+                    if (generalErrorDisplay) {
+                        generalErrorDisplay.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                    }
+                }
             <?php endif; ?>
 
             offerForm.addEventListener('submit', (event) => {
@@ -2037,7 +2163,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
                     const firstInvalidField = offerForm.querySelector('.invalid');
                     if (firstInvalidField) {
                         firstInvalidField.focus();
-                        firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        firstInvalidField.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
                     }
                 }
             });
@@ -2048,4 +2177,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
         }
     </script>
 </body>
+
 </html>

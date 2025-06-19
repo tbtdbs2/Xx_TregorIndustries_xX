@@ -1,36 +1,39 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACT Pro - Contact</title><link rel="icon" href="images/Logo2withoutbgorange.png">
+    <title>PACT Pro - Contact</title>
+    <link rel="icon" href="images/Logo2withoutbgorange.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
+
 <body>
     <header>
-    <div class="container header-container">
-        <div class="header-left">
-            <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
-            <span class="pro-text">Professionnel</span>
-        </div>
+        <div class="container header-container">
+            <div class="header-left">
+                <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
+                <span class="pro-text">Professionnel</span>
+            </div>
 
-        <nav class="main-nav">
-            <ul>
-                <li><a href="index.php">Accueil</a></li>
-                <li><a href="recherche.php">Mes Offres</a></li>
-                <li><a href="publier-une-offre.php">Publier une offre</a></li>
-            </ul>
-        </nav>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="index.php">Accueil</a></li>
+                    <li><a href="recherche.php">Mes Offres</a></li>
+                    <li><a href="publier-une-offre.php">Publier une offre</a></li>
+                </ul>
+            </nav>
 
-        <div class="header-right">
-            <a href="profil.php" class="btn btn-secondary">Mon profil</a>
-            <a href="../deconnexion.php" class="btn btn-primary">Se déconnecter</a>
+            <div class="header-right">
+                <a href="profil.php" class="btn btn-secondary">Mon profil</a>
+                <a href="../deconnexion.php" class="btn btn-primary">Se déconnecter</a>
+            </div>
         </div>
-    </div>
     </header>
 
     <main>
@@ -53,7 +56,7 @@
             <div class="footer-section links">
                 <h3>Visiteur</h3>
                 <ul>
-                    <li><a href="../index.html">Accueil</a></li>
+                    <li><a href="../index.php">Accueil</a></li>
                     <li><a href="../FO/recherche.php">Recherche d'offres</a></li>
                     <li><a href="../FO/connexion-compte.php">Je me connecte en tant que membre</a></li>
                 </ul>
@@ -80,4 +83,5 @@
     </footer>
     <script src="script.js" defer></script>
 </body>
+
 </html>

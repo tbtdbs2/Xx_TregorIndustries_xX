@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PACT Pro - Publication</title><link rel="icon" href="images/Logo2withoutbgorange.png">
+    <title>PACT Pro - Publication</title>
+    <link rel="icon" href="images/Logo2withoutbgorange.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -36,7 +38,7 @@
             font-size: 36px;
         }
 
-        .content-area p{
+        .content-area p {
             color: #000000;
             margin-bottom: 20px;
             font-size: 24px;
@@ -63,7 +65,7 @@
             font-weight: 500;
         }
 
-        .form-group input[type="email"]{
+        .form-group input[type="email"] {
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -71,8 +73,8 @@
         }
 
         .login-button {
-            background-color:var(--couleur-principale);
-            
+            background-color: var(--couleur-principale);
+
             color: #fff;
             border: none;
             padding: 12px 20px;
@@ -88,46 +90,47 @@
         }
     </style>
 </head>
+
 <body>
     <header>
-    <div class="container header-container">
-        <div class="header-left">
-            <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
-            <span class="pro-text">Professionnel</span>
-        </div>
+        <div class="container header-container">
+            <div class="header-left">
+                <a href="index.php"><img src="images/Logowithoutbgorange.png" alt="Logo" class="logo"></a>
+                <span class="pro-text">Professionnel</span>
+            </div>
 
-        <nav class="main-nav">
-            <ul>
-                <li><a href="index.php">Accueil</a></li>
-                <li><a href="recherche.php">Mes Offres</a></li>
-                <li><a href="publier-une-offre.php">Publier une offre</a></li>
-            </ul>
-        </nav>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="index.php">Accueil</a></li>
+                    <li><a href="recherche.php">Mes Offres</a></li>
+                    <li><a href="publier-une-offre.php">Publier une offre</a></li>
+                </ul>
+            </nav>
 
-        <div class="header-right">
-            <a href="profil.php" class="btn btn-secondary">Mon profil</a>
-            <a href="connexion-compte.php" class="btn btn-primary">Se déconnecter</a>
+            <div class="header-right">
+                <a href="profil.php" class="btn btn-secondary">Mon profil</a>
+                <a href="connexion-compte.php" class="btn btn-primary">Se déconnecter</a>
+            </div>
         </div>
-    </div>
     </header>
 
-<main>
-    <div class="container content-area">
-        <h1>Récupérez votre mot de passe</h1>
-        <p>Saisissez votre email ci-dessous</p>
-        <div class="login-container">
-            <form class="login-form">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" placeholder="adressemail@exemple.com">
-                </div>
-                <button type="submit" class="login-button">Envoyer un lien de récupération</button>
-            </form>
+    <main>
+        <div class="container content-area">
+            <h1>Récupérez votre mot de passe</h1>
+            <p>Saisissez votre email ci-dessous</p>
+            <div class="login-container">
+                <form class="login-form">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" placeholder="adressemail@exemple.com">
+                    </div>
+                    <button type="submit" class="login-button">Envoyer un lien de récupération</button>
+                </form>
+            </div>
         </div>
-    </div>
-</main>
+    </main>
 
-<footer>
+    <footer>
         <div class="container footer-content">
             <div class="footer-section social-media">
                 <div class="social-icons">
@@ -140,7 +143,7 @@
             <div class="footer-section links">
                 <h3>Visiteur</h3>
                 <ul>
-                    <li><a href="../index.html">Accueil</a></li>
+                    <li><a href="../index.php">Accueil</a></li>
                     <li><a href="../FO/recherche.php">Recherche d'offres</a></li>
                     <li><a href="../FO/connexion-compte.php">Je me connecte en tant que membre</a></li>
                 </ul>
@@ -167,4 +170,5 @@
     </footer>
     <script src="script.js" defer></script>
 </body>
+
 </html>
