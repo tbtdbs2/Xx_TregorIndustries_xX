@@ -891,6 +891,36 @@ function display_stars($rating)
                     this.classList.toggle('active');
                 });
             }
+    </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const favoriteButton = document.querySelector('.offre-favorite-btn');
+        if (favoriteButton) {
+            favoriteButton.addEventListener('click', function() { this.classList.toggle('active'); });
+        }
+
+        const avisListContainer = document.querySelector('.avis-list');
+        const allAvisCards = avisListContainer ? Array.from(avisListContainer.querySelectorAll('.avis-card')) : [];
+        const prevAvisBtn = document.querySelector('.prev-avis');
+        const nextAvisBtn = document.querySelector('.next-avis');
+
+        let currentAvisPage = 1;
+        const avisPerPage = 3; // Nombre d'avis à afficher par page
+        let totalAvisPages = 0;
+
+        function displayCurrentAvisPage() {
+            if (!avisListContainer || allAvisCards.length === 0) return;
+            const startIndex = (currentAvisPage - 1) * avisPerPage;
+            const endIndex = startIndex + avisPerPage;
+
+            allAvisCards.forEach((card, index) => {
+                if (index >= startIndex && index < endIndex) {
+                    card.style.display = 'flex'; // Ou 'block' selon le style initial des cartes
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
 
             const avisListContainer = document.querySelector('.avis-list');
             const allAvisCards = avisListContainer ? Array.from(avisListContainer.querySelectorAll('.avis-card')) : [];
@@ -926,6 +956,55 @@ function display_stars($rating)
                 } else { // S'il n'y a aucun avis
                     if (avisListContainer) avisListContainer.innerHTML = "<p>Aucun avis pour le moment.</p>";
                 }
+        // Modal Logic for "Laisser un avis" button
+        const openAvisModalBtn = document.getElementById('openAvisModalBtn');
+        const avisModal = document.getElementById('avisModal');
+        const closeModalButton = document.querySelector('#avisModal .close-button');
+        const modalBody = document.querySelector('#avisModal .modal-body');
+
+        if (openAvisModalBtn) {
+            openAvisModalBtn.addEventListener('click', function() {
+                const isUserLoggedIn = this.dataset.isLoggedIn === 'true';
+                const offerId = this.dataset.offerId;
+
+                if (isUserLoggedIn) {
+                    console.log('Utilisateur connecté, chargement du formulaire d\'avis...'); // Ajout pour le débogage
+                    // Load the review form into the modal
+                    fetch(`laisser-avis-modal.php?offer_id=${offerId}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                console.error('Erreur HTTP lors du chargement de la modale:', response.status, response.statusText); // Ajout pour le débogage
+                                // If response is not ok (e.g., 401 Unauthorized from laisser-avis-modal.php)
+                                // Try to parse as JSON first, then fall back to text
+                                return response.json().catch(() => response.text());
+                            }
+                            return response.text(); // Expecting HTML normally
+                        })
+                        .then(data => {
+                            if (typeof data === 'object' && data.error) {
+                                // Handle JSON error response, e.g., if not authenticated
+                                alert('Erreur: ' + data.error);
+                                if (data.error === 'Non authentifié.') {
+                                     window.location.href = 'connexion-compte.php?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+                                }
+                                return; // Stop further processing
+                            }
+                            // Assume HTML content otherwise
+                            modalBody.innerHTML = data;
+                            avisModal.style.display = 'flex'; // Show the modal
+                            initializeModalFormLogic(); // Initialize form-specific JS (e.g., star rating)
+                            console.log('Modale d\'avis chargée et affichée.'); // Ajout pour le débogage
+                        })
+                        .catch(error => {
+                            console.error('Error loading review form:', error); // Ajout pour le débogage
+                            modalBody.innerHTML = '<p>Impossible de charger le formulaire d\'avis. Veuillez réessayer plus tard.</p>';
+                            avisModal.style.display = 'flex';
+                        });
+                } else {
+                    // Redirect to login page if not logged in
+                    console.log('Utilisateur non connecté, redirection vers la page de connexion.'); // Ajout pour le débogage
+                    window.location.href = 'connexion-compte.php?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+                }
             }
 
             if (allAvisCards.length > 0) { // S'il y a des avis, initialiser la pagination
@@ -945,6 +1024,20 @@ function display_stars($rating)
                             updateAvisNavigation();
                         }
                     });
+             }
+        if (closeModalButton) {
+            closeModalButton.addEventListener('click', function() {
+                avisModal.style.display = 'none';
+                console.log('Modale d\'avis fermée.'); // Ajout pour le débogage
+            });
+        }
+
+        // Close modal when clicking outside of it
+        if (avisModal) {
+            avisModal.addEventListener('click', function(event) {
+                if (event.target === avisModal) {
+                    avisModal.style.display = 'none';
+                    console.log('Modale d\'avis fermée (clic extérieur).'); // Ajout pour le débogage
                 }
                 updateAvisNavigation(); // Appel initial pour afficher la première page et définir l'état des boutons
             } else if (prevAvisBtn && nextAvisBtn) { // S'il n'y a pas d'avis, désactiver les boutons
@@ -1026,6 +1119,14 @@ function display_stars($rating)
                     }
                 });
             }
+            ratingStars.forEach(star => {
+                star.addEventListener('click', function() {
+                    currentRating = parseInt(this.dataset.rating);
+                    if (ratingInput) ratingInput.value = currentRating;
+                    updateStars(currentRating);
+                    console.log('Note sélectionnée:', currentRating); // Ajout pour le débogage
+                });
+            }
 
             function initializeModalFormLogic() {
                 const ratingStars = document.querySelectorAll('#avisModal .rating-input .fa-star');
@@ -1039,6 +1140,42 @@ function display_stars($rating)
                             star.classList.remove('far');
                             star.classList.add('fas');
                             star.style.color = 'gold';
+                        });
+                  }
+            // Handle form submission inside the modal via AJAX
+            const avisForm = document.getElementById('avisForm');
+            // Ciblez l'élément d'erreur directement depuis avisForm après son chargement
+            const errorMessageElement = avisForm ? avisForm.querySelector('.modal-error-message') : null;
+
+
+            if (avisForm) { // Vérifiez que le formulaire existe avant d'ajouter l'écouteur
+                avisForm.addEventListener('submit', function(event) {
+                    event.preventDefault(); // Prevent default form submission
+                    console.log('Soumission du formulaire d\'avis interceptée.'); // Ajout pour le débogage
+
+                    const formData = new FormData(avisForm);
+                    
+                    // Récupérer les champs pour la validation avant envoi
+                    const titleInput = document.getElementById('avis_title');
+                    const commentInput = document.getElementById('avis_comment');
+                    const ratingValue = ratingInput ? parseInt(ratingInput.value) : 0;
+                    const visitDateValue = document.getElementById('visit_date').value;
+                    const contextValue = document.getElementById('context').value;
+
+                    let errors = [];
+
+                    if (titleInput.value.trim() === '') errors.push('Veuillez entrer un titre pour votre avis.');
+                    if (commentInput.value.trim() === '') errors.push('Veuillez entrer votre commentaire.');
+                    if (ratingValue < 1 || ratingValue > 5) errors.push('Veuillez donner une note entre 1 et 5 étoiles.');
+                    if (visitDateValue === '') errors.push('Veuillez entrer la date de votre visite.');
+                    if (new Date(visitDateValue) > new Date()) errors.push('La date de visite ne peut pas être future.');
+                    if (contextValue === '') errors.push('Veuillez sélectionner un contexte de visite.');
+
+                    if (errors.length > 0) {
+                        if (errorMessageElement) { // Vérifiez que l'élément d'erreur existe
+                            errorMessageElement.innerHTML = errors.join('<br>');
+                            errorMessageElement.style.display = 'block';
+                            console.log('Erreurs de validation côté client:', errors); // Ajout pour le débogage
                         } else {
                             star.classList.remove('fas');
                             star.classList.add('far');
@@ -1099,6 +1236,7 @@ function display_stars($rating)
                             if (errorMessageElement) { // Vérifiez que l'élément d'erreur existe
                                 errorMessageElement.innerHTML = errors.join('<br>');
                                 errorMessageElement.style.display = 'block';
+                                console.log('Erreurs de validation côté serveur:', data.errors); // Ajout pour le débogage
                             } else {
                                 console.error("Element d'erreur introuvable."); // Log pour le débogage
                             }

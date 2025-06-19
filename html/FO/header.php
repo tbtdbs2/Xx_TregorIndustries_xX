@@ -16,7 +16,7 @@ $is_member_logged_in = isset($_COOKIE['user_type']) && $_COOKIE['user_type'] ===
         <div class="header-right">
             <?php if ($is_member_logged_in): ?>
                 <a href="/FO/profil.php" class="btn btn-secondary desktop-only">Mon profil</a>
-                <a href="/deconnexion.php" class="btn btn-primary desktop-only">Déconnexion</a>
+                <a href="/FO/deconnexion-Membre.php" class="btn btn-primary desktop-only">Déconnexion</a>
             <?php else: ?>
                 <a href="/BO/index.php" class="pro-link desktop-only">Je suis professionnel</a>
                 <a href="/FO/creation-compte.php" class="btn btn-secondary desktop-only">S'enregistrer</a>
@@ -40,7 +40,7 @@ $is_member_logged_in = isset($_COOKIE['user_type']) && $_COOKIE['user_type'] ===
             <li><a href="/FO/recherche.php">Recherche</a></li>
             <?php if ($is_member_logged_in): ?>
                 <li><a href="/FO/profil.php">Mon profil</a></li>
-                <li><a href="/deconnexion.php">Déconnexion</a></li>
+                <li><a href="/FO/deconnexion-Membre.php">Déconnexion</a></li>
             <?php else: ?>
                 <li><a href="/BO/index.php">Je suis professionnel</a></li>
                 <li><a href="/FO/creation-compte.php">S'enregistrer</a></li>
