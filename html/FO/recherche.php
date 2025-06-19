@@ -671,7 +671,7 @@ function renderStars($rating)
                         <input type="hidden" name="destination" value="<?php echo htmlspecialchars($destination); ?>">
                         <input type="hidden" name="price_min_input" value="<?php echo htmlspecialchars((string)$priceMin); ?>">
                         <input type="hidden" name="price_max_input" value="<?php echo htmlspecialchars((string)$priceMax); ?>">
-                        <input type="hidden" name="date" value="<?php echo htmlspecialchars($selectedDate); ?>">
+                        <input type="hidden" name="date" value="<?php echo htmlspecialchars((string)$selectedDate); ?>">
                         <input type="hidden" name="min_rating" value="<?php echo htmlspecialchars((string)$minRating); ?>">
                         <button type="submit" aria-label="Rechercher"><i class="fas fa-search"></i></button>
                     </form>
