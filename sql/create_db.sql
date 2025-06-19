@@ -243,7 +243,7 @@ CREATE TABLE `offres` (
   `categorie_id` char(36) NOT NULL,
   `adresse_id` char(36) NOT NULL,
   `pro_id` char(36) NOT NULL,
-  `title` varchar(32) NOT NULL,
+  `title` varchar(64) NOT NULL,
   `summary` varchar(128) NOT NULL,
   `description` varchar(512) DEFAULT NULL,
   `main_photo` text NOT NULL,
