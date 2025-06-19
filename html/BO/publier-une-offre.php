@@ -1303,11 +1303,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
 
                      <label style="font-weight: normal; font-size: 0.9em; margin-top: var(--espacement-double);">
                         <input type="checkbox" name="mettre_a_la_une" style="width:auto; margin-right: 5px;" <?php echo isset($_POST['mettre_a_la_une']) ? 'checked' : ''; ?>> Je souhaite mettre mon offre à la une
-                        (fonctionnalité payante - TODO : à implémenter via table 'souscriptions')
+                        
                     </label>
                     <label style="font-weight: normal; font-size: 0.9em;">
                         <input type="checkbox" name="offre_speciale" style="width:auto; margin-right: 5px;" <?php echo isset($_POST['offre_speciale']) ? 'checked' : ''; ?>> Je souhaite mettre mon offre en avant comme "Offre Spéciale"
-                        (fonctionnalité payante - TODO : à implémenter via table souscriptions')
+                        
                     </label>
                     <button type="submit">Publier mon annonce</button>
                 </div>
