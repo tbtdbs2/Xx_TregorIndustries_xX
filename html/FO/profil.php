@@ -208,6 +208,7 @@ try {
         .container.content-area {
             padding: 32px 0px;
             text-align: center;
+            align-items: center;
             display: flex;
             flex-direction: column;
         }
@@ -654,16 +655,15 @@ try {
                     <p style="color:red; font-family:monospace;">Erreur DÉVELOPPEMENT (SELECT): <?php echo htmlspecialchars($e->getMessage()); ?></p>
                 <?php endif; ?>
             <?php endif; ?>
-
+            <div class="card_section" style="margin-top: 20px; width: 700px; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 style="margin: 0; font-size: 1.2em;">Sécurité du compte</h2>
+                    <p style="margin: 5px 0 0 0; color: #555;">Protégez votre compte avec la double authentification.</p>
+                </div>
+                <a href="Activation-A2F.php" class="btn-primary" style="text-decoration: none; padding: 12px 24px; border-radius: 8px;">Activer l'A2F</a>
+            </div>
         </div>
     </main>
-    <div class="card_section" style="margin-top: 20px; width: 700px; justify-content: space-between; align-items: center;">
-        <div>
-            <h2 style="margin: 0; font-size: 1.2em;">Sécurité du compte</h2>
-            <p style="margin: 5px 0 0 0; color: #555;">Protégez votre compte avec la double authentification.</p>
-        </div>
-        <a href="Activation-A2F.php" class="btn-primary" style="text-decoration: none; padding: 12px 24px; border-radius: 8px;">Activer l'A2F</a>
-    </div>
     <div id="popupOverlay" class="popup-overlay">
         <div class="popup-content">
             <h2 id="popupTitle"></h2>
