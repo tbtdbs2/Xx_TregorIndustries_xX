@@ -70,8 +70,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // 3. Insertion du compte membre
             $stmtMembre = $pdo->prepare("
-                INSERT INTO comptes_membre (id, adresse_id, email, password, phone, lastname, firstname, alias)
-                VALUES (:id_compte_membre, :adresse_id, :email, :password, :phone, :lastname, :firstname, :alias)
+                INSERT INTO comptes_membre (id, adresse_id, email, password, phone, lastname, firstname, alias, otp_enabled, otp_secret)
+                VALUES (:id_compte_membre, :adresse_id, :email, :password, :phone, :lastname, :firstname, :alias, '0', NULL)
             ");
             $id_compte_membre = generate_uuid(); // Génération d'un UUID pour le compte membre
             if ($stmtMembre->execute(['id_compte_membre' => $id_compte_membre, 'adresse_id' => $adresse_id, 'email' => $email, 'password' => $password, 'phone' => $phone, 'lastname' => $lastname, 'firstname' => $firstname, 'alias' => $alias])) {
@@ -381,7 +381,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input type="password" id="password_confirm" name="password_confirm" placeholder="Mot de passe">
                     </div>
                     <div class="register-button-container">
-                        <a href="#" class="already-registered">J'ai déjà un compte</a>
+                        <a href="./connexion-compte.php" class="already-registered">J'ai déjà un compte</a>
                         <button type="submit" class="register-button">S'inscrire</button>
                     </div>
                 </form>
@@ -390,6 +390,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
 
     <footer>
+        <div class="container footer-content">
+            <div class="footer-section social-media">
+                <a href="index.php"><img src="images/Logowithoutbg.png" alt="Logo PACT" class="footer-logo"></a>
+                <div class="social-icons">
+                    <a href="#" aria-label="Twitter PACT"><i class="fab fa-x-twitter"></i></a>
+                    <a href="#" aria-label="Instagram PACT"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="YouTube PACT"><i class="fab fa-youtube"></i></a>
+                    <a href="#" aria-label="LinkedIn PACT"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="footer-section links">
+                <h3>Professionnel</h3>
+                <ul>
+                    <li><a href="../BO/index.php">Comment poster une annonce</a></li>
+                    <li><a href="../BO/creation-compte.php">Je crée mon compte pro</a></li>
+                    <li><a href="../BO/connexion-compte.php">Je me connecte en tant que pro</a></li>
+                </ul>
+            </div>
+            <div class="footer-section links">
+                <h3>Découvrir</h3>
+                <ul>
+                    <li><a href="index.php">Accueil</a></li>
+                    <li><a href="recherche.php">Recherche</a></li>
+                </ul>
+            </div>
+            <div class="footer-section links">
+                <h3>Ressources</h3>
+                <ul>
+                    <li><a href="conditions-generales-d'utilisation.php">Conditions générales d'utilisation</a></li>
+                    <li><a href="contact-du-responsable-du-site.php">Contact du responsable du site</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 PACT. Tous droits réservés.</p>
+        </div>
     </footer>
     <script src="script.js" defer></script>
 </body>
