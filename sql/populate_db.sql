@@ -215,9 +215,9 @@ SET @langue_id_2 = UUID();
 SET @langue_id_3 = UUID();
 
 INSERT INTO `langues` (`id`, `language`) VALUES
-(@langue_id_1, 'Français'),
-(@langue_id_2, 'Anglais'),
-(@langue_id_3, 'Italien');
+(@langue_id_1, 'fr'),
+(@langue_id_2, 'en'),
+(@langue_id_3, 'it');
 
 SET @option_id_1 = UUID();
 SET @option_id_2 = UUID();
