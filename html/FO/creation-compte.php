@@ -70,8 +70,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // 3. Insertion du compte membre
             $stmtMembre = $pdo->prepare("
-                INSERT INTO comptes_membre (id, adresse_id, email, password, phone, lastname, firstname, alias)
-                VALUES (:id_compte_membre, :adresse_id, :email, :password, :phone, :lastname, :firstname, :alias)
+                INSERT INTO comptes_membre (id, adresse_id, email, password, phone, lastname, firstname, alias, otp_enabled, otp_secret)
+                VALUES (:id_compte_membre, :adresse_id, :email, :password, :phone, :lastname, :firstname, :alias, '0', NULL)
             ");
             $id_compte_membre = generate_uuid(); // Génération d'un UUID pour le compte membre
             if ($stmtMembre->execute(['id_compte_membre' => $id_compte_membre, 'adresse_id' => $adresse_id, 'email' => $email, 'password' => $password, 'phone' => $phone, 'lastname' => $lastname, 'firstname' => $firstname, 'alias' => $alias])) {
