@@ -647,55 +647,6 @@ $current_pro_id = require_once __DIR__ . '/../../includes/auth_check_pro.php';
             </div>
         </section>
 
-        <section class="news-section-bo container" id="mesOffresCarouselWrapper">
-            <h2>Vos Offres Publiées</h2>
-            <div class="cards-container-wrapper">
-                <div class="cards-container">
-                    <div class="card card-bo">
-                        <div class="card-image-wrapper">
-                            <img src="images/kayak.jpg" alt="Mon offre Kayak">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Archipel de Bréhat en kayak</h3>
-                            <p class="card-status-bo">Statut : <span class="status-active">Actif</span></p>
-                            <div class="card-actions-bo">
-                                <a href="offre.php?id=1" class="btn-bo-card btn-bo-view">Voir</a>
-                                <a href="publier-une-offre.php?edit_id=1" class="btn-bo-card btn-bo-edit">Modifier</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card card-bo">
-                        <div class="card-image-wrapper">
-                            <img src="images/randonnee.jpg" alt="Ma Randonnée Guidée">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Randonnée Guidée Montagnes</h3>
-                            <p class="card-status-bo">Statut : <span class="status-inactive">Inactif</span></p>
-                            <div class="card-actions-bo">
-                                <a href="offre.php?id=2" class="btn-bo-card btn-bo-view">Voir</a>
-                                <a href="publier-une-offre.php?edit_id=2" class="btn-bo-card btn-bo-edit">Modifier</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card card-bo">
-                        <div class="card-image-wrapper">
-                            <img src="images/cuisine.jpg" alt="Cours de Cuisine Locale">
-                        </div>
-                        <div class="card-content">
-                            <h3 class="card-title">Cours de Cuisine Locale</h3>
-                            <p class="card-status-bo">Statut : <span class="status-active">Actif</span></p>
-                            <div class="card-actions-bo">
-                                <a href="offre.php?id=3" class="btn-bo-card btn-bo-view">Voir</a>
-                                <a href="publier-une-offre.php?edit_id=3" class="btn-bo-card btn-bo-edit">Modifier</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="carousel-arrow prev-arrow" onclick="scrollSpecificCarousel('mesOffresCarouselWrapper', -1)"><i class="fas fa-chevron-left"></i></div>
-                <div class="carousel-arrow next-arrow" onclick="scrollSpecificCarousel('mesOffresCarouselWrapper', 1)"><i class="fas fa-chevron-right"></i></div>
-            </div>
-        </section>
-
     </main>
 
     <footer>
