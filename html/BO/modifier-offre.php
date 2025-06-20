@@ -43,7 +43,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($pdo)) {
     {
         $data = trim($data);
         $data = stripslashes($data);
-        $data = htmlspecialchars($data);
         return $data;
     }
 
